@@ -1,0 +1,26 @@
+{
+  "description": "Reviewer gate configuration for math-modeling-contest skill",
+  "reviewer_skill": "academic-paper-reviewer",
+  "review_mode": "full",
+  "reviewers": [
+    "methodology_reviewer",
+    "statistical_reviewer",
+    "domain_reviewer",
+    "devils_advocate",
+    "eic"
+  ],
+  "pass_criteria": {
+    "max_critical_issues": 0,
+    "max_major_issues": 1,
+    "min_overall_score": 65,
+    "acceptable_decisions": [
+      "Accept",
+      "Minor Revision"
+    ]
+  },
+  "max_review_cycles": 3,
+  "verdict_file": "state/review_verdict.json",
+  "version": "2.0",
+  "calibration_enabled": true,
+  "calibration_gold_set": "references/review_calibration_gold.json"
+}

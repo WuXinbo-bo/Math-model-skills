@@ -1,0 +1,65 @@
+{
+  "_description": "Problem-to-algorithm mapping for math modeling contests. Maps problem keywords to recommended algorithm combinations.",
+  "_version": "3.0",
+  "mappings": {
+    "干涉条纹/周期提取/光谱分析/薄膜测厚": {
+      "primary": ["峰谷法 (Peak-Valley Method)", "FFT频域分析"],
+      "alternative": ["自相关分析", "小波变换峰值检测"],
+      "fitting": "Fabry-Perot非线性最小二乘拟合 (Levenberg-Marquardt)",
+      "reference": "algorithm-library/05-统计分析与数据处理算法说明.md",
+      "note": "峰谷法适合等间距条纹；非等间距时优先FFT+自相关。拟合用LM算法，初始值由峰谷法提供。"
+    },
+    "优化/规划/调度/分配/路径": {
+      "primary": ["线性规划 (LP)", "整数规划 (IP)", "动态规划 (DP)"],
+      "alternative": ["遗传算法 (GA)", "粒子群优化 (PSO)", "模拟退火 (SA)"],
+      "reference": "algorithm-library/01-优化算法说明.md",
+      "note": "优先使用精确算法(LP/IP/DP)；问题规模大/非线性时使用启发式算法。"
+    },
+    "预测/预报/趋势/时间序列": {
+      "primary": ["灰色预测 GM(1,1)", "ARIMA时间序列", "线性回归"],
+      "alternative": ["LSTM神经网络", "XGBoost", "Prophet"],
+      "reference": "algorithm-library/02-预测类算法说明.md",
+      "note": "数据量<30点用灰色预测；>100点可用ARIMA；非线性关系用XGBoost。慎用神经网络。"
+    },
+    "评价/评估/排名/打分/权重": {
+      "primary": ["层次分析法 (AHP)", "熵权法", "TOPSIS"],
+      "alternative": ["模糊综合评价", "灰色关联分析 (GRA)", "数据包络分析 (DEA)"],
+      "reference": "algorithm-library/03-评价类算法说明.md",
+      "note": "主观赋权用AHP；客观赋权用熵权法；综合排序用TOPSIS。"
+    },
+    "分类/聚类/识别/判别": {
+      "primary": ["K-Means聚类", "层次聚类", "判别分析"],
+      "alternative": ["DBSCAN", "随机森林", "SVM"],
+      "reference": "algorithm-library/05-统计分析与数据处理算法说明.md",
+      "note": "数据量<1000优先用传统聚类；高维数据考虑降维(PCA)后再聚类。"
+    },
+    "图论/网络/最短路径/最大流": {
+      "primary": ["Dijkstra算法", "Floyd-Warshall", "最大流算法"],
+      "alternative": ["最小生成树 (MST)", "网络流优化"],
+      "reference": "algorithm-library/04-图论与网络分析算法说明.md"
+    },
+    "微分方程/动力学/传播/扩散": {
+      "primary": ["常微分方程数值解 (ODE)", "偏微分方程 (PDE)"],
+      "alternative": ["元胞自动机", "蒙特卡洛模拟"],
+      "reference": "algorithm-library/06-综合类算法说明.md"
+    },
+    "统计分析/假设检验/回归/相关": {
+      "primary": ["多元线性回归", "主成分分析 (PCA)", "因子分析"],
+      "alternative": ["岭回归/LASSO", "典型相关分析"],
+      "reference": "algorithm-library/05-统计分析与数据处理算法说明.md"
+    }
+  },
+  "quality_thresholds": {
+    "regression_r2_min": 0.05,
+    "cv_r2_hard_fail": -0.5,
+    "classification_auc_min": 0.70,
+    "classification_recall_min": 0.20
+  },
+  "anti_patterns": [
+    "优先使用简单方法，避免不必要的复杂模型",
+    "神经网络仅当传统方法明确失败时使用",
+    "每个模型的假设前提必须明确列出",
+    "所有公式必须有完整的符号说明",
+    "算法参数选择必须有论证依据"
+  ]
+}

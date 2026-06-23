@@ -1,0 +1,79 @@
+{
+  "version": "3.0.0",
+  "contest": "CUMCM",
+  "subquestions": 4,
+  "mode": "championship",
+  "created_at": "2026-06-17 02:12:34",
+  "stages": {
+    "S0": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S1": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S2": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S3": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S4": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S5": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S5.5": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S6": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S7": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S7.5": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S8": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S9": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S9.5": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    },
+    "S10": {
+      "status": "pending",
+      "attempt": 0,
+      "rework_count": 0
+    }
+  }
+}

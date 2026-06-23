@@ -1,0 +1,220 @@
+# 数学建模全链路工作流 DAG 定义
+# 定义阶段、依赖关系、参与 Agent 和质量门禁
+
+workflow:
+  name: "Mate-Math-v3 增强版工作流"
+  version: "3.0"
+
+stages:
+  - id: S0_input_registration
+    name: "输入登记"
+    agents: ["planner"]
+    outputs: ["inputs_manifest.json", "problem_text.md", "problem_classification.json"]
+    gates: []
+    references: ["problem-triage.md", "problem-taxonomy.md"]
+    auto_decisions:
+      - point: "S0_competition_type"
+        rule: "auto_detect_from_keywords"
+        description: "从题目文本自动识别竞赛类型"
+      - point: "S0_subquestion_count"
+        rule: "auto_count_from_text"
+        description: "从题目文本自动统计子问题数量"
+    
+  - id: S1_problem_analysis
+    name: "题目解析与题意共识"
+    agents: ["planner", "analyst", "reviewer"]
+    dependencies: ["S0_input_registration"]
+    meeting: "M001_kickoff"
+    outputs: ["project_brief.md", "task_breakdown.md", "symbol_table.md",
+              "outputs/literature/literature_review.md",
+              "problem_restatement.md", "figures/tech_roadmap.png"]
+    gates: ["G1_problem_parsed"]
+    references: ["problem-triage.md", "problem-taxonomy.md", "scoring-criteria-cumcm.md", "literature-search-guide.md", "problem-algorithm-map.json", "algorithm-library/"]
+    auto_decisions: []
+    
+  - id: S2_data_governance
+    name: "数据治理与画像"
+    agents: ["analyst"]
+    dependencies: ["S1_problem_analysis"]
+    outputs: ["data/processed/*.csv", "data_dictionary.md", "data_profile_report.md"]
+    gates: ["G1.5_data_quality"]
+    references: []
+    auto_decisions: []
+    
+  - id: S3_model_selection
+    name: "模型候选与路线辩论"
+    agents: ["proposer", "analyst", "critic", "reviewer"]
+    dependencies: ["S2_data_governance"]
+    meeting: "M002_model_debate"
+    outputs: ["model_candidates.md", "model_selection_report.md", "metric_spec.md", "model_assumptions.md"]
+    gates: ["G2_method_validated", "G1.5_metric_guardian", "G3_assumptions_valid"]
+    references: ["problem-algorithm-map.json", "algorithm-library/", "model-formulation-guide.md"]
+    auto_decisions:
+      - point: "S3_model_selection"
+        rule: "auto_score_matrix"
+        description: "评分矩阵自动打分，选最高分方案"
+    
+  - id: S4_experiment_race
+    name: "自动实验赛马"
+    agents: ["builder"]
+    dependencies: ["S3_model_selection"]
+    outputs: ["experiment_race_plan.md", "model_leaderboard.csv"]
+    gates: ["G2.5_experiment_race"]
+    references: ["experiment_design_framework.md", "model-formulation-guide.md"]
+    auto_decisions: []
+    auto_skip_in_fast: true
+    
+  - id: S5_modeling_and_solve
+    name: "建模求解与代码实现"
+    agents: ["proposer", "builder"]
+    dependencies: ["S4_experiment_race"]
+    outputs: ["src/*.py", "outputs/tables/*.csv", "outputs/figures/*.png",
+              "outputs/q{N}/solution_summary.md", "figures/q{N}_flowchart.png",
+              "unified_framework.md", "cross_validation_report.md"]
+    gates: ["G3_code_reviewed", "G3_math_sandbox", "G3_baseline_compared", "G3_parallel_merge"]
+    references: ["model-formulation-guide.md", "algorithm-library/"]
+    parallel_subquestions: true
+    parallel_description: "每个子问题独立建模，可并行执行"
+    auto_decisions:
+      - point: "S5_code_execution"
+        rule: "auto_sandbox_execute"
+        description: "自动执行代码 + 检查输出合理性"
+    
+  - id: S5.5_model_evolution
+    name: "模型进化与突变搜索"
+    agents: ["proposer", "builder"]
+    dependencies: ["S5_modeling_and_solve"]
+    outputs: ["models/evolution/*/model_search_space.md", "models/evolution/*/model_evolution_log.md", "model_evolution_summary.md"]
+    gates: ["G3.5_evolution_converged"]
+    references: ["model-formulation-guide.md", "algorithm-library/", "experiment_design_framework.md"]
+    auto_decisions: []
+    
+  - id: S6_verification
+    name: "模型检验与灵敏度分析"
+    agents: ["builder", "proposer"]
+    dependencies: ["S5.5_model_evolution"]
+    outputs: ["sensitivity_analysis.md", "robustness_report.md",
+              "figures/sensitivity_figure.png", "constraint_verification.md"]
+    gates: ["G4_results_frozen", "per_subquestion_verification"]
+    references: ["robustness-guide.md", "experiment_design_framework.md"]
+    auto_decisions: []
+    
+  - id: S7_evidence_chain
+    name: "证据链构建"
+    agents: ["planner"]
+    dependencies: ["S6_verification"]
+    outputs: ["conclusion_evidence_map.md", "paper_code_consistency_report.md", "model_evaluation.md"]
+    gates: ["G4.5_evidence_chain"]
+    references: []
+    auto_decisions: []
+    
+  - id: S7.5_unified_kernel
+    name: "统一内核归纳"
+    agents: ["planner"]
+    dependencies: ["S7_evidence_chain"]
+    outputs: ["unified_kernel.md"]
+    gates: ["G4.5_evidence_chain"]
+    references: []
+    auto_decisions: []
+
+  - id: S8_paper_drafting
+    name: "论文初稿撰写"
+    agents: ["writer", "builder", "proposer", "critic"]
+    dependencies: ["S7.5_unified_kernel"]
+    meeting: "M003_experiment_review"
+    outputs: ["paper.md", "paper_assets_manifest.json", "paper_structure_check.json"]
+    gates: ["G5_S8_CONTENT_READY", "G5_paper_section_ready", "G5_5_paper_structure", "ABSTRACT_QUALITY_GATE_V2", "G6_paper_evaluation"]
+    references: ["paper-writing-rules.md", "nature-writing-guide.md", "nature-figure-guide.md",
+                 "scoring-criteria-cumcm.md", "documents-workflow.md",
+                 "format-spec-51mcm.md", "format-spec-cumcm.md", "format-spec-mcm-icm.md"]
+    auto_decisions:
+      - point: "S8_paper_route"
+        rule: "default_fresh_markdown"
+        description: "默认从零撰写 Markdown → DOCX"
+    
+  - id: S9_adversarial_review
+    name: "对抗审稿与修订"
+    agents: ["critic", "reviewer", "writer"]
+    dependencies: ["S8_paper_drafting"]
+    meeting: "M004_paper_redteam"
+    outputs: ["adversarial_review.md", "revision_plan.md", "paper_revised.md"]
+    gates: ["G5.5_adversarial_review", "abstract_body_consistency"]
+    references: ["format-spec-51mcm.md", "format-spec-cumcm.md", "format-spec-mcm-icm.md"]
+    auto_decisions:
+      - point: "S9_revision_direction"
+        rule: "auto_fix_all_p0_p1"
+        description: "自动修复所有 P0/P1 问题"
+    championship_extra_iterations: 3
+    
+  - id: S9.5_publication_readiness
+    name: "出版规范审查"
+    agents: ["inspector"]
+    dependencies: ["S9_adversarial_review"]
+    outputs: ["publication_readiness_report.md", "paper_final.md"]
+    gates: ["G9.5_publication_ready"]
+    references: ["format-spec-51mcm.md", "format-spec-cumcm.md", "format-spec-mcm-icm.md"]
+    auto_decisions: []
+    championship_extra_iterations: 2
+    
+  - id: S10_final_build
+    name: "最终构建与交付"
+    agents: ["writer", "planner"]
+    dependencies: ["S9.5_publication_readiness"]
+    outputs: ["outputs/paper/final.docx", "outputs/paper/final.pdf",
+              "reproducibility_report.md", "appendix/appendix.md"]
+    gates: ["G6_audit_layer_passed", "cross_subquestion_consistency", "G6_appendix_complete"]
+    references: ["format-spec-51mcm.md", "format-spec-cumcm.md", "format-spec-mcm-icm.md",
+                 "documents-workflow.md", "modeling-paper-archives/"]
+    auto_decisions: []
+
+gates:
+  G1_problem_parsed:
+    description: "每个问题必须有明确输入、输出、评价指标"
+  G1.5_data_quality:
+    description: "不得存在未说明的缺失值、异常列、单位混乱"
+  G1.5_metric_guardian:
+    description: "所有指标必须有数学定义和代码实现"
+  G2_method_validated:
+    description: "至少比较两个可执行模型，且说明选择理由"
+  G2.5_experiment_race:
+    description: "统一口径赛马完成，主模型和备选模型确认"
+  G3_code_reviewed:
+    description: "代码可运行，结果可复现"
+  G3_parallel_merge:
+    description: "所有子问题并行建模完成后合并结果，跨子问题变量/单位一致"
+  G3_math_sandbox:
+    description: "数学推导通过沙箱验证"
+  G3_baseline_compared:
+    description: "每个主模型必须与至少一个简单基线对比，证明复杂度必要性"
+  G3_assumptions_valid:
+    description: "模型假设完整性 — 3-5条假设，每条有论证，质量评分达标"
+  G3.5_evolution_converged:
+    description: "模型进化完成，最优变异体适应度超过基础模型或搜索空间已穷尽"
+  G4_results_frozen:
+    description: "关键结果冻结，不得随意修改"
+  G4.5_evidence_chain:
+    description: "所有结论有代码/数据支撑"
+  G5_S8_CONTENT_READY:
+    description: "论文内容素材就绪 — S8 撰写前的所有上游素材必须齐全"
+  G5_paper_section_ready:
+    description: "每个问题都有模型、求解、结果、误差评价"
+  G5_5_paper_structure:
+    description: "论文结构完整性 — paper.md 必须包含全部必选章节"
+  G5.5_adversarial_review:
+    description: "所有高优先级审稿问题必须关闭"
+  G6_audit_layer_passed:
+    description: "论文、代码、图表、表格一致"
+  G6_paper_evaluation:
+    description: "模型评价完整性 — 优缺点+推广方向必须有数据支撑"
+  G6_appendix_complete:
+    description: "附录完整性 — 源代码+参考文献格式化+AI声明"
+  ABSTRACT_QUALITY_GATE_V2:
+    description: "增强版摘要质量门禁 — 每个子问题至少1个量化结果"
+  abstract_body_consistency:
+    description: "摘要数字与正文一致"
+  cross_subquestion_consistency:
+    description: "跨子问题变量、单位、假设一致"
+  per_subquestion_verification:
+    description: "每个子问题末尾嵌入灵敏度分析和检验"
+  G9.5_publication_ready:
+    description: "出版规范门禁 — AI痕迹清零、非正式表达≤2、格式合规、竞赛规范达标"

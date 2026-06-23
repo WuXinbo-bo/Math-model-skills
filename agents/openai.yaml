@@ -1,0 +1,26 @@
+interface:
+  display_name: "Math Modeling Contest Pipeline"
+  description: "Industrial-grade 14-stage math modeling workflow for CUMCM/51MCM/MCM/ICM with 7-role collaboration, 32 quality gates, and competition-grade paper generation."
+  brand_color: "#8B5CF6"
+  default_prompt: "Start the math modeling contest pipeline. Ask me which competition (CUMCM/51MCM/MCM) and which problem to work on."
+
+policy:
+  allow_implicit_invocation: true
+  invocation_keywords:
+    - "math modeling"
+    - "数学建模"
+    - "CUMCM"
+    - "51MCM"
+    - "MCM"
+    - "ICM"
+    - "建模竞赛"
+    - "建模流水线"
+
+dependencies:
+  tools:
+    - type: "shell"
+      value: "python"
+      description: "Python 3.8+ for running tool scripts (stage_executor.py, gate_contracts.py, etc.)"
+    - type: "filesystem"
+      value: "read-write"
+      description: "Local filesystem access for reading/writing project files in CUMCM_Workspace/"

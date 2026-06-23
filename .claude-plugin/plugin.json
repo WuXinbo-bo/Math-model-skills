@@ -1,0 +1,25 @@
+{
+  "name": "meta-model-skills-max",
+  "displayName": "Math Modeling Contest Pipeline",
+  "version": "3.1.0",
+  "description": "Industrial-grade math modeling contest workflow for CUMCM, 51MCM, and MCM/ICM. 14-stage engineering pipeline with inspector-driven quality gates, role-based collaboration (7 functional agents), ephemeral sub-agents, baseline-first modeling, adversarial review, and competition-grade DOCX generation.",
+  "author": {
+    "name": "math-modeling-team"
+  },
+  "category": "development",
+  "defaultEnabled": true,
+  "skills": [
+    "./skills/meta-model"
+  ],
+  "requirements": {
+    "claude": ">=1.0.0"
+  },
+  "tags": [
+    "math-modeling",
+    "competition",
+    "pipeline",
+    "multi-agent",
+    "quality-gates"
+  ],
+  "license": "MIT"
+}

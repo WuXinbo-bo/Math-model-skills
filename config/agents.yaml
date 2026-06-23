@@ -1,0 +1,73 @@
+# 功能角色定义（v3.0）
+# 所有提示词内联在 stages/S{N}.md 中，无外部 prompt 文件依赖
+# 角色名对齐 SKILL.md 角色注册表
+
+agents:
+  planner:
+    name: "规划组(Planner)"
+    description: "战略规划、题目解析、文献深搜、技术路线图、问题拆解"
+    responsibilities:
+      - S0: 题目登记与分类
+      - S1: 问题拆解与建模方向
+      - S7: 证据链构建
+      - S7.5: 统一内核归纳
+      - S10: 最终构建协调
+
+  analyst:
+    name: "分析组(Analyst)"
+    description: "数据画像、清洗、质量报告、数据字典、可用性评估"
+    responsibilities:
+      - S1: 数据可用性评估
+      - S2: 数据治理与画像
+
+  proposer:
+    name: "提案组(Proposer)"
+    description: "候选模型生成、公式推导、基线对比、稳健性分析"
+    note: "合并精度视角与稳健性视角，按需多次调用"
+    responsibilities:
+      - S3: 模型候选方案生成
+      - S5: 建模求解方案设计
+      - S5.5: 模型进化与突变搜索
+      - S6: 稳健性改进方案
+
+  builder:
+    name: "构建组(Builder)"
+    description: "Python 代码实现、实验执行、图表生成、原型构建"
+    responsibilities:
+      - S4: 实验赛马代码实现
+      - S5: 模型代码实现与运行
+      - S5.5: 进化代码实现
+      - S6: 验证代码与灵敏度分析
+
+  critic:
+    name: "审查组(Critic)"
+    description: "红队攻击、对抗审稿、P0/P1/P2 分级、多视角质疑"
+    responsibilities:
+      - S3: 红队质疑候选模型
+      - S8: 论文质量质疑
+      - S9: 对抗审稿与多轮攻击
+
+  reviewer:
+    name: "评审组(Reviewer)"
+    description: "四维审查、驳回决策、模型仲裁、终审裁决"
+    responsibilities:
+      - S1: 题意共识终审
+      - S3: 模型选择终审
+      - S9: 审稿意见仲裁
+
+  writer:
+    name: "写作组(Writer)"
+    description: "论文写作、摘要打磨、格式合规、DOCX 生成"
+    responsibilities:
+      - S8: 论文初稿撰写
+      - S9: 论文修订
+      - S10: 最终构建与交付
+
+  inspector:
+    name: "审查官(Inspector)"
+    description: "质量打分、问题识别、改进建议、阶段门禁裁决"
+    note: "特殊角色 — 每个阶段末尾强制介入"
+    scoring:
+      fast_threshold: 60
+      standard_threshold: 70
+      championship_threshold: 85
