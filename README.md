@@ -5,361 +5,291 @@
 <h1 align="center">Meta-model-skills-max</h1>
 
 <p align="center">
-  <strong>v4.0.0</strong> · 数学建模竞赛智能体工程群
+  <strong>比赛级数学建模自动化SKILL</strong><br>
+  <sub>从赛题输入到完整论文交付的全流程自动化系统</sub>
 </p>
 
 <p align="center">
-  <img alt="Agents" src="https://img.shields.io/badge/Agents-7%20functional%20roles-8B5CF6">
-  <img alt="Stages" src="https://img.shields.io/badge/Stages-14%20stages-059669">
-  <img alt="Gates" src="https://img.shields.io/badge/Gates-32%20quality%20gates-DC2626">
-  <img alt="Meetings" src="https://img.shields.io/badge/Meetings-4%20protocols-F59E0B">
-  <img alt="Scripts" src="https://img.shields.io/badge/Scripts-56%20tools-F59E0B">
-  <img alt="Version" src="https://img.shields.io/badge/version-4.0.0-blue">
-  
+  <img alt="Agents" src="https://img.shields.io/badge/Agent集群-9角色协作-8B5CF6">
+  <img alt="Pipeline" src="https://img.shields.io/badge/流水线-14阶段DAG-059669">
+  <img alt="Quality" src="https://img.shields.io/badge/质量门禁-32道强制检查-DC2626">
+  <img alt="Scripts" src="https://img.shields.io/badge/工具脚本-57个Python引擎-7C3AED">
+  <img alt="Version" src="https://img.shields.io/badge/version-v4.0.0-blue">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+</p>
+
+<p align="center">
+  <strong>支持 CUMCM · 51MCM · MCM/ICM</strong>
+</p>
+
+<p align="center">
+  <strong>🔑 API 赞助中转站</strong>：<a href="https://api.scxai.top/"><code>api.scxai.top</code></a>
+</p>
+
+<p align="center">
+  <a href="#它能做什么">功能能力</a> ·
+  <a href="#效果演示claude-code-效果部分展示">效果演示</a> ·
+  <a href="#三档深度模式">多种模式</a> ·
+  <a href="#快速开始">快速开始</a> ·
+  <a href="#项目结构">项目结构</a> ·
+  <a href="#常见问题">常见问题</a>
 </p>
 
 ---
 
-> 7 个功能角色、4 场会议协议、14 阶段流水线、32 道质量门禁、56 个工具脚本——把数学建模竞赛从"个人手工作坊"升级为"可追溯、可审计、可复现的智能体工程群"。
+## 它能做什么
 
-## 为什么需要这个？
+**输入赛题与数据 → 输出比赛级论文（含模型、代码、图表、审计报告），全程自动化。**
 
-建模竞赛真正失败的地方，往往不是"不会模型"，而是**流程漂移**：
-- 题没读清楚就上复杂模型
-- 论文里写的数字脚本输出找不到
-- bug 修复后论文数字偷偷漂移没人察觉
-- 一个人身兼数职，角色混乱导致遗漏
+把一道数学建模赛题变成一篇完整的竞赛论文，覆盖你通常需要 3-4 个人、3 天才能完成的工作：
 
-`Meta-model-skills-max` 用**功能角色制衡**思想，把建模流程拆成 7 个专业角色、4 场正式会议、32 道门禁——每个数字可追溯、每次修改有审计、每项声明有证据、每个决策有对抗。
+| 环节 | 能力 |
+|------|------|
+| **读题解析** | 自动拆解子问题、识别题型、生成符号表、检索相关文献 |
+| **数据治理** | 缺失值分析、异常检测、数据字典生成 |
+| **模型选择** | 4组候选方案对抗辩论（精度派 vs 稳健派），红蓝对抗裁决 |
+| **代码实现** | 自动生成 Python 求解代码，基线对比，实验赛马 |
+| **结果验证** | 灵敏度分析、鲁棒性检验、跨子问题一致性校验 |
+| **论文撰写** | 结构化论文生成，图表叙事（D-A-C），摘要-正文数字交叉验证 |
+| **排版输出** | 一键生成竞赛规范 DOCX（三线表、LaTeX 公式转 Word、宋体/黑体） |
+| **质量审稿** | 红队对抗审稿，反 AI 痕迹检测，逐项评分打回 |
 
-## 核心能力
+### 使用场景
 
-| 能力 | 说明 |
-|---|---|
-| **功能角色群** | 7 个专业角色（Planner/Analyst/Proposer/Builder/Critic/Reviewer/Writer），inline role-play 切换 |
-| **4 场会议协议** | 题意共识会、模型辩论会、实验复盘会、红队审稿会——结构化决策 |
-| **14 阶段流水线** | S0-S10（含 S5.5/S7.5/S9.5），workflow.yaml 驱动的 DAG 依赖管理 |
-| **32 道质量门禁** | G1-G9.5 全覆盖，含并行合并门禁、基线对比门禁、摘要质量门禁、出版规范门禁 |
-| **并行子问题建模** | S5 阶段按 Q1/Q2/Q3 并行 spawn，独立建模后合并 |
-| **12 个增强引擎** | 摘要质量、推导链、方法矩阵、逐题检验、对抗审稿、灵敏度分析、出版规范检查等 |
-| **3 种深度模式** | Fast / Standard / Championship，按赛期灵活切换 |
-| **Auto Mode（全自动模式）** | 3×3 模式矩阵 × 6 决策点自动裁决 + 安全熔断 + 决策日志 |
-| **Friendly Mode** | 编号选项推进，用户无需理解内部流水线 |
-| **竞赛适配评分** | 100 分制自动评分 + 奖项预估（CUMCM / 51MCM / MCM-ICM） |
-| **三层引用体系** | 每个阶段、每个 Agent 都有明确的 reference 文件映射 |
-| **公式自动渲染** | LaTeX → OMML 原生 Word 公式（可编辑，非图片） |
-| **DOCX 全链路** | 生成、修订、差异对比、完整性验证一站式完成 |
+> **强烈建议使用 Claude Code 导入 Skill** — 作者实测效果最好，Claude 的长上下文和指令遵循能力与本项目的多阶段工作流契合度最高。
 
-## 架构全景图
+支持作为 Skill 导入到以下 AI 助手中使用：
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     用户 (人机交互)                           │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-              ┌────────▼────────┐
-              │  LLM (主Agent) │  唯一交互入口
-              │  工作流编排      │  任务调度 + 门禁裁决
-              └────────┬────────┘
-                       │
-         ┌─────────────┼─────────────┐
-         │             │             │
-  ┌──────▼──────┐      │      ┌──────▼──────┐
-  │ Auto 编排器 │      │      │ Friendly    │
-  │ 3×3 自动    │      │      │ 编号选项    │
-  │ 决策 + 熔断 │      │      │ 交互模式    │
-  └──────┬──────┘      │      └──────┬──────┘
-         │             │             │
-    ┌────▼──────────────┴─────────────▼────┐
-    │                  │                      │
-┌───▼───────┐  ┌───────▼──────────┐  ┌────────▼────────┐
-│ 功能角色  │  │   核心能力组     │  │    增强引擎     │
-│           │  │                  │  │                 │
-│ Planner   │  │ Analyst Builder  │  │ 摘要质量引擎    │
-│ Proposer  │  │ Critic  Writer   │  │ 推导链检查器    │
-│ Reviewer  │  │ Inspector        │  │ 对抗审稿系统    │
-│           │  │                  │  │ 灵敏度分析器    │
-└───────────┘  └──────────────────┘  │ ... 共 12 个    │
-                                     └─────────────────┘
-```
+| 平台 | 导入方式 | 说明 |
+|------|---------|------|
+| **Claude Code** | `~/.claude/skills/` 目录导入 | 输入 `/meta-model` 触发 |
+| **CodeX** | Skill 配置加载 | OpenAI 官方 AI 助手 |
+| **CodeBuddy** | 集成面板一键安装 | 腾讯 AI 编程助手 |
+| **Cursor / VS Code** | Agent 配置加载 | IDE 集成模式 |
+| **其他 Agent** | 读取 `SKILL.md` 即可 | 通用兼容 |
 
-### 设计原则
-
-1. **Main agent = sole LLM**: 所有推理由 LLM 自身完成，按角色视角切换（功能角色群）
-2. **Python scripts = pure tooling**: 56 个脚本仅做文件 I/O、DOCX、图表、状态追踪
-3. **Gate checks = main agent judgment**: 基于实际文件内容评估门禁
-4. **SKILL.md = 操作手册**: 每阶段显式命令，LLM 按指令执行
-
-## 功能角色群
-
-| Agent | 角色 | 职责 |
-|-------|------|------|
-| **planner** | 规划组 | 赛题解析、建模路线规划、文献深搜、符号表 |
-| **analyst** | 分析组 | 数据治理、缺失值分析、数据字典 |
-| **proposer** | 提案组 | 候选模型生成（精度+稳健性视角）、公式推导、基线对比 |
-| **builder** | 构建组 | Python 代码实现、实验执行、图表生成 |
-| **critic** | 审查组 | 红队攻击、对抗审稿、错误搜索 |
-| **reviewer** | 评审组 | 可行性审查、逻辑漏洞检测、驳回权 |
-| **writer** | 写作组 | 论文撰写、格式排版、DOCX 生成 |
-| **inspector** | 审查官 | 质量打分、问题识别、改进建议 |
-
-所有角色由同一 LLM 通过 `stages/S{N}.md` 中的内联提示词切换，无独立 subagent。
-
-### 角色调度策略
-
-所有角色由同一 LLM 通过 `stages/S{N}.md` 中的内联提示词切换视角，不 spawn 独立进程。
-
-**角色切换时机**:
-- M001 题意共识会: planner → analyst → reviewer
-- M002 模型辩论会: proposer(精度) → proposer(稳健) → critic → reviewer
-- S5 建模求解: proposer(建模) → builder(编码) 交替
-- M004 红队审稿: critic → reviewer → writer
-
-**不切换**（主 LLM 直接处理）:
-- 最终决策、同文件编辑、状态更新
-
-## 四次会议协议
-
-| 会议 | 类型 | 阶段 | 参与者 | 产出 |
-|------|------|------|--------|------|
-| **M001 题意共识会** | consensus | S1 | planner + analyst + reviewer | 共识文档 + 风险登记 |
-| **M002 模型辩论会** | debate | S3 | proposer + critic + reviewer | 模型选择报告 |
-| **M003 实验复盘会** | review | S8 | builder + proposer + critic | 复盘结论（嵌入论文） |
-| **M004 红队审稿会** | adversarial | S9 | critic + reviewer + writer | 审稿报告 + 修订计划 |
-
-## 14 阶段流水线 + 24 门禁
+### 14阶段流水线
 
 ```
-S0 输入登记 ──→ S1 题意解析(M001) ──→ S2 数据治理 ──→ S3 模型选择(M002)
-     │               │ G1                  │ G1.5            │ G2, G1.5, G3假设
-     │               ▼                     ▼                 ▼
-     │          S4 实验赛马 ──→ S5 并行建模求解 ──→ S5.5 模型进化
-     │               │ G2.5         │ G3×4              │ G3.5
-     │               ▼              ▼                    ▼
-     │          S6 检验与灵敏度 ──→ S7 证据链 ──→ S8 论文撰写(M003)
-     │               │ G4, 逐题验证    │ G4.5         │ G5×5
-     │               ▼                ▼               ▼
-     │          S9 对抗审稿(M004) ──→ S10 最终构建
-     │               │ G5.5, 摘要一致    │ G6×3
-     │               ▼                   ▼
-     └──────── 交付 DOCX + PDF ────────┘
+输入：赛题文档（PDF/Word/TXT）+ 竞赛类型 + 模式（Fast/Standard/Championship）
+
+自动执行：
+  ├─ S0：输入登记          → 赛题解析、子问题拆分、数据提取
+  ├─ S1：题意解析          → 问题重述、文献检索、技术路线图
+  ├─ S2：数据治理          → 数据清洗、特征工程、探索性分析
+  ├─ S3：模型选择          → 4组候选方案对抗辩论 + 裁决
+  ├─ S4：实验赛马          → 原型代码真实执行 + 基线对比
+  ├─ S5：并行建模          → 多子问题独立建模（Q1/Q2/Q3并行）
+  ├─ S5.5：模型进化        → 超参优化、集成学习、迁移学习
+  ├─ S6：检验灵敏度        → 逐题灵敏度分析 + 鲁棒性检查
+  ├─ S7：证据链构建        → 每个数值标注来源（脚本+行号）
+  ├─ S7.5：统一内核        → 提炼多模型共同数学框架
+  ├─ S8：论文撰写          → 12000+字论文初稿 + 6-10张图表 + AI痕迹扫描
+  ├─ S9：对抗审稿          → 三轮红队攻击 + 修订验证 + AI痕迹复检
+  ├─ S9.5：出版规范检查    → 34项细则强制审计
+  └─ S10：最终构建         → DOCX生成 + 完整性验证
+
+输出：paper.docx（比赛级论文）+ code/（完整代码）+ outputs/（审计报告）
 ```
 
-## 12 个增强引擎
+### 差异化特性
 
-| # | 引擎 | 脚本 | 作用 |
-|---|------|------|------|
-| 1 | 摘要质量引擎 | `abstract_quality_gate.py` | 4 要素检查：模型名+量化结果+公式+标注 |
-| 2 | 推导链检查器 | `derivation_chain_checker.py` | 第一性原理推导链完整性 |
-| 3 | 方法选择矩阵 | `method_selection_matrix.py` | 候选方法对比 + 选择理由 |
-| 4 | 逐题嵌入式检验 | `per_subquestion_verification.py` | 灵敏度+鲁棒性+误差分析 |
-| 5 | 多维度讨论 | `discussion_enhancer.py` | 7 维度结果讨论框架 |
-| 6 | 摘要-正文一致性 | `abstract_body_consistency.py` | 数字交叉验证 |
-| 7 | 图表叙事引擎 | `figure_narrative_gate.py` | D-A-C 叙事 + 数据墨水比 |
-| 8 | 学术表达增强 | `academic_expression_checker.py` | 反 AI 填充 + 口语化检测 |
-| 9 | 对抗审稿系统 | `adversarial_review.py` | 三视角红队审稿 |
-| 10 | 假设工程系统 | `assumption_engineer.py` | 4 类假设分类 + 质量评分 |
-| 11 | 跨子问题一致性 | `cross_subquestion_consistency.py` | 变量/单位/假设一致性 |
-| 12 | 竞赛适配器 | `competition_adapter.py` | CUMCM/51MCM/MCM-ICM 动态适配 |
+1. **对抗决策机制** — M002模型辩论会：4组Proposer提案 → Critic红队攻击 → Reviewer独立裁决，避免单人视角盲点
+2. **结果冻结与追溯** — S7阶段锁定论文所有关键数值，后续修改代码时自动检测数值漂移
+3. **强制基线对比** — 禁止直接使用深度学习/集成模型，必须先实现简单基线
+4. **逐题嵌入式检验** — 每个子问题独立执行灵敏度分析+鲁棒性检查+误差分析
+5. **反AI痕迹写作** — 40+类AI套话黑名单 + 结构性AI痕迹 + 段落多样性检测，通过2026年反AIGC检测
+6. **三轮红队审稿** — 数学视角+领域专家+评审裁判三个独立视角找问题
+7. **真实代码执行** — 实验赛马和模型进化从模拟评分改为subprocess真实执行代码
+8. **跨子问题一致性** — 自动检测跨子问题的符号冲突、数值不一致、单位矛盾
 
-## 支持的竞赛
+---
 
-| 竞赛 | 语言 | 论文格式 | 评分标准 |
-|---|---|---|---|
-| **CUMCM** 全国大学生数学建模竞赛（国赛） | 中文 | 三线表、宋体+黑体、A4 | 100 分制（一等奖 ≥85） |
-| **51MCM** 五一数学建模竞赛 | 中文 | 三线表、宋体+黑体、A4 | 100 分制（一等奖 ≥82） |
-| **MCM/ICM** 美国大学生数学建模竞赛（美赛） | 英文 | 标准学术格式 | 100 分制（一等奖 ≥82） |
+## 效果演示（Claude code 效果，部分展示）
+
+> **提示**：具体效果由多种因素决定，暂时无法保证最终效果。
+
+<p align="center">
+  <img src="效果演示图.jpg" alt="效果演示" width="100%">
+</p>
+
+---
+
+## 核心架构
+
+```
+                   ┌─────────────┐
+                   │   主 Agent   │  唯一 LLM，负责编排与推理
+                   └────────────┘
+                          │
+         ┌────────────────┼────────────────┐
+         │                │                │
+  ┌──────▼──────┐  ┌─────▼─────┐  ┌───────▼───────┐
+  │  9角色集群   │  │ 14阶段流水线│  │  32道质量门禁  │
+  │              │  │             │  │               │
+  │ Chief Agent  │  │ S0 输入登记  │  │ G1 题意解析    │
+  │ Planner      │  │ S1 题意解析  │  │ G2 模型选择    │
+  │ Analyst      │  │ S2 数据治理  │  │ G3 建模求解    │
+  │ Proposer     │  │ S3 模型选择  │  │ G5 论文质量    │
+  │ Builder      │  │ S4 实验赛马  │  │ G9 对抗审稿    │
+  │ Critic       │  │ S5 并行建模  │  │ ...共32道      │
+  │ Reviewer     │  │ ... → S10   │  │               │
+  │ Writer       │  └─────────────┘  └───────────────┘
+  │ Inspector    │
+  └─────────────┘
+```
+
+**设计原则：**
+- **LLM 是大脑**：所有推理由主 Agent 完成，Python 脚本只做工具性工作（文件读写、画图、DOCX生成、状态追踪）
+- **角色制衡**：Planner 规划、Proposer 提案、Critic 攻击、Reviewer 评审——每个决策都有对抗
+- **门禁卡死**：每阶段必须通过质量门禁才能进入下一阶段，不通过就打回重做
+
+### 三档深度模式
+
+| 模式 | 适用场景 | 论文质量目标 | 门禁严格度 |
+|------|---------|-------------|-----------|
+| **Fast** | 时间紧迫 / 练手 | 8000字 / 4图 | 放宽（60分通过） |
+| **Standard** | 正式参赛 | 12000字 / 6图 | 标准（70分通过） |
+| **Championship** | 冲刺国一 | 15000字 / 10图 | 最严格（85分通过，3轮审稿） |
+
+---
 
 ## 快速开始
 
-### 安装
+### 1. 导入 Claude Code Skill
 
 ```bash
-# 克隆仓库
-git clone <repo-url>
-cd Meta-model-skills-max
+# 克隆项目
+git clone https://github.com/WuXinbo-bo/Math-model-skills.git
+cd Math-model-skills
 
 # 安装依赖
+conda activate math_model
 pip install -r requirements.txt
+
+# 将 skill 安装到 Claude Code
+cp -r skills/meta-model ~/.claude/skills/
 ```
 
-### 环境依赖
+### 2. 调用 Skill
 
-```bash
-pip install -r requirements.txt
+在 Claude Code 中输入：
+
 ```
-
-核心依赖：`python-docx`, `lxml`, `latex2mathml`, `mathml2omml`, `pandas`, `numpy`, `matplotlib`, `pyyaml`, `scipy`
-
-### 初始化
-
-```bash
-# 初始化项目（从 workflow.yaml 加载阶段定义）
-python main.py init --contest CUMCM --problems 3 --mode AP
-
-# 查看 pipeline 状态
-python main.py status
-
-# 查看 workflow.yaml 解析结果
-python main.py workflow
-
-# 列出所有门禁合约
-python main.py gates
-```
-
-### 使用
-
-在 AI 助手中说：
-- "求解这道题" / "solve this" — 全流程跑
-- "只做问题1" — 分段执行
-- "生成论文" / "write paper" — 走 `build_docx.py`
-- "修改论文" / "revise paper" — 原地编辑 DOCX
-- "审阅论文" — 对抗审稿 + QA 清单
-
-## 不知道怎么调用？直接复制这些提示词
-
-安装完成后，在 AI 助手里明确提到 `Meta-model-skills-max`，或直接描述"数学建模竞赛 / 国赛 / 美赛 / 五一赛"，AI 助手就会读取 SKILL.md 并按流程工作。
-
-### 最推荐的首次启动提示词
-
-```text
 请使用 Meta-model-skills-max skill 处理我上传的数学建模赛题。
 竞赛类型：国赛/CUMCM
-执行模式：标准模式（完整 14 阶段 + 全部门禁）
-子问题数量：3
-
-请先完成：读题、问题拆解、数据检查、建模路线选择，并告诉我下一步该做什么。
+执行模式：均衡模式（全自动，不打断，无人工干预），这个项目之后默认使用conda activate math_model环境，注意在其中有要求调用子agent的地方默认调用真实的子agent去做相应任务.添加记忆。
 ```
 
-### 快速启动速查表
+Claude Code 会自动读取 `SKILL.md`，按 14 阶段流水线引导你完成全流程。
 
-| 场景 | 中文模板 | English Template |
-|------|---------|-----------------|
-| 新赛题（标准） | `请使用 Meta-model-skills-max skill 处理我上传的赛题，标准模式，完整流水线。` | `Use Meta-model-skills-max skill to solve my contest problem in standard mode.` |
-| 新赛题（快速） | `请使用 Meta-model-skills-max skill 处理赛题，快速模式。` | `Use Meta-model-skills-max skill in fast mode.` |
-| 新赛题（冠军） | `请使用 Meta-model-skills-max skill 处理赛题，冠军模式。` | `Use Meta-model-skills-max skill in championship mode.` |
-| 修订论文 | `请使用 Meta-model-skills-max skill 修订我的论文。` | `Use Meta-model-skills-max skill to revise my paper.` |
-| 审计论文 | `请使用 Meta-model-skills-max skill 审计我的论文。` | `Use Meta-model-skills-max skill to audit my paper.` |
-| 继续工作 | `请继续我之前的建模工作，工作目录是 [路径]。` | `Continue my modeling work from [workspace path].` |
-| 新赛题（标准-全自动） | `请使用 Meta-model-skills-max skill 处理赛题，标准模式，全自动执行。` | `Use Meta-model-skills-max skill in standard-auto mode.` |
-| 新赛题（快速-全自动） | `请使用 Meta-model-skills-max skill 处理赛题，快速模式，全自动。` | `Use Meta-model-skills-max skill in fast-auto mode.` |
-| 新赛题（冠军-全自动） | `请使用 Meta-model-skills-max skill 处理赛题，冠军模式，全自动。` | `Use Meta-model-skills-max skill in championship-auto mode.` |
+### 3. 环境要求
 
-完整 11 种场景模板见 `templates/startup_prompts.md`。
+| 项目 | 要求 |
+|------|------|
+| **Python 环境** | `conda activate math_model`（默认环境） |
+| **子 Agent** | 有要求调用子 Agent 的地方默认调用真实的子 Agent（通过 Task tool） |
+| **核心依赖** | `python-docx` `lxml` `pandas` `numpy` `matplotlib` `pyyaml` `scipy` |
+
+### 4. 更多启动场景
+
+| 场景 | 提示词 |
+|------|--------|
+| 快速模式 | `请使用 Meta-model-skills-max skill 处理赛题，快速模式。` |
+| 冲刺国一 | `请使用 Meta-model-skills-max skill 处理赛题，冠军模式。` |
+| 只做某题 | `请只求解问题1。` |
+| 审计论文 | `请审阅并打分我的论文。` |
+| 继续工作 | `请继续之前的建模工作，工作目录是 [路径]。` |
+
+---
 
 ## 项目结构
 
 ```
 Meta-model-skills-max/
-├── SKILL.md                       # Skill 入口（执行规则 + 路由表）
-├── AGENTS.md                      # 多角色策略文档
-├── main.py                        # 统一 CLI 入口
-├── requirements.txt               # Python 依赖
+├── SKILL.md                    # Skill 入口（路由表 + 执行规则）
+├── AGENTS.md                   # 多角色调度策略
+├── main.py                     # CLI 统一入口
+├── requirements.txt
 │
-├── config/                        # 配置层
-│   ├── workflow.yaml              # 14 阶段 DAG + 24 门禁定义
-│   ├── agents.yaml                # 9 角色定义
-│   ├── meeting_templates.yaml     # 4 场会议模板
-│   ├── rubric.yaml                # 评分标准
-│   └── prompts/                   # 保留（已迁移到 stages/）
-│
-├── scripts/                       # 执行层（45 个纯工具脚本）
-│   ├── stage_executor.py          # 单阶段执行引导器
-│   ├── pipeline_manager.py        # 流水线状态机
-│   ├── build_docx.py              # DOCX 生成器（LaTeX→OMML）
-│   ├── formula_renderer.py        # 公式渲染引擎
-│   ├── gate_contracts.py          # 门控契约（24 个）
-│   ├── metric_guardian.py         # 指标守门
-│   ├── experiment_race.py         # 实验赛马
-│   ├── evidence_tracer.py         # 证据链追踪
-│   ├── math_sandbox.py            # 数学沙箱
-│   └── ... (36 more)
-│
-├── stages/                        # 14 个阶段指令文件
+├── stages/                     # 14 个阶段指令文件（S0-S10）
 │   ├── S0.md ~ S10.md
-│   ├── S5.5.md
-│   └── S7.5.md
+│   ├── S5.5.md                 # 模型进化
+│   ├── S7.5.md                 # 统一内核归纳
+│   └── S9.5.md                 # 出版规范检查
 │
-├── references/                    # 参考文档（450KB 知识资产）
-│   ├── algorithm-library/         # 7 类算法库
-│   ├── modeling-paper-archives/   # 优秀论文范例
-│   ├── problem-triage.md          # 题目分类
-│   └── ... (27 more)
+├── scripts/                    # 57 个工具脚本（纯工具，无 LLM 调用）
+│   ├── stage_executor.py       # 阶段执行状态机
+│   ├── gate_contracts.py       # 32 道门禁合约
+│   ├── build_docx.py           # DOCX 生成（LaTeX→OMML）
+│   ├── pipeline_manager.py     # 流水线管理
+│   ├── sensitivity_analysis.py # 灵敏度分析
+│   ├── adversarial_review.py   # 红队对抗审稿
+│   ├── anti_aigc_scanner.py    # AI痕迹扫描
+│   └── ... (50+ more)
 │
-├── templates/                     # 模板层
-│   └── startup_prompts.md         # 11 种一键启动模板
+├── references/                 # 知识资产（450KB）
+│   ├── algorithm-library/      # 7 类算法说明
+│   ├── modeling-paper-archives/ # 优秀论文范例
+│   ├── nature-writing-guide.md # 反AI写作规范
+│   └── ... (25+ reference files)
 │
-├── tests/                         # 测试
-│   └── test_e2e.py                # 端到端测试
+├── templates/
+│   ├── paper_templates/        # DOCX 模板
+│   └── startup_prompts.md      # 11 种启动模板
 │
-├── assets/                        # 图标
-├── docs/                          # 设计文档
-├── CUMCM_Workspace/               # 竞赛工作空间（运行时生成）
-└── outputs/                       # 产出层（运行时生成，Git 忽略）
+└── config/                     # 工作流与门禁配置
+    ├── workflow.yaml
+    └── meeting_templates.yaml
 ```
 
-## 脚本参考表
+---
 
-| 需求 | 命令 |
-|------|------|
-| 初始化 | `python main.py init --contest CUMCM --problems 3` |
-| 查看状态 | `python main.py status` |
-| 查看工作流 | `python main.py workflow` |
-| 列出所有门禁 | `python main.py gates` |
-| 检查门禁 | `python main.py check-gate G1_problem_parsed` |
-| 冻结结果 | `python main.py freeze --subquestion Q1` |
-| 沙箱执行 | `python main.py sandbox --code "..."` |
-| 证据链 | `python main.py evidence --subquestion Q1` |
-| G6 审计 | `python main.py audit` |
-| 摘要检查 | `python main.py check-abstract paper.md` |
-| 推导链检查 | `python main.py check-derivation model.md` |
-| 方法矩阵 | `python main.py check-matrix selection.md` |
-| 讨论检查 | `python main.py check-discussion results.md` |
-| 表达检查 | `python main.py check-expression paper.md` |
-| 一致性检查 | `python main.py check-consistency paper.md` |
-| 灵敏度分析 | `python main.py sensitivity init/sweep/check/report -q Q1` |
-| 摘要一致性 | `python main.py check-abstract-consistency -a abs.md -b body.md` |
-| 逐题验证 | `python main.py check-verification -q Q1` |
-| 模型进化 | `python main.py model-evolve init/evolve/status -q Q1` |
-| 红队审稿 | `python main.py adversarial-review generate/check-rebuttal/report` |
-| 图表叙事 | `python main.py check-figure-narrative scan/check-dac/report` |
-| 闭环评分 | `python main.py review-stage score/report/check` |
-| DOCX 工具 | `python main.py docx analyze/map/replace/diff/verify` |
-| 运行测试 | `python main.py test` |
+## 支持的竞赛
 
-## 设计吸收点
+| 竞赛 | 语言 | 关键格式要求 |
+|------|------|-------------|
+| **CUMCM** 全国大学生数学建模竞赛 | 中文 | 三线表 / 宋体+黑体 / A4 |
+| **51MCM** 五一数学建模竞赛 | 中文 | 三线表 / 宋体+黑体 / A4 |
+| **MCM/ICM** 美国大学生数学建模竞赛 | 英文 | 标准学术格式 |
 
-本项目融合了 math-modeling-skills-main (v5.9.0) 的工业级稳健性，并在此基础上进行深度扩展。
+---
 
-核心升级对比：
+## 常见问题
 
-| 维度 | math-modeling-skills-main | Meta-model-skills-max |
-|------|--------------------------|----------------------|
-| Agent 架构 | 三角色协作（建模/编程/论文） | 9 角色三省六部（inline role-play） |
-| 决策机制 | 单人决策 | 4 场会议协议 + 对抗审稿 |
-| 门控数量 | 6 个主门禁 | 24 个门禁（含子门禁） |
-| 阶段数 | 线性流程 | 14 阶段 DAG + 并行子问题 |
-| 增强模块 | 基础检查 | 12 个专用引擎 |
-| 竞赛评分 | 无 | 100 分制 + 奖项预估 |
-| 环境感知 | 无 | Startup Protocol（自动扫描工作区） |
+### 1. 是否可以全自动？
 
-## 论文生成（关键流程）
+**答：** 主要是辅助数学建模，关键环节理论上可以自动化，但建议人工检查。
 
-```bash
-# 1. 写 Markdown 草稿（LaTeX 公式 + [FIGURE:] 占位符）
-# 2. 一键生成 DOCX
-python scripts/build_docx.py paper.md output.docx
-# 3. 如果实质内容不足 12000 字 → HARD FAIL → 补充后重试
-```
+### 2. 产出质量如何？
 
-> **严禁**使用 Pandoc 或手动 `python-docx` 绕过此流程。
+**答：** 具体质量由大语言模型能力决定，建议使用 Claude 模型，效果最佳。
+
+### 3. 消耗如何？
+
+**答：** 每篇消耗由题目难度与思考强度有关。参考：冠军模式使用 [api.scxai.top](https://api.scxai.top/) 赞助中转站，大约 **20-40 元/篇**。
+
+### 4. 目前短板
+
+1. **模型质量取决于模型质量**：通过 SKILL 架构来最大化限制流程，确保产出质量。
+2. **可能中断**：使用过程理论上全自动，但是可能由于网络或模型思考自动中断，回复"继续使用 Meta-model-skills-max 技能完成后续阶段"即可。
+3. **排版微调**：目前暂时无法确保最终产出的排版完全正确，可能需要人工二次微调。
+4. **图表质量**：图表质量暂时无法保证。
+
+---
+
+## 建议反馈
+
+欢迎提出建议与反馈，可通过 QQ（1806598228）联系，也可申请 pull requests，感谢你的支持与贡献。
+
+---
 
 ## 许可证
 
 MIT License
 
----
+## 致谢
 
-<p align="center">
-  <sub>Built for CUMCM · 51MCM · MCM/ICM — 三省六部，智能体工程群</sub>
-</p>
+本项目站在巨人的肩膀上：
+
+- [math-modeling-skills-main](https://github.com) (v5.9.0)：工业级稳健性基础
