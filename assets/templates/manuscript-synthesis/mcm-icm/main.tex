@@ -1,0 +1,29 @@
+% Complete COMAP MCM/ICM paper project. Compile with pdfLaTeX or XeLaTeX.
+% The whole PDF, including this summary sheet, references and appendices, must remain within 25 pages.
+\documentclass{mcmicm}
+\controlnumber{[CONTROL NUMBER]}
+\problemchoice{[A--F]}
+\papertitle{[PAPER TITLE]}
+\begin{document}
+\begin{summarysheet}
+[State the problem, approach, major quantitative results, validation, recommendations, and limitations in concise English.]
+\keywords{[keyword 1; keyword 2; keyword 3; keyword 4]}
+\end{summarysheet}
+\input{sections/1_problem_restatement}
+\input{sections/2_assumptions_notation}
+\input{sections/3_data_and_preprocessing}
+\input{sections/4_model_development}
+\input{sections/5_solution_results}
+\input{sections/6_validation_sensitivity}
+\input{sections/7_discussion_recommendations}
+\input{sections/8_conclusions}
+\bibliographystyle{plainnat}
+\begin{thebibliography}{99}
+% \bibitem{ref1} Author. Title. Journal/Publisher, year.
+\end{thebibliography}
+\appendix
+\input{sections/A_code_reproducibility}
+\label{LastSolutionPage}
+\clearpage
+\input{sections/B_ai_use_report}
+\end{document}

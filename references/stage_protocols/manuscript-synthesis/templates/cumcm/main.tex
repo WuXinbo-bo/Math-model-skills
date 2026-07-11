@@ -1,0 +1,40 @@
+% CUMCM complete paper project. XeLaTeX is required.
+\documentclass[withoutpreface,bwprint]{cumcmthesis}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage[section]{placeins}
+\usepackage{needspace}
+\usepackage{algorithm2e}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+\lstset{language=Python,basicstyle=\small\ttfamily,breaklines=true,frame=single,numbers=left,numberstyle=\tiny}
+\makeatletter
+\def\@cite#1#2{\textsuperscript{[{#1\if@tempswa , #2\fi}]}}
+\renewenvironment{abstract}{%
+  \if@twocolumn\section*{\abstractname}%
+  \else\begin{center}{\zihao{4}\bfseries \abstractname\vspace{-.5em}\vspace{\z@}}\end{center}\quotation\fi
+}{\if@twocolumn\else\endquotation\newpage\fi}
+\makeatother
+\title{[论文标题]}
+\begin{document}
+\maketitle
+\begin{abstract}
+[中文摘要内容：问题概述、逐问方法、关键数值、验证结论和总体结论。]
+\keywords{[关键词1]\quad [关键词2]\quad [关键词3]\quad [关键词4]}
+\end{abstract}
+\tableofcontents
+\clearpage
+\input{sections/1_restatement}
+\input{sections/2_analysis}
+\input{sections/3_assumptions}
+\input{sections/4_symbols}
+\input{sections/5_problem1}
+\input{sections/6_problem2}
+\input{sections/7_problem3}
+\input{sections/8_sensitivity}
+\input{sections/9_evaluation}
+\begin{thebibliography}{99}
+% \bibitem{ref1} 作者. 标题[J]. 期刊, 年份.
+\end{thebibliography}
+\begin{appendices}
+\input{sections/A_code}
+\end{appendices}
+\end{document}

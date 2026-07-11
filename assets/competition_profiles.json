@@ -1,0 +1,49 @@
+{
+  "cumcm": {
+    "display_name": "全国大学生数学建模竞赛（CUMCM）",
+    "template_dir": "cumcm",
+    "class_file": "cumcmthesis.cls",
+    "class_required_terms": ["LoadClass[a4paper,12pt]", "geometry{top=25mm,bottom=25mm,left=25mm,right=25mm}", "setfontsize\\normalsize{12.05}"],
+    "language": "zh-CN",
+    "minimum_font_pt": 10.5,
+    "minimum_body_units": 3500,
+    "page_limit": null,
+    "allowed_identity": [],
+    "required_source_terms": ["cumcmthesis"],
+    "required_content_terms": ["摘要", "关键词"],
+    "forbidden_identity_terms": ["学校名称", "指导教师", "队员姓名"],
+    "official_notes": "references/competition-profiles/cumcm.md"
+  },
+  "51mcm": {
+    "display_name": "五一数学建模竞赛（51MCM）",
+    "template_dir": "51mcm",
+    "class_file": "51mcmthesis.cls",
+    "class_required_terms": ["LoadClass[a4paper,12pt]", "geometry{top=25.4mm,bottom=25.4mm,left=30.8mm,right=26.8mm}", "setfontsize\\normalsize{12}"],
+    "language": "zh-CN",
+    "minimum_font_pt": 10.5,
+    "minimum_body_units": 3500,
+    "page_limit": null,
+    "allowed_identity": ["报名号"],
+    "required_source_terms": ["51mcmthesis", "withoutpreface", "\\tihao", "\\duihao", "\\zubie"],
+    "required_content_terms": ["摘要", "关键词"],
+    "forbidden_identity_terms": ["schoolname", "membera", "memberb", "memberc", "email", "phone", "学校名称", "队员姓名"],
+    "official_notes": "references/competition-profiles/51mcm.md"
+  },
+  "mcm-icm": {
+    "display_name": "Mathematical / Interdisciplinary Contest in Modeling（MCM/ICM）",
+    "template_dir": "mcm-icm",
+    "class_file": "mcmicm.cls",
+    "class_required_terms": ["LoadClass[12pt,letterpaper]", "letterpaper,margin=1in", "fancyhead[L]{Team", "newenvironment{summarysheet}"],
+    "language": "en",
+    "minimum_font_pt": 12,
+    "minimum_body_units": 3000,
+    "page_limit": 25,
+    "page_limit_marker": "LastSolutionPage",
+    "page_limit_excludes": ["Report on Use of AI Tools"],
+    "allowed_identity": ["Control Number"],
+    "required_source_terms": ["mcmicm", "\\controlnumber", "\\problemchoice", "\\papertitle", "summarysheet"],
+    "required_content_terms": ["summarysheet", "keywords", "thebibliography", "Report on Use of AI Tools"],
+    "forbidden_identity_terms": ["\\author{", "student name:", "advisor name:", "school name:", "institution name:"],
+    "official_notes": "references/competition-profiles/mcm-icm.md"
+  }
+}

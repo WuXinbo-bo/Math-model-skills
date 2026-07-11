@@ -1,0 +1,35 @@
+51mcmthesis LaTeX 模板使用许可协议（CC BY-NC 4.0）
+
+版权所有 © 2025 Nicole Logan
+
+本项目采用知识共享署名-非商业性使用 4.0 国际许可协议（CC BY-NC 4.0）。
+
+您可以自由地：
+
+- 共享 —— 以任何媒介或格式复制、传播本模板；
+- 修改 —— 基于本模板进行 remix、转换或创作衍生版本；
+
+只要您遵守以下条件：
+
+- 署名 —— 您必须给予适当的署名，提供许可证链接，并注明是否做出更改。您可以以任何合理方式署名，但不得以任何方式暗示授权人对您或您的使用方式表示认可。
+- 非商业性使用 —— 您不得将本作品用于商业目的，亦不得以直接或间接方式将其作为营利工具（例如出售模板、付费下载等）；
+- 不得添加额外限制 —— 您不得对他人行使本许可协议所授权利施加法律条款或技术措施。
+
+完整协议内容请参阅：
+https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans
+
+如需商业授权或特别许可，请联系作者：Nicole Logan（可通过项目页或邮箱获取联系信息）。
+
+Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)
+
+This work (51mcmthesis LaTeX template) is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
+
+You are free to:
+- Share — copy and redistribute the material in any medium or format
+- Adapt — remix, transform, and build upon the material
+
+Under the following terms:
+- Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made.
+- NonCommercial — You may not use the material for commercial purposes.
+
+Full license text: https://creativecommons.org/licenses/by-nc/4.0/

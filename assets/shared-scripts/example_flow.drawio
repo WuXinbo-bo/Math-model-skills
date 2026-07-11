@@ -1,0 +1,73 @@
+<mxfile host="draw.io">
+<diagram name="问题二求解流程" id="flow_q2_v2">
+<mxGraphModel dx="900" dy="750" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="900" pageHeight="700" background="none" math="0" shadow="0">
+<root>
+<mxCell id="0"/>
+<mxCell id="1" parent="0"/>
+<mxCell id="2" value="&lt;b&gt;读取候选站点数据&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;地理坐标/用地类型/电网接入点&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4FA;strokeColor=#7B9FC0;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="170" y="10" width="260" height="42" as="geometry"/>
+</mxCell>
+<mxCell id="3" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.25;exitY=1;entryX=0.5;entryY=0;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="235" y="52" as="sourcePoint"/><mxPoint x="135" y="75" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="4" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="365" y="52" as="sourcePoint"/><mxPoint x="465" y="75" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="5" value="&lt;b&gt;需求热力分析&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;核密度估计/空间聚类&lt;br&gt;识别高需求热点区域&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7AAA7A;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="20" y="75" width="230" height="55" as="geometry"/>
+</mxCell>
+<mxCell id="6" value="&lt;b&gt;交通可达性分析&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;路网最短路径/OD矩阵&lt;br&gt;服务半径覆盖率计算&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7AAA7A;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="350" y="75" width="230" height="55" as="geometry"/>
+</mxCell>
+<mxCell id="7" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.25;entryY=0;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="135" y="130" as="sourcePoint"/><mxPoint x="235" y="153" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="8" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.75;entryY=0;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="465" y="130" as="sourcePoint"/><mxPoint x="365" y="153" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="9" value="&lt;b&gt;多目标优化模型构建&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;目标：最小化建设成本 + 最大化覆盖率&lt;br&gt;约束：电网容量/用地/预算&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4FA;strokeColor=#7B9FC0;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="130" y="153" width="340" height="58" as="geometry"/>
+</mxCell>
+<mxCell id="10" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="300" y="211" as="sourcePoint"/><mxPoint x="300" y="234" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="11" value="&lt;b&gt;NSGA-II遗传算法求解&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;种群初始化/交叉变异/非支配排序&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4FA;strokeColor=#7B9FC0;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="130" y="234" width="340" height="42" as="geometry"/>
+</mxCell>
+<mxCell id="12" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="300" y="276" as="sourcePoint"/><mxPoint x="300" y="299" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="13" value="&lt;b&gt;Pareto解集是否&lt;br&gt;满足约束?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F5F0E8;strokeColor=#B0A080;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="230" y="299" width="140" height="80" as="geometry"/>
+</mxCell>
+<mxCell id="14" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="300" y="379" as="sourcePoint"/><mxPoint x="300" y="402" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="15" value="&lt;font style=&quot;font-size:10px;color:#7AAA7A;&quot;&gt;&lt;b&gt;是&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+<mxGeometry x="305" y="381" width="25" height="18" as="geometry"/>
+</mxCell>
+<mxCell id="16" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="370" y="339" as="sourcePoint"/><mxPoint x="470" y="339" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="17" value="&lt;font style=&quot;font-size:10px;color:#B08080;&quot;&gt;&lt;b&gt;否&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+<mxGeometry x="375" y="325" width="25" height="18" as="geometry"/>
+</mxCell>
+<mxCell id="18" value="&lt;b&gt;调整约束参数&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;放宽/收紧预算&lt;br&gt;调整服务半径&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5EDED;strokeColor=#B08080;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="470" y="314" width="150" height="52" as="geometry"/>
+</mxCell>
+<mxCell id="19" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.5;exitY=0;entryX=1;entryY=0.5;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="545" y="314" as="sourcePoint"/><mxPoint x="470" y="255" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="20" value="&lt;b&gt;TOPSIS综合评价排序&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;构建决策矩阵/熵权赋权/逼近理想解&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7AAA7A;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="130" y="402" width="340" height="42" as="geometry"/>
+</mxCell>
+<mxCell id="21" edge="1" parent="1" style="rounded=1;html=1;strokeWidth=1.5;strokeColor=#999999;endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+<mxGeometry relative="1" as="geometry"><mxPoint x="300" y="444" as="sourcePoint"/><mxPoint x="300" y="467" as="targetPoint"/></mxGeometry>
+</mxCell>
+<mxCell id="22" value="&lt;b&gt;输出最优选址方案&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;color:#888;&quot;&gt;站点坐标/数量/覆盖范围/成本估算&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0F4FA;strokeColor=#7B9FC0;strokeWidth=1.5;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+<mxGeometry x="130" y="467" width="340" height="42" as="geometry"/>
+</mxCell>
+</root>
+</mxGraphModel>
+</diagram>
+</mxfile>
