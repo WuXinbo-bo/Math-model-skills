@@ -14,13 +14,11 @@ import re, sys
 
 def check_roadmap(content, filename):
 
-    """检查技术路线图是否符合粉色表头 + 六边形阶段节点 + 浅色子节点的设计语言。
-
-    支持 4 个模板（example_roadmap_stats / _stats_warm / _hex / _hex_cool），均为同一家族。"""
+    """检查技术路线图的逻辑结构、直角矩形合同和克制的学术表达。"""
 
     issues = []
 
-    
+
 
     # ===== 必须有顶部三栏表头（研究阶段/研究内容/研究方法）=====
 
@@ -30,7 +28,7 @@ def check_roadmap(content, filename):
 
         issues.append("CRITICAL: 缺少顶部三栏表头（研究阶段/研究内容/研究方法）")
 
-    
+
 
     # ===== 必须有六边形或圆形/箭头编号的阶段节点形状 =====
 
@@ -40,7 +38,7 @@ def check_roadmap(content, filename):
 
         issues.append("CRITICAL: 缺少阶段节点形状（应使用 shape=hexagon / shape=step / ellipse 表示阶段递进）")
 
-    
+
 
     # ===== 必须有粗主流程箭头连接阶段 =====
 
@@ -50,7 +48,7 @@ def check_roadmap(content, filename):
 
         issues.append("CRITICAL: 阶段节点间连接不足（至少 3 个箭头/连线）")
 
-    
+
 
     # ===== 必须有右栏研究方法 =====
 
@@ -60,7 +58,7 @@ def check_roadmap(content, filename):
 
         issues.append("WARNING: 可能缺少右栏研究方法卡片")
 
-    
+
 
     # ===== 必须有虚线框分组 =====
 
@@ -70,11 +68,11 @@ def check_roadmap(content, filename):
 
         issues.append("WARNING: 没有虚线框容器 — 中栏每阶段应使用虚线框分组")
 
-    
+
 
     # ===== 通用检查 =====
 
-    # 节点必须有双行
+    # 节点文字可按信息需要使用单行或双行，不以卡片化副标题作为质量目标。
 
     nodes_with_br = len(re.findall(r'&lt;br&gt;|<br>', content))
 
@@ -82,21 +80,43 @@ def check_roadmap(content, filename):
 
     if total_nodes > 5 and nodes_with_br < total_nodes * 0.3:
 
-        issues.append("WARNING: 大部分节点只有单行文字，应有双行（主标题+灰色副标题）")
+        issues.append("WARNING: 大部分节点只有单行文字；仅在需要补充关键参数时增加简短第二行")
 
-    
 
-    # 必须有渐变色/足够的色彩
 
-    has_gradient = bool(re.search(r'gradientColor', content))
+    # 矩形节点必须为直角；带 shape= 的菱形、圆形、六边形等保持原形状。
+
+    for cell in re.findall(r'<mxCell\b[^>]*vertex="1"[^>]*>', content):
+
+        style_match = re.search(r'style="([^"]*)"', cell)
+
+        if not style_match:
+
+            continue
+
+        style = style_match.group(1)
+
+        is_plain_rectangle = "shape=" not in style or "swimlane" in style
+
+        if is_plain_rectangle and "rounded=1" in style:
+
+            issues.append("CRITICAL: 矩形节点使用 rounded=1 — 全部流程图矩形必须使用 rounded=0 直角")
+
+    if 'gradientColor' in content:
+
+        issues.append("WARNING: 检测到渐变填充 — 默认使用纯色或灰阶")
+
+    if 'shadow=1' in content:
+
+        issues.append("WARNING: 检测到阴影 — 学术流程图默认禁用装饰阴影")
 
     unique_fills = set(re.findall(r'fillColor=#[A-Fa-f0-9]{6}', content))
 
-    if not has_gradient and len(unique_fills) < 3:
+    if len(unique_fills) > 5:
 
-        issues.append("WARNING: 色彩不足 — 建议使用 gradientColor 或多种填充色增加层次感")
+        issues.append(f"WARNING: 填充色过多（{len(unique_fills)}）— 建议灰阶加一个低饱和强调色")
 
-    
+
 
     # 不能有图内标题（只检查 mxCell 的 value 属性，不包含 diagram name 等元数据）
 
@@ -110,7 +130,7 @@ def check_roadmap(content, filename):
 
         issues.append("CRITICAL: 图内有标题文字 — 违反零容忍规则第 11 条（标题由 LaTeX caption 管理）")
 
-    
+
 
     # 居中检测
 
@@ -128,7 +148,7 @@ def check_roadmap(content, filename):
 
             containers[parent_id].append((x, w))
 
-    
+
 
     off_center_count = 0
 
@@ -162,13 +182,13 @@ def check_roadmap(content, filename):
 
                 off_center_count += 1
 
-    
+
 
     if off_center_count > 0:
 
         issues.append("CRITICAL: %d 个容器内的子节点未居中（偏移 >40px）" % off_center_count)
 
-    
+
 
     # 报告检查结果
 
@@ -180,7 +200,7 @@ def check_roadmap(content, filename):
 
         print(f"ℹ 发现 {len(issues)} 个问题")
 
-    
+
 
     return issues
 
@@ -192,7 +212,7 @@ def check_flow(content, filename):
 
     issues = []
 
-    
+
 
     # 1. 必须有判断分支（菱形节点）
 
@@ -202,7 +222,7 @@ def check_flow(content, filename):
 
         issues.append("CRITICAL: 没有判断分支（菱形节点）— 求解流程图必须至少有 1 个判断分支")
 
-    
+
 
     # 2. 必须有是/否标签
 
@@ -212,9 +232,9 @@ def check_flow(content, filename):
 
         issues.append("WARNING: 有判断分支但缺少是/否标签")
 
-    
 
-    # 3. 节点必须有双行（主标题+副标题）
+
+    # 3. 节点文字应简洁；不强制卡片式双行副标题。
 
     nodes_with_br = len(re.findall(r'&lt;br&gt;|<br>', content))
 
@@ -222,11 +242,11 @@ def check_flow(content, filename):
 
     if total_nodes > 3 and nodes_with_br < total_nodes * 0.3:
 
-        issues.append("CRITICAL: 大部分节点只有单行文字 — 必须有双行（主标题+灰色副标题说明具体方法/参数）")
+        issues.append("WARNING: 大部分节点只有单行文字 — 若步骤含关键参数，可补一行简短说明；不得为装饰强制双行")
 
-    
 
-    # 4. 必须有颜色区分（fillColor + strokeColor 合计至少 3 种不同颜色）
+
+    # 4. 颜色应克制，以灰阶和一个强调色为默认。
 
     fills = set(re.findall(r'fillColor=#([A-Fa-f0-9]{6})', content))
 
@@ -240,21 +260,23 @@ def check_flow(content, filename):
 
     all_colors = fills | strokes
 
-    if len(all_colors) < 3:
+    if len(all_colors) > 5:
 
-        issues.append("CRITICAL: 颜色种类不足（只有 %d 种颜色）— 必须按步骤类型区分：输入蓝/处理绿/判断黄/检验紫/输出红" % len(all_colors))
+        issues.append("WARNING: 颜色种类过多（%d 种）— 默认使用灰阶和一个低饱和强调色" % len(all_colors))
 
-    
+
 
     # 5. 不能有图内标题
 
-    has_title = bool(re.search(r'求解流程|问题[一二三四五]求解', content))
+    cell_values = " ".join(re.findall(r'<mxCell[^>]+value="([^"]*)"', content))
+
+    has_title = bool(re.search(r'求解流程图|问题[一二三四五]求解流程图', cell_values))
 
     if has_title:
 
         issues.append("CRITICAL: 图内有标题文字 — 违反零容忍规则第 11 条")
 
-    
+
 
     # 6. 检查是否只是一条直线（没有分叉）— 边数应该 > 节点数-1
 
@@ -266,7 +288,7 @@ def check_flow(content, filename):
 
         issues.append("WARNING: 流程图可能是纯线性链（无分叉/循环）— 建议增加并行分叉或循环反馈")
 
-    
+
 
     # 7. 求解流程图绝对不能有「工具与方法」独立侧栏，副标题里也不能写工具/库名
 
@@ -334,7 +356,7 @@ def check_flow(content, filename):
 
             )
 
-    
+
 
     # 8. 节点间距不能太大（y 间距 > 100px 说明太稀疏）
 
@@ -352,7 +374,7 @@ def check_flow(content, filename):
 
             issues.append("WARNING: 节点间距过大（平均 %.0fpx）— 建议缩小到 60-80px，图会更紧凑" % avg_gap)
 
-    
+
 
     # 9. 字号不能太大
 
@@ -362,7 +384,7 @@ def check_flow(content, filename):
 
         issues.append("WARNING: 字号过大（最大 %spx）— 流程图建议 9-11px" % max(large_fonts))
 
-    
+
 
     # 10. html=1 检查
 
@@ -378,7 +400,7 @@ def check_flow(content, filename):
 
         issues.append("CRITICAL: %d 个含 HTML 标签的节点缺少 html=1 — 导出后会显示原始 HTML 代码" % cells_without_html1)
 
-    
+
 
     # 11. 检查长距离循环箭头是否可能穿过节点
 
@@ -420,7 +442,7 @@ def check_flow(content, filename):
 
         issues.append("CRITICAL: %d 条长距离循环箭头（跨度 >300px）没有 waypoints — 可能穿过中间节点。必须添加 waypoints 让箭头走图的左侧或右侧边缘绕行" % len(long_edges))
 
-    
+
 
     # 12. 检查 shape=line（fork/join 横线）— CLI 导出可能不稳定
 
@@ -430,7 +452,35 @@ def check_flow(content, filename):
 
         issues.append("WARNING: %d 个 shape=line 元素（fork/join 横线）— CLI 导出可能渲染不稳定，建议用细长矩形（height=2, fillColor=#333）替代" % line_shapes)
 
-    
+
+
+    # 全部求解流程图同样执行直角矩形合同；其他 shape 保持不变。
+
+    for cell in re.findall(r'<mxCell\b[^>]*vertex="1"[^>]*>', content):
+
+        style_match = re.search(r'style="([^"]*)"', cell)
+
+        if not style_match:
+
+            continue
+
+        style = style_match.group(1)
+
+        is_plain_rectangle = "shape=" not in style or "swimlane" in style
+
+        if is_plain_rectangle and "rounded=1" in style:
+
+            issues.append("CRITICAL: 矩形节点使用 rounded=1 — 全部流程图矩形必须使用 rounded=0 直角")
+
+    if 'gradientColor' in content:
+
+        issues.append("WARNING: 检测到渐变填充 — 默认使用纯色或灰阶")
+
+    if 'shadow=1' in content:
+
+        issues.append("WARNING: 检测到阴影 — 学术流程图默认禁用装饰阴影")
+
+
 
     return issues
 
@@ -444,13 +494,13 @@ def main():
 
         sys.exit(0)
 
-    
+
 
     filepath = sys.argv[1]
 
     check_type = sys.argv[2]
 
-    
+
 
     try:
 
@@ -464,7 +514,7 @@ def main():
 
         sys.exit(0)
 
-    
+
 
     if check_type == 'roadmap':
 
@@ -480,13 +530,13 @@ def main():
 
         sys.exit(0)
 
-    
+
 
     critical = sum(1 for i in issues if i.startswith('CRITICAL'))
 
     warning = sum(1 for i in issues if i.startswith('WARNING'))
 
-    
+
 
     print(f"=== DrawIO 结构自检: {filepath} ({check_type}) ===")
 
@@ -494,7 +544,7 @@ def main():
 
         print(f"  {issue}")
 
-    
+
 
     if not issues:
 
@@ -508,7 +558,7 @@ def main():
 
             print(f"  ⛔ 必须修复所有 CRITICAL 后重新导出")
 
-    
+
 
     sys.exit(1 if critical > 0 else 0)
 
@@ -517,4 +567,3 @@ def main():
 if __name__ == '__main__':
 
     main()
-

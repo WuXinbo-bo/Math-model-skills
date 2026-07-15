@@ -28,6 +28,21 @@ Meta-model-agent 强调研究证据优先。论文中的公式、数值、图表
 - 图表过大或导致页数超限时，优先裁除空白边缘、合并相关子图、精简重复图、缩短图注、将次要图表移至附录；不得通过把整张图缩到文字不可读来“塞进页面”。图中文字在最终 PDF/DOCX 的 100% 显示比例下必须可读。
 - `MAX_PAGES` 是上限，不是正文字数目标。页数紧张时必须优先保护问题分析、模型机制、公式推导、求解过程、验证、结果解释和局限性，不能为了满足页数而删成只有结论和图表的空心论文。
 - 页数合规与正文充分性必须分别验收。即使 PDF 未超页，若任一子问题缺少“机制/推导 -> 结果 -> 验证 -> 解释”，或正文有效字数明显不足，仍不得通过 MANUSCRIPT/ASSURANCE 门禁；禁止用放大字号、拉大行距、堆图或空泛文字补页。
+- CUMCM 按 2026 官方规范执行：摘要原则上不超过 1 页，正文不要目录且不超过 30 页，附录单独计数且页数不限。必须通过编译后的 `AbstractStart/AbstractEnd` 与 `BodyStart/BodyEnd` 标签实测，禁止用字符估算代替最终门禁。
+- 普通 LaTeX 图表使用 `[htbp]` 并在章节边界用 `\FloatBarrier` 收束，禁止全篇强制 `[H]` 造成空白页和页数膨胀。
+
+### 图表与流程图克制表达硬约束
+
+- 每张正文图必须登记明确论点、数据来源和读者任务；使用 `图表/figure_manifest.json` 区分正文图、附录图和诊断图，只有 `publish=true` 的图必须嵌入正文。
+- 图形类别按数据结构和读者任务选择，禁止为了“高级感”或多样性强制使用渐变、阴影、圆角标注框、KDE 背景和无必要多层叠加。
+- 所有 DrawIO/TikZ 流程图中的普通矩形、矩形容器和表头必须使用直角矩形；菱形、圆形、六边形、圆柱、平行四边形等其他语义形状保持不变。
+- AI Image 默认关闭，禁止用于技术路线图、流程图和模型架构图；仅在用户明确需要且经过内容级核验的物理场景示意中使用。
+
+### 代码附录硬约束
+
+- COMPUTATION 必须生成 `程序/code_manifest.json`，登记入口、逐问程序、依赖、代码行数和源码哈希。
+- MANUSCRIPT 必须运行 `工具/build_code_appendix.py`，从当前源码自动生成附录；禁止用一段复现说明或“代码见支撑材料”替代真实核心实现。
+- CUMCM 附录必须完整列出全部可运行源程序及支撑材料文件；其他赛制按竞赛 Profile 嵌入主程序和逐问核心实现。源码哈希、附录标记和运行入口不一致时不得通过门禁。
 
 ## 快速启动
 
@@ -151,6 +166,7 @@ python scripts/pipeline_manager.py set-mode championship --workspace .
 - `scripts/stateful_smoke.py`: 核验 checkpoint rerun、rework 传播、resume 行为
 - `scripts/enhancement_audit.py`: enhancement 阶段的返工与增强推荐入口
 - `scripts/championship_review.py`: 冠军模式多轮审稿、修订和终版论文回写入口
+- `scripts/build_code_appendix.py`: 生成源码哈希清单，并从当前程序确定性构建 LaTeX/DOCX 代码附录
 - `references/championship-review-method.md`: 冠军审稿评分、攻击策略与回退知识库
 - `scripts/state_store.py`: JSON 运行状态存储
 - `assets/shared-scripts/`: 原共享脚本

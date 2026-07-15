@@ -154,7 +154,7 @@ i2_text = 'I² = 42.3%, Q = 13.8 (p = 0.055)'
 
 ax.text(0.0, diamond_y - 1.0, i2_text, ha='center', va='top', fontsize=8.5,
 
-        bbox=dict(boxstyle='round,pad=0.4', facecolor=_lighten(COLORS['highlight'], 0.85),
+        bbox=dict(boxstyle='square,pad=0.4', facecolor=_lighten(COLORS['highlight'], 0.85),
 
                   edgecolor=_lighten(COLORS['highlight'], 0.4), alpha=0.95),
 
@@ -240,7 +240,7 @@ for x_start, x_end, c_base, lbl in [(-5.5, -0.5, _lighten(COLORS['up'], 0.8), 'P
 
     ax.text(cx, -0.15, lbl, ha='center', va='bottom', fontsize=9, color=COLORS['ref_line'],
 
-            bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                       edgecolor=COLORS['grid'], alpha=0.9))
 
@@ -250,7 +250,7 @@ ax.text(-0.5, 0.62, 'Treatment', ha='center', va='bottom', fontsize=9,
 
         color=COLORS['down'], fontweight='bold',
 
-        bbox=dict(boxstyle='round,pad=0.25', facecolor=COLORS['bg_box'],
+        bbox=dict(boxstyle='square,pad=0.25', facecolor=COLORS['bg_box'],
 
                   edgecolor=COLORS['down'], alpha=0.9))
 
@@ -288,7 +288,7 @@ ax.annotate(f'ATT = {treat[-1]-ctrl[-1]:.2f}',
 
                             connectionstyle='arc3,rad=-0.2'),
 
-            bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                       edgecolor=PALETTE[0], alpha=0.9))
 
@@ -464,7 +464,7 @@ for pval_pct, plabel in [(np.percentile(fake, 5), '5th'), (np.percentile(fake, 9
 
     ax.text(pval_pct, max(yk)*0.92, plabel, ha='center', va='bottom', fontsize=8, color=COLORS['text'],
 
-            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor=COLORS['grid'], alpha=0.8))
+            bbox=dict(boxstyle='square,pad=0.2', facecolor='white', edgecolor=COLORS['grid'], alpha=0.8))
 
 ax.axvline(x=real, color=PALETTE[1], linewidth=2.5, zorder=5)
 
@@ -474,7 +474,7 @@ ax.annotate(f'Real = {real:.3f}', xy=(real, max(yk)*0.15),
 
             arrowprops=dict(arrowstyle='->', color=PALETTE[1], lw=1.5, connectionstyle='arc3,rad=0.2'),
 
-            bbox=dict(boxstyle='round,pad=0.4', facecolor='white', edgecolor=PALETTE[1], alpha=0.95))
+            bbox=dict(boxstyle='square,pad=0.4', facecolor='white', edgecolor=PALETTE[1], alpha=0.95))
 
 p_value = np.mean(np.abs(fake) >= np.abs(real))
 
@@ -482,7 +482,7 @@ ax.text(0.97, 0.95, f'Permutations: 500\np-value = {p_value:.3f}', transform=ax.
 
         fontsize=8.5, va='top', ha='right',
 
-        bbox=dict(boxstyle='round,pad=0.5', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.95), color=COLORS['text'])
+        bbox=dict(boxstyle='square,pad=0.5', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.95), color=COLORS['text'])
 
 ax.set_xlabel('Placebo Coefficients', fontsize=11); ax.set_ylabel('Density', fontsize=11)
 
@@ -672,7 +672,7 @@ for i, (grp, data) in enumerate(zip(groups, data_all)):
 
             fontsize=7.5, color=COLORS['text'], va='center',
 
-            bbox=dict(boxstyle='round,pad=0.25', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.9))
+            bbox=dict(boxstyle='square,pad=0.25', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.9))
 
 ax.set_yticks([i*2.5 for i in range(len(groups))]); ax.set_yticklabels(groups, fontsize=10)
 
@@ -762,13 +762,13 @@ for yr, evt in {2015: 'Policy A', 2020: 'Policy B'}.items():
 
     ax1.text(yr, gdp.max()+0.3, evt, ha='center', va='bottom', fontsize=8, color=COLORS['down'],
 
-             bbox=dict(boxstyle='round,pad=0.2', facecolor=COLORS['bg_box'], edgecolor=COLORS['down'], alpha=0.85))
+             bbox=dict(boxstyle='square,pad=0.2', facecolor=COLORS['bg_box'], edgecolor=COLORS['down'], alpha=0.85))
 
 corr_val = np.corrcoef(gdp, digital)[0, 1]
 
 ax1.text(0.03, 0.97, f'Pearson r = {corr_val:.3f}', transform=ax1.transAxes, fontsize=9,
 
-         va='top', ha='left', bbox=dict(boxstyle='round,pad=0.5', facecolor=_lighten(PALETTE[0], 0.7),
+         va='top', ha='left', bbox=dict(boxstyle='square,pad=0.5', facecolor=_lighten(PALETTE[0], 0.7),
 
                                          edgecolor=COLORS['grid'], alpha=0.95), color=COLORS['text'])
 
@@ -844,7 +844,7 @@ ax.text(0.97, 0.97, 'Breusch-Pagan\nχ²=2.14, p=0.143', transform=ax.transAxes,
 
         va='top', ha='right', color=COLORS['text'],
 
-        bbox=dict(boxstyle='round,pad=0.3', facecolor=_lighten(COLORS['highlight'], 0.85), edgecolor=_lighten(COLORS['highlight'], 0.4), alpha=0.95))
+        bbox=dict(boxstyle='square,pad=0.3', facecolor=_lighten(COLORS['highlight'], 0.85), edgecolor=_lighten(COLORS['highlight'], 0.4), alpha=0.95))
 
 ax.set_xlabel('Fitted Values'); ax.set_ylabel('Residuals')
 
@@ -870,7 +870,7 @@ ax.text(0.03, 0.97, f'Shapiro-Wilk\nW={sw_stat:.3f}\np={sw_p:.3f}', transform=ax
 
         fontsize=7.5, va='top', ha='left', color=COLORS['text'],
 
-        bbox=dict(boxstyle='round,pad=0.3', facecolor=_lighten(PALETTE[0], 0.8), edgecolor=_lighten(PALETTE[0], 0.6), alpha=0.95))
+        bbox=dict(boxstyle='square,pad=0.3', facecolor=_lighten(PALETTE[0], 0.8), edgecolor=_lighten(PALETTE[0], 0.6), alpha=0.95))
 
 ax.set_xlabel('Theoretical Quantiles'); ax.set_ylabel('Sample Quantiles')
 
@@ -922,7 +922,7 @@ ax.axhspan(threshold, cooks.max()*1.2, color=COLORS['bg_box'], alpha=0.3, zorder
 
 ax.text(n*0.97, threshold+0.001, f'4/n={threshold:.3f}', ha='right', va='bottom', fontsize=8, color=COLORS['down'],
 
-        bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor=COLORS['down'], alpha=0.9))
+        bbox=dict(boxstyle='square,pad=0.2', facecolor='white', edgecolor=COLORS['down'], alpha=0.9))
 
 ax.set_xlabel('Observation Index'); ax.set_ylabel("Cook's Distance")
 
@@ -988,7 +988,7 @@ ax1.annotate(f'Crossover\nMod = {cross_x:.2f}', xy=(cross_x, 0),
 
              arrowprops=dict(arrowstyle='->', color=PALETTE[1], lw=1.5, connectionstyle='arc3,rad=-0.3'),
 
-             bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor=PALETTE[1], alpha=0.95))
+             bbox=dict(boxstyle='square,pad=0.3', facecolor='white', edgecolor=PALETTE[1], alpha=0.95))
 
 ax1.set_xlabel('Moderator'); ax1.set_ylabel('Marginal Effect (95% CI)')
 
@@ -1212,7 +1212,7 @@ ax.annotate(f'τ=0.9: {c[-1]:.3f}', xy=(q[-1], c[-1]),
 
             arrowprops=dict(arrowstyle='->', color=PALETTE[0], lw=1.2),
 
-            bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor=PALETTE[0], alpha=0.9))
+            bbox=dict(boxstyle='square,pad=0.3', facecolor='white', edgecolor=PALETTE[0], alpha=0.9))
 
 ax.set_xlabel('Quantile (τ)', fontsize=11); ax.set_ylabel('Coefficient', fontsize=11)
 
@@ -1284,7 +1284,7 @@ ax.text(0.97, 0.03, f'Avg |SMD| Before: {avg_b:.3f}\nAvg |SMD| After: {avg_a:.3f
 
         transform=ax.transAxes, fontsize=8.5, va='bottom', ha='right', color=COLORS['text'],
 
-        bbox=dict(boxstyle='round,pad=0.4', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.95))
+        bbox=dict(boxstyle='square,pad=0.4', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.95))
 
 ax.legend(frameon=True, edgecolor=COLORS['grid'], fontsize=9, loc='best')
 
@@ -1360,11 +1360,11 @@ ax.axvline(x=split_point, color=COLORS['ref_line'], linestyle=':', linewidth=1.2
 
 ax.text(split_point/2, actual.max()+2, 'Training', ha='center', fontsize=9, color=COLORS['text'],
 
-        bbox=dict(boxstyle='round,pad=0.25', facecolor='white', edgecolor=COLORS['grid'], alpha=0.9))
+        bbox=dict(boxstyle='square,pad=0.25', facecolor='white', edgecolor=COLORS['grid'], alpha=0.9))
 
 ax.text((split_point+100)/2, actual.max()+2, 'Testing', ha='center', fontsize=9, color=COLORS['text'],
 
-        bbox=dict(boxstyle='round,pad=0.25', facecolor='white', edgecolor=COLORS['grid'], alpha=0.9))
+        bbox=dict(boxstyle='square,pad=0.25', facecolor='white', edgecolor=COLORS['grid'], alpha=0.9))
 
 n_layers = 12
 
@@ -1390,7 +1390,7 @@ ax.text(0.02, 0.03, f'Test Metrics:\nRMSE = {rmse:.3f}\nMAE  = {mae:.3f}\nR²   
 
         transform=ax.transAxes, fontsize=8.5, va='bottom', ha='left', color=COLORS['text'], family='monospace',
 
-        bbox=dict(boxstyle='round,pad=0.4', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.95))
+        bbox=dict(boxstyle='square,pad=0.4', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.95))
 
 ax.set_xlabel('Time Step'); ax.set_ylabel('Value')
 
@@ -1596,13 +1596,13 @@ for i, (model, err) in enumerate(zip(models, errors)):
 
     ax.text(err.max()+1, y_pos, f't={t_stat:.2f} {sig_str}', ha='left', va='center', fontsize=8, color=COLORS['text'],
 
-            bbox=dict(boxstyle='round,pad=0.2', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.9))
+            bbox=dict(boxstyle='square,pad=0.2', facecolor=COLORS['bg_box'], edgecolor=COLORS['grid'], alpha=0.9))
 
 ax.axvline(0, color=COLORS['down'], linestyle='--', linewidth=1.0, alpha=0.6)
 
 ax.text(0, len(models)*1.5-0.3, 'Zero Error', ha='center', va='bottom', fontsize=8, color=COLORS['down'],
 
-        bbox=dict(boxstyle='round,pad=0.2', facecolor=COLORS['bg_box'], edgecolor=COLORS['down'], alpha=0.9))
+        bbox=dict(boxstyle='square,pad=0.2', facecolor=COLORS['bg_box'], edgecolor=COLORS['down'], alpha=0.9))
 
 ax.set_yticks([i*1.5 for i in range(len(models))]); ax.set_yticklabels(models, fontsize=10)
 
@@ -1672,7 +1672,7 @@ ax.axhspan(threshold, 1.0, color=_lighten(COLORS['up'], 0.8), alpha=0.1, zorder=
 
 ax.text(12.3, threshold, 'Acceptable\nThreshold', ha='left', va='center', fontsize=8, color=COLORS['up'],
 
-        bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor=COLORS['up'], alpha=0.9))
+        bbox=dict(boxstyle='square,pad=0.2', facecolor='white', edgecolor=COLORS['up'], alpha=0.9))
 
 markers = ['o','s','D','^']
 
@@ -1694,7 +1694,7 @@ for i, (name, acc) in enumerate(models_data.items()):
 
                     arrowprops=dict(arrowstyle='->', color=PALETTE[i], lw=1.0, connectionstyle='arc3,rad=0.2'),
 
-                    bbox=dict(boxstyle='round,pad=0.25', facecolor='white', edgecolor=PALETTE[i], alpha=0.9))
+                    bbox=dict(boxstyle='square,pad=0.25', facecolor='white', edgecolor=PALETTE[i], alpha=0.9))
 
 ax.set_xlabel('Prediction Horizon (steps ahead)', fontsize=11); ax.set_ylabel('R² Score', fontsize=11)
 
@@ -1874,7 +1874,7 @@ for i in top_idx:
 
                 fontsize=7.5, color=COLORS['text'],
 
-                bbox=dict(boxstyle='round,pad=0.15', facecolor='white',
+                bbox=dict(boxstyle='square,pad=0.15', facecolor='white',
 
                           edgecolor=COLORS['grid'], alpha=0.85))
 
@@ -1886,7 +1886,7 @@ ax.text(0.03, 0.97, f"Moran's I = {moran.I:.4f}{sig}\np = {moran.p_sim:.4f}\n(99
 
         transform=ax.transAxes, fontsize=9, va='top',
 
-        bbox=dict(boxstyle='round,pad=0.4', facecolor=COLORS['bg_box'],
+        bbox=dict(boxstyle='square,pad=0.4', facecolor=COLORS['bg_box'],
 
                   edgecolor=COLORS['grid'], alpha=0.95))
 
@@ -2066,7 +2066,7 @@ for _, row in gdf[gdf['lisa_cluster'] != 'NS'].iterrows():
 
             fontweight='bold', color='#333333',
 
-            bbox=dict(boxstyle='round,pad=0.15', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.15', facecolor='white',
 
                       edgecolor='#999999', linewidth=0.6, alpha=0.92))
 
@@ -2108,7 +2108,7 @@ ax.text(0.98, 0.98, f"Global Moran's I = {lisa.Is.mean():.4f}\n999 permutations"
 
         transform=ax.transAxes, fontsize=8.5, ha='right', va='top',
 
-        bbox=dict(boxstyle='round,pad=0.4', facecolor=COLORS['bg_box'],
+        bbox=dict(boxstyle='square,pad=0.4', facecolor=COLORS['bg_box'],
 
                   edgecolor=COLORS['grid'], alpha=0.95))
 

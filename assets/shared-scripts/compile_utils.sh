@@ -511,54 +511,54 @@ if [ -f "$PAPER_DIR/论文正文.tex" ]; then
     fi
 fi
 
-# 6.8 强制修复浮动体：所有非 [H] 的浮动说明符 → [H]（防止图表浮动导致图文分离）
-# ⛔ 跳过符号说明和模型假设文件（[H] 会导致标题和表格分页，9.8 步单独处理）
-echo "--- 修复浮动体 → [H] ---"
+# 6.8 规范浮动体：所有非 [htbp] 的浮动说明符 → [htbp]（让 LaTeX 合理利用页面空间）
+# 符号说明和模型假设文件继续由 9.8 步单独处理。
+echo "--- 规范浮动体 → [htbp] ---"
 FLOAT_FIXES=0
 for f in "$PAPER_DIR"/章节/*.tex "$PAPER_DIR"/论文正文.tex; do
     [ -f "$f" ] || continue
     bn=$(basename "$f")
-    # ⛔ 跳过符号说明和模型假设（这些文件的表格不能用 [H]，否则标题和表格会分页）
+    # 跳过符号说明和模型假设，沿用其专用分页策略。
     if echo "$bn" | grep -qi 'symbol\|assumption'; then
         continue
     fi
     if grep -q '\\section{符号说明}\|\\section{模型假设}\|\\section.*假设\|\\section.*符号' "$f" 2>/dev/null; then
         continue
     fi
-    # 修复 figure: [htbp] [tbp] [htp] [ht] [h] [t] [b] [p] [!h] [h!] [!ht] [!htbp] 等 → [H]
-    # 但不动已经是 [H] 的
-    if grep -qP '\\begin\{figure\}\[(?!H\])[^\]]*\]' "$f" 2>/dev/null; then
-        sed -i -E 's/\\begin\{figure\}\[[^]]*\]/\\begin{figure}[H]/g' "$f"
-        # 恢复已经正确的 [H]（上面的替换不会破坏它，因为 [H] 也匹配但替换结果一样）
-        echo "  $bn: figure 浮动符 → [H]"
+    # 修复 figure: [htbp] [tbp] [htp] [ht] [h] [t] [b] [p] [!h] [h!] [!ht] [!htbp] 等 → [htbp]
+    # 但不动已经是 [htbp] 的
+    if grep -qP '\\begin\{figure\}\[(?!htbp\])[^\]]*\]' "$f" 2>/dev/null; then
+        sed -i -E 's/\\begin\{figure\}\[[^]]*\]/\\begin{figure}[htbp]/g' "$f"
+
+        echo "  $bn: figure 浮动符 → [htbp]"
         FLOAT_FIXES=$((FLOAT_FIXES+1))
     fi
     # 修复没有方括号的 \begin{figure}（LaTeX 默认 [tbp]，也会浮动）
     if grep -qP '\\begin\{figure\}[^[\n]' "$f" 2>/dev/null || grep -qP '\\begin\{figure\}$' "$f" 2>/dev/null; then
-        sed -i 's/\\begin{figure}$/\\begin{figure}[H]/g' "$f"
+        sed -i 's/\\begin{figure}$/\\begin{figure}[htbp]/g' "$f"
         # 处理 \begin{figure} 后面直接跟 \centering 等（同一行或下一行）
-        sed -i 's/\\begin{figure}\\centering/\\begin{figure}[H]\\centering/g' "$f"
-        sed -i -E 's/\\begin\{figure\}([^[H\n])/\\begin{figure}[H]\1/g' "$f"
-        echo "  $bn: figure 无浮动符 → [H]"
+        sed -i 's/\\begin{figure}\\centering/\\begin{figure}[htbp]\\centering/g' "$f"
+        sed -i -E 's/\\begin\{figure\}([^[\n])/\\begin{figure}[htbp]\1/g' "$f"
+        echo "  $bn: figure 无浮动符 → [htbp]"
         FLOAT_FIXES=$((FLOAT_FIXES+1))
     fi
     # 同样修复 table 浮动体
-    if grep -qP '\\begin\{table\}\[(?!H\])[^\]]*\]' "$f" 2>/dev/null; then
-        sed -i -E 's/\\begin\{table\}\[[^]]*\]/\\begin{table}[H]/g' "$f"
-        echo "  $bn: table 浮动符 → [H]"
+    if grep -qP '\\begin\{table\}\[(?!htbp\])[^\]]*\]' "$f" 2>/dev/null; then
+        sed -i -E 's/\\begin\{table\}\[[^]]*\]/\\begin{table}[htbp]/g' "$f"
+        echo "  $bn: table 浮动符 → [htbp]"
         FLOAT_FIXES=$((FLOAT_FIXES+1))
     fi
     # 修复没有方括号的 \begin{table}
     if grep -qP '\\begin\{table\}[^[\n]' "$f" 2>/dev/null || grep -qP '\\begin\{table\}$' "$f" 2>/dev/null; then
-        sed -i 's/\\begin{table}$/\\begin{table}[H]/g' "$f"
-        sed -i -E 's/\\begin\{table\}([^[H\n])/\\begin{table}[H]\1/g' "$f"
-        echo "  $bn: table 无浮动符 → [H]"
+        sed -i 's/\\begin{table}$/\\begin{table}[htbp]/g' "$f"
+        sed -i -E 's/\\begin\{table\}([^[\n])/\\begin{table}[htbp]\1/g' "$f"
+        echo "  $bn: table 无浮动符 → [htbp]"
         FLOAT_FIXES=$((FLOAT_FIXES+1))
     fi
     # 修复 algorithm 环境浮动（algorithm2e 的 \begin{algorithm} 也会浮动）
-    if grep -qP '\\begin\{algorithm\}\[(?!H\])[^\]]*\]' "$f" 2>/dev/null; then
-        sed -i -E 's/\\begin\{algorithm\}\[[^]]*\]/\\begin{algorithm}[H]/g' "$f"
-        echo "  $bn: algorithm 浮动符 → [H]"
+    if grep -qP '\\begin\{algorithm\}\[(?!htbp\])[^\]]*\]' "$f" 2>/dev/null; then
+        sed -i -E 's/\\begin\{algorithm\}\[[^]]*\]/\\begin{algorithm}[htbp]/g' "$f"
+        echo "  $bn: algorithm 浮动符 → [htbp]"
         FLOAT_FIXES=$((FLOAT_FIXES+1))
     fi
 done
@@ -917,17 +917,17 @@ for f in "$PAPER_DIR"/章节/*.tex; do
     if [ "$is_symbol" = true ]; then
         # 符号说明：用 longtable 替代 table+tabular，自动跨页
         # longtable 天然支持跨页，标题永远在表格开头，不存在分离问题
-        
+
         # 移除之前可能加的分页控制
         sed -i '/\\clearpage/d' "$f" 2>/dev/null
         sed -i '/\\needspace.*baselineskip/d' "$f" 2>/dev/null
         sed -i '/\\nopagebreak/d' "$f" 2>/dev/null
-        
+
         # 删引导文字
         sed -i '/本文所用主要符号/d' "$f" 2>/dev/null
         sed -i '/本文.*符号.*含义.*表/d' "$f" 2>/dev/null
         sed -i '/主要符号.*如.*所示/d' "$f" 2>/dev/null
-        
+
         # table+tabular → longtable（简单可靠的 sed 方案）
         if grep -q '\\begin{table}' "$f" 2>/dev/null; then
             echo "  $bn: table+tabular → longtable"

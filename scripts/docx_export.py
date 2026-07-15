@@ -82,7 +82,7 @@ def export(workspace: Path) -> dict:
             document.add_paragraph(line)
     output.parent.mkdir(parents=True, exist_ok=True)
     document.save(output)
-    report = {"output_format": "docx", "competition": state.get("competition"), "source": str(source), "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "source_mtime_ns": source.stat().st_mtime_ns, "output": str(output), "effective_body_units": effective_units(text), "usable_width_cm": round(float(usable_width_cm), 3), "usable_height_cm": round(float(usable_height_cm), 3), "images": images, "page_count": None, "preview_pdf": None}
+    report = {"output_format": "docx", "competition": state.get("competition"), "source": str(source), "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "source_mtime_ns": source.stat().st_mtime_ns, "output": str(output), "effective_body_units": effective_units(text), "usable_width_cm": round(float(usable_width_cm), 3), "usable_height_cm": round(float(usable_height_cm), 3), "images": images, "page_count": None, "body_page_count": None, "abstract_page_count": None, "preview_pdf": None}
     soffice = shutil.which("soffice") or shutil.which("libreoffice")
     if soffice:
         preview_dir = workspace / "论文" / "docx_preview"
@@ -93,7 +93,17 @@ def export(workspace: Path) -> dict:
             report["preview_pdf"] = str(preview)
             try:
                 from pypdf import PdfReader
-                report["page_count"] = len(PdfReader(str(preview)).pages)
+                reader = PdfReader(str(preview))
+                report["page_count"] = len(reader.pages)
+                page_texts = [(page.extract_text() or "") for page in reader.pages]
+                if state.get("competition") == "cumcm":
+                    body_start = next((index for index, value in enumerate(page_texts, 1) if "问题重述" in value), None)
+                    appendix_start = next((index for index, value in enumerate(page_texts, 1) if "附录" in value and "程序" in value), None)
+                    if body_start is not None:
+                        report["abstract_page_count"] = max(body_start - 1, 0)
+                    if body_start is not None and appendix_start is not None and appendix_start >= body_start:
+                        # Conservatively count a page containing both the end of body and appendix as a body page.
+                        report["body_page_count"] = appendix_start - body_start + 1
             except Exception:
                 pass
     (workspace / "论文" / "docx_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

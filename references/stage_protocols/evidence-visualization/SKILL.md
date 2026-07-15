@@ -48,6 +48,24 @@ Stats tables: `stats_utils.py` supplies `regression_table`, `descriptive_table`,
 
 ## ⛔⛔⛔ 交付契约（最高优先级）
 
+除 `图表/图表引用.tex` 外，必须生成 `图表/figure_manifest.json`。每张图登记 `path`、`claim`、`source`、`reader_task`、`publish` 和 `placement`。只有 `publish=true` 的图必须嵌入正文；诊断图、调试图和被替代的图应登记为 `publish=false`，不得为了覆盖文件而挤入正文。
+
+```json
+{
+  "version": 1,
+  "figures": [
+    {
+      "path": "图表/fig_q1_sensitivity.pdf",
+      "claim": "参数扰动不改变最优方案排序",
+      "source": "图表/全部结果.json",
+      "reader_task": "比较趋势与稳定区间",
+      "publish": true,
+      "placement": "body"
+    }
+  ]
+}
+```
+
 **Must produce all planned visuals (per 论文规划.md or skill-specific plan)** as `图表/fig_*.png/pdf` plus `图表/图表引用.tex` (or, in docx mode, the same PNGs without 图表引用.tex requirement).
 
 ⛔ **特殊豁免**：若 论文规划.md 清晰标明写"无图形与表格"或图形与表格清单为空（纯文字综述/思辨论文），准许 图表/ 为空，但**务必**写一个空的 `图表/图表引用.tex` (`touch 图表/图表引用.tex; mkdir -p 图表`) 让下游知道这步跑过了。
@@ -398,9 +416,9 @@ Produce all visuals from scratch using JSON data in `图表/*.json`.
 
 ### 工作节点 1.5：Produce AI Image visuals (non-data visuals)
 
-AI Image 2 can produce high-quality scene diagrams, technical roadmaps, flowcharts, and architecture diagrams — far better than DrawIO.
+AI Image 默认关闭。仅当题目确有无法用数据图、DrawIO 或 TikZ 准确表达的物理场景，并且用户明确需要场景示意时才启用；技术路线图、流程图和模型架构图严禁使用生成式图片。
 
-**1. AI Image 直接采用，无需预核验：**
+**1. AI Image 不得直接采用，必须进行内容级预核验：**
 
 API Key 已通过配置文件 `工具/_ai_image_config.json` 注入（用户在设定页面配置，后端自动化写入）。
 
@@ -695,9 +713,9 @@ Browse the recipe library (97 total across 5 files) and the `<figure_selection_g
 
 5. Consult the full implementation example from the matched recipe file
 
-6. Select the color palette based on manuscript domain
+6. Select the smallest semantic color set that remains readable in grayscale
 
-**⛔ Do NOT always default to grouped bar / lollipop / line chart.** The recipe library has 97 chart types — apply the variety. For any data shape, there are in most cases 3-5 suitable types. Pick the one that's most visually interesting AND hasn't been used yet in this manuscript.
+**⛔ Choose by reader task, not novelty.** Prefer familiar grouped bars, lines, scatter plots, heatmaps, or three-line tables when they communicate the claim directly. Reusing a clear chart type is correct; never switch charts merely to create variety.
 
 Reference `工具/figure_exemplars.md` for visual distribution examples by manuscript type. Decide count and placement autonomously.
 
@@ -727,7 +745,7 @@ For every planned visual, build a Visual Type Audit Table. The "Chosen Type" is 
 
 One `gen_fig_xxx.py` script per visual, executed from workspace root. Each script starts with `工具` initialization and `setup_style()` call.
 
-**MANDATORY**: Prior to writing each script, you MUST extract the matched recipe implementation using `get_recipe.py`. Copy the recipe implementation as the starting point, then adapt it to the actual data. Do NOT write visual scripts from scratch — the recipes include critical styling details (gradient fills, KDE backgrounds, annotation boxes, layered visuals) that you will miss if you write from memory.
+Use `get_recipe.py` when a recipe matches the data and reader task. Treat recipes as implementation references, not mandatory visual decoration; remove gradient fills, rounded annotation boxes, decorative backgrounds, and extra layers unless they encode necessary data or uncertainty.
 
 ```bash
 
@@ -755,9 +773,9 @@ python3 工具/get_recipe.py competition 2
 
 5. Save as `图表/gen_fig_xxx.py`
 
-**Skip this = ugly visuals with wrong colors and no styling. The quality gate WILL reject them.**
+Skipping a matching implementation reference may increase coding risk, but a simple custom chart is acceptable when it is clearer and passes the evidence, readability, and source-trace gates.
 
-If you skip this step and produce a visual with matplotlib default blue, no gradient fills, or no annotations, the visual will be rejected in Phase 4 self-validate.
+Matplotlib defaults should still be normalized for font and print readability. Missing gradients or annotations is not a defect; unnecessary decoration is a defect.
 
 <script_template>
 
@@ -1155,7 +1173,7 @@ For each fig_xxx.pdf, answer:
 
    - Uses PALETTE colors, not matplotlib default blue?
 
-   - Has light-fill + solid-border premium look? (not plain solid blocks + white edges)
+   - Uses restrained fills and borders whose differences encode data rather than decoration?
 
    - Annotation text readable? (no overlap, not too small)
 
@@ -1181,7 +1199,7 @@ For each fig_xxx.pdf, answer:
 
    - Does the script call setup_style() + PALETTE?
 
-   - Has premium elements from recipe? (gradient fills, KDE backgrounds, annotation boxes, smart_labels, etc.)
+   - Has only the visual elements needed to support the declared claim and reader task?
 
    - If plain matplotlib default style (blue bars, no annotations, no fills), must rewrite using recipe
 
@@ -1197,9 +1215,9 @@ For each fig_xxx.pdf, answer:
 
    - Same chart type appearing ≥3 times? If so, swap one
 
-   - All bar charts? Mix at least 3+ different types
+   - Repeated reader tasks use a consistent visual grammar; chart variety is not scored
 
-   - Lollipop: if used, must have premium visual effects (gradient background, #1 highlight row, median reference line + annotation box). Plain stem+dot = reject and redo
+   - Lollipop: use only when ranking is clearer than a bar chart; keep stem and dot simple, with at most one semantic highlight
 
 ```
 

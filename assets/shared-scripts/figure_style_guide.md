@@ -1,6 +1,6 @@
 # 科研图形与表格风格指南
 
-Meta-model-agent 画图时参考此文件，提升图形与表格的学术美观度。全部图形与表格务必达到 SCI/Nature 发表水准。
+Meta-model-agent 画图时参考此文件。全部图形与表格务必达到可核验、可读、克制且适合竞赛论文印刷的水准；禁止用渐变、阴影、圆角卡片和无必要多层叠加模拟所谓“顶刊高级感”。
 
 ## 按图形与表格类别的配色策略（⛔ 务必遵循）
 
@@ -24,9 +24,9 @@ Choose the visual type that best communicates your data, not the fanciest one av
 
 4. **Use basic recipes** (grouped bar, line, scatter) when they are the clearest way to present the data — a well-made grouped bar chart is better than a confusing Bump chart
 
-A manuscript needs visual variety — mix basic and advanced charts. A manuscript with ALL advanced charts looks like it's trying too hard. A manuscript with ALL bar charts looks monotonous. Balance is key.
+A manuscript needs consistent visual grammar. Reuse the same familiar chart type whenever the reader task is the same; variety is not an independent quality target.
 
-**Hard rule**: avoid apply the same chart type more than 3 times in one manuscript. If you already have 3 bar charts, use an alternative for the next comparison. Same applies to lollipop charts or any other type.
+**Hard rule**: choose by reader task and data shape. Never replace a clear bar, line, scatter plot, or three-line table merely to avoid repetition.
 
 </selection_priority>
 
@@ -226,7 +226,7 @@ Not every "enhancement" is appropriate. Validate this table, but choose based on
 
 | 多数据集排名变化 | Bump Chart | 展示排名交叉 |
 
-**全篇图形与表格多样性准则：** 同一种图形与表格类别避免超过 3 次。若已经有 3 个柱状图，下一个对比用棒棒糖或雷达图。反过来也一样——若已经有 3 个棒棒糖图，下一个用柱状图。
+**全篇一致性准则：** 同一读者任务优先采用同一图形语法。只有数据结构或比较任务改变时才更换图形类别，禁止为了“多样性”改用棒棒糖、雷达图或其他装饰性图形。
 
 </bar_chart_alternatives>
 
@@ -240,7 +240,7 @@ Not every "enhancement" is appropriate. Validate this table, but choose based on
 
 **装饰颜色**（网格线/文字/标注框）：用 `COLORS['grid']`、`COLORS['text']`、`COLORS['bg_box']`。
 
-**渐变起点**：用 `_lighten(PALETTE[0], 0.6)` 而不是硬编码 `#b0c4de`。
+**浅色变体**：仅在区分置信区间或同一语义层级时使用 `_lighten(PALETTE[0], 0.6)`，不得作为装饰背景。
 
 这样切换配色方案（journal/soft/npg/colorblind）时，全部颜色自动化跟随。
 
@@ -252,7 +252,7 @@ Not every "enhancement" is appropriate. Validate this table, but choose based on
 
 - **3-5 组对比**：用 PALETTE 前 3-5 色，饱和度统一
 
-- **单组多类别**：用同一色系的渐变（如从 `PALETTE[0]` 到 `PALETTE_LIGHT[0]` 的 n 个梯度），避免每根柱子一个颜色
+- **单组多类别**：默认使用同一填充色；只高亮与结论直接相关的一项，避免每根柱子不同颜色或装饰渐变
 
 - **⛔ 禁止**：plt.cm 渐变色、matplotlib 默认蓝色、超过 6 种不同颜色
 
@@ -320,7 +320,7 @@ setup_style()  # 默认就是 soft
 
 ```
 
-柔和明亮，纯白背景，大面积半透明渐变填充效果极佳。竞赛、经管、统计建模首选。
+柔和明亮，适合有限类别对比。默认纯白背景，不使用大面积半透明装饰填充。
 
 **Tableau 10（需 >6 色区分度时）**
 
@@ -396,7 +396,7 @@ setup_style(palette='colorblind')
 
 | 无障碍要求 | colorblind |
 
-| SCI 顶刊投稿 / 低饱和高级感 | journal |
+| 论文印刷 / 低饱和克制表达 | journal |
 
 **⛔ 已移除的土色配色**：jama（深灰绿+土灰）、lancet（深海蓝+暗红）、aaas（深紫+纯红+近黑）、morandi（灰调脏色）已从可选列表中移除。若旧代码使用这些名称，`setup_style()` 会自动回退到 Journal。
 
@@ -428,7 +428,7 @@ plt.rcParams.update({
 
 ```
 
-## 让图形与表格更高级的技巧
+## 提高图形信息效率的技巧
 
 ### 1. 去掉顶部和右侧边框（已在 plot_utils 中默认）
 
@@ -660,7 +660,7 @@ TikZ 画出来丑的根本缘由：没有颜色分层、没有分阶段色块、
 
 1. **分阶段着色**：各个研究阶段用不同的背景色块（浅色填充 + 深色边框），一眼看出层次
 
-2. **圆角矩形**：全部节点用 `rounded corners=4pt`，避免直角方框
+2. **直角矩形**：全部矩形节点使用直角方框，不设置 `rounded corners`；菱形、圆形、六边形、圆柱等其他形状保持原有语义
 
 3. **箭头统一**：用 `-{Stealth[length=6pt]}`，粗细 `line width=0.8pt`
 
@@ -668,7 +668,7 @@ TikZ 画出来丑的根本缘由：没有颜色分层、没有分阶段色块、
 
 5. **字体统一**：节点内文字用 `\small` 或 `\footnotesize`，避免太大
 
-6. **阴影可选**：`drop shadow` 增加层次感，但避免过度
+6. **禁止装饰阴影**：流程图节点不使用 `drop shadow`，层次通过位置、边框粗细和少量强调色表达
 
 ### 模板 1/2/3：已废弃（被模板 4/9/10/11 替代）
 
@@ -682,7 +682,7 @@ TikZ 画出来丑的根本缘由：没有颜色分层、没有分阶段色块、
 
 ### 模板 4：通用研究技术路线图（全部论文类别通用）
 
-白底 + 浅灰虚线框分阶段 + 蓝色主节点（微阴影）+ 白色子节点 + 蓝色粗箭头。简洁专业，适合全部论文类别。不依赖 `backgrounds` 和 `fit` 库。
+白底 + 浅灰分组 + 直角主节点 + 白色子节点 + 深灰箭头。仅对关键节点使用一个低饱和强调色，不依赖阴影制造层次。
 
 **完整代码**：
 
@@ -700,9 +700,7 @@ TikZ 画出来丑的根本缘由：没有颜色分层、没有分阶段色块、
 
 \begin{tikzpicture}[scale=1.0,
 
-    main/.style={rectangle, rounded corners=3pt,
-
-        minimum width=5.5cm, minimum height=0.7cm,
+    main/.style={rectangle, minimum width=5.5cm, minimum height=0.7cm,
 
         draw=blue!80, line width=0.7pt, fill=blue!6,
 
@@ -710,17 +708,13 @@ TikZ 画出来丑的根本缘由：没有颜色分层、没有分阶段色块、
 
         drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}},
 
-    sub/.style={rectangle, rounded corners=2pt,
-
-        minimum width=2.4cm, minimum height=0.6cm,
+    sub/.style={rectangle, minimum width=2.4cm, minimum height=0.6cm,
 
         draw=teal!70, line width=0.5pt, fill=white,
 
         font=\footnotesize, align=center},
 
-    dashbox/.style={rectangle, rounded corners=4pt,
-
-        draw=gray!40, dashed, line width=0.7pt, fill=gray!2},
+    dashbox/.style={rectangle, draw=gray!40, dashed, line width=0.7pt, fill=gray!2},
 
     bigarrow/.style={-stealth, line width=1.4pt, color=blue!70},
 
@@ -898,13 +892,13 @@ bigarrow: color={rgb,255:red,140;green,120;blue,100}
 
 | 人文/历史/法学/哲学 | E（暖灰+赭石） |
 
-All schemes share the same structural rules: white background, dashed boxes, rounded corners, draw-order layering. Exclusively the fill/draw colors differ.
+All schemes share the same structural rules: white background, straight-corner rectangles, restrained grouping, and clear draw order. Color changes must carry meaning rather than decoration.
 
 </tikz_color_schemes>
 
 ```latex
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 
 \centering
 
@@ -912,17 +906,13 @@ All schemes share the same structural rules: white background, dashed boxes, rou
 
     main/.style={fill={rgb,255:red,200;green,218;blue,235},
 
-        draw={rgb,255:red,140;green,170;blue,200}, rounded corners=3pt,
-
-        minimum width=4.5cm, minimum height=0.6cm, align=center,
+        draw={rgb,255:red,140;green,170;blue,200}, minimum width=4.5cm, minimum height=0.6cm, align=center,
 
         font=\small, line width=0.4pt},
 
     sub/.style={fill={rgb,255:red,218;green,232;blue,220},
 
-        draw={rgb,255:red,165;green,200;blue,175}, rounded corners=2pt,
-
-        minimum width=2cm, minimum height=0.5cm, align=center,
+        draw={rgb,255:red,165;green,200;blue,175}, minimum width=2cm, minimum height=0.5cm, align=center,
 
         font=\footnotesize, line width=0.3pt},
 
@@ -934,9 +924,7 @@ All schemes share the same structural rules: white background, dashed boxes, rou
 
     lbl/.style={font=\small\bfseries, color=black},
 
-    dashbox/.style={draw=gray!40, dashed, rounded corners=4pt,
-
-        fill={rgb,255:red,248;green,249;blue,250}},
+    dashbox/.style={draw=gray!40, dashed, fill={rgb,255:red,248;green,249;blue,250}},
 
 ]
 
@@ -1282,7 +1270,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
 | 用了 `on background layer` 导致黑底 | 用绘制顺序控制层级 |
 
-| 直角方框 | `rounded corners=3pt` |
+| 圆角方框 | 删除 `rounded corners`，使用直角矩形 |
 
 | 箭头太细看不清 | 阶段间用 `bigarrow`（1.8pt） |
 
@@ -1302,7 +1290,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
 ```latex
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 
 \centering
 
@@ -1316,21 +1304,17 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
     method/.style={fill={rgb,255:red,#1}, draw={rgb,255:red,#2},
 
-        rounded corners=4pt, minimum width=3.4cm, minimum height=0.85cm,
+        minimum width=3.4cm, minimum height=0.85cm,
 
         align=center, font=\small, line width=0.5pt},
 
     tool/.style={fill={rgb,255:red,248;green,248;blue,248},
 
-        draw={rgb,255:red,210;green,210;blue,210}, rounded corners=2pt,
-
-        minimum width=1.8cm, minimum height=0.5cm, align=center,
+        draw={rgb,255:red,210;green,210;blue,210}, minimum width=1.8cm, minimum height=0.5cm, align=center,
 
         font=\scriptsize, line width=0.3pt},
 
-    outputtag/.style={fill={rgb,255:red,#1}, rounded corners=10pt,
-
-        minimum width=1.6cm, minimum height=0.4cm, align=center,
+    outputtag/.style={fill={rgb,255:red,#1}, minimum width=1.6cm, minimum height=0.4cm, align=center,
 
         font=\tiny\bfseries, text=white, inner sep=2pt},
 
@@ -1340,7 +1324,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
     inner/.style={-{Stealth[length=3pt]}, line width=0.4pt, color=gray!45},
 
-    card/.style={fill={rgb,255:red,#1}, rounded corners=6pt, line width=0pt},
+    card/.style={fill={rgb,255:red,#1}, line width=0pt},
 
 ]
 
@@ -1446,7 +1430,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
 ```latex
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 
 \centering
 
@@ -1454,9 +1438,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
     node distance=0.8cm,
 
-    procedure/.style={fill=blue!10, draw=blue!50, rounded corners=4pt,
-
-        minimum width=3.5cm, minimum height=0.8cm, align=center,
+    procedure/.style={fill=blue!10, draw=blue!50, minimum width=3.5cm, minimum height=0.8cm, align=center,
 
         font=\small, line width=0.6pt},
 
@@ -1466,9 +1448,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
         inner sep=1pt},
 
-    io/.style={fill=gray!8, draw=gray!50, rounded corners=3pt,
-
-        minimum width=3cm, minimum height=0.7cm, align=center, font=\small},
+    io/.style={fill=gray!8, draw=gray!50, minimum width=3cm, minimum height=0.7cm, align=center, font=\small},
 
     arrow/.style={-{Stealth[length=5pt]}, line width=0.7pt, color=gray!70},
 
@@ -1514,7 +1494,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
 ```latex
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 
 \centering
 
@@ -1522,9 +1502,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
     node distance=0.3cm,
 
-    stage/.style={fill=#1!12, draw=#1!50, rounded corners=5pt,
-
-        minimum width=2.2cm, minimum height=2.2cm, align=center,
+    stage/.style={fill=#1!12, draw=#1!50, minimum width=2.2cm, minimum height=2.2cm, align=center,
 
         font=\small, line width=0.6pt},
 
@@ -1580,7 +1558,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
 ```latex
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 
 \centering
 
@@ -1588,9 +1566,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
     node distance=2cm and 3cm,
 
-    var/.style={fill=#1!12, draw=#1!50, rounded corners=5pt,
-
-        minimum width=3cm, minimum height=1cm, align=center,
+    var/.style={fill=#1!12, draw=#1!50, minimum width=3cm, minimum height=1cm, align=center,
 
         font=\small, line width=0.7pt},
 
@@ -1612,9 +1588,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
 \draw[arrow, color=red!60] (m) -- node[coef, above right] {$b$ (H2)} (y);
 
-\node[fill=gray!8, draw=gray!40, rounded corners=3pt,
-
-    minimum width=2.5cm, minimum height=0.7cm, align=center,
+\node[fill=gray!8, draw=gray!40, minimum width=2.5cm, minimum height=0.7cm, align=center,
 
     font=\footnotesize, below=1.5cm of y] (ctrl) {控制变量\\企业规模/行业/年份};
 
@@ -1636,7 +1610,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
 ```latex
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 
 \centering
 
@@ -1644,15 +1618,11 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
     node distance=0.7cm and 1.2cm,
 
-    step/.style={fill=#1!10, draw=#1!45, rounded corners=4pt,
-
-        minimum width=3.5cm, minimum height=0.75cm, align=center,
+    step/.style={fill=#1!10, draw=#1!45, minimum width=3.5cm, minimum height=0.75cm, align=center,
 
         font=\small, line width=0.5pt},
 
-    substep/.style={fill=gray!6, draw=gray!35, rounded corners=3pt,
-
-        minimum width=2.6cm, minimum height=0.6cm, align=center,
+    substep/.style={fill=gray!6, draw=gray!35, minimum width=2.6cm, minimum height=0.6cm, align=center,
 
         font=\footnotesize, line width=0.4pt},
 
@@ -1666,9 +1636,7 @@ next_stage_main_y = bigarrow_end_y - 0.5
 
     yesno/.style={font=\tiny, color=gray!50},
 
-    phaselabel/.style={font=\tiny\bfseries, color=#1!50, rounded corners=2pt,
-
-        fill=#1!6, inner sep=2pt},
+    phaselabel/.style={font=\tiny\bfseries, color=#1!50, fill=#1!6, inner sep=2pt},
 
 ]
 
@@ -1777,4 +1745,3 @@ next_stage_main_y = bigarrow_end_y - 0.5
 % 反馈：-{Stealth[length=4pt]}, line width=0.5pt, dashed, color=red!40
 
 ```
-

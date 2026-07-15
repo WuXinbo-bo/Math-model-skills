@@ -563,6 +563,10 @@ Verify items:
 
 6. **No undefined references/citations**
 
+“Code appendix exists”不得只检查标题或“代码/程序”关键词。必须读取 `程序/code_manifest.json`，逐项核验源码存在、SHA-256 未陈旧、`required_in_appendix=true` 的文件均有 `CODE_FILE` 标记和真实 `\lstinputlisting`/代码块。CUMCM 要求全部完整可运行源程序；其他赛制按 Profile 核验核心实现。
+
+CUMCM 页数必须读取编译后的 `AbstractStart/AbstractEnd` 与 `BodyStart/BodyEnd` 标签：摘要不超过 1 页，正文不超过 30 页，附录页数单独报告且不计入正文。模板含目录、标签缺失或仅用字符数估算时直接失败。
+
 <page_diagnosis>
 
 #### 正文充分性诊断（与页数上限分开）

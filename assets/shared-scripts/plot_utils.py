@@ -705,13 +705,13 @@ def _guard_subplot_size(fig):
 
     """防护：检测子图是否被压缩得过小，如果是则强制修复布局。
 
-    
+
 
     常见原因：SciencePlots 的 subplot margins 过紧、tight_layout(pad) 过大、
 
     ax.text(transAxes) 标签被算入空间分配。
 
-    
+
 
     强制修复策略：检测到问题 → 重置 margins → 重新 tight_layout(pad=0.3) → 再验证。
 
@@ -723,7 +723,7 @@ def _guard_subplot_size(fig):
 
         return
 
-    
+
 
     fig_w, fig_h = fig.get_size_inches()
 
@@ -731,7 +731,7 @@ def _guard_subplot_size(fig):
 
         return
 
-    
+
 
     def _is_too_small():
 
@@ -765,13 +765,13 @@ def _guard_subplot_size(fig):
 
         return False
 
-    
+
 
     if not _is_too_small():
 
         return
 
-    
+
 
     # ★ 强制修复第一步：重置 subplot margins
 
@@ -787,7 +787,7 @@ def _guard_subplot_size(fig):
 
                             hspace=0.3, wspace=0.3)
 
-    
+
 
     # ★ 强制修复第二步：用小 pad 重新 tight_layout 覆盖之前的大 pad
 
@@ -799,7 +799,7 @@ def _guard_subplot_size(fig):
 
         pass
 
-    
+
 
     # ★ 强制修复第三步：如果还是太小，直接放弃 tight_layout，手动设置合理布局
 
@@ -1457,7 +1457,7 @@ def smart_labels(ax, xs, ys, texts, colors=None, fontsize=9, fontweight='normal'
 
         avoid_self: 是否避免标签之间重叠
 
-        bbox: 标签背景框样式 dict（如 dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.7)）
+        bbox: 标签背景框样式 dict（如 dict(boxstyle='square,pad=0.2', facecolor='white', alpha=0.7)）
 
         arrowprops: 箭头样式 dict（如 dict(arrowstyle='->', color='gray', lw=0.5)）
 
@@ -1837,7 +1837,7 @@ def heatmap(data, labels=None, output='图表/fig_heatmap.pdf', title=None,
 
     """相关性热力图（带数值标注）。
 
-    
+
 
     Args:
 
@@ -1945,7 +1945,7 @@ def forest_plot(coefs, ci_lower, ci_upper, labels, output='图表/fig_forest.pdf
 
     """回归系数森林图（带置信区间）。
 
-    
+
 
     Args:
 
@@ -2009,7 +2009,7 @@ def trend_plot(x, y, output='图表/fig_trend.pdf', ci=None,
 
     """时间趋势图（可选置信带）。
 
-    
+
 
     Args:
 
@@ -2059,7 +2059,7 @@ def bar_compare(categories, values_dict, output='图表/fig_bar.pdf',
 
     """分组柱状图（带误差棒，多组对比）。
 
-    
+
 
     Args:
 

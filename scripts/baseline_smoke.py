@@ -282,6 +282,7 @@ def make_s3(workspace: Path) -> None:
     )
     write_text(workspace / "图表" / "全部结果.json", json.dumps([{"problem": i, "value": i * 10} for i in range(1, 4)], ensure_ascii=False, indent=2))
     write_text(workspace / "依赖清单.txt", "numpy\npandas\nmatplotlib\n")
+    run(str(workspace / "工具" / "build_code_appendix.py"), "--workspace", str(workspace), "--manifest-only")
 
 
 def make_s4(workspace: Path) -> None:
@@ -300,6 +301,26 @@ def make_s4(workspace: Path) -> None:
         + "\n"
     )
     write_text(workspace / "图表" / "图表引用.tex", latex)
+    write_text(
+        workspace / "图表" / "figure_manifest.json",
+        json.dumps(
+            {
+                "version": 1,
+                "figures": [
+                    {
+                        "path": "图表/结果总览图.pdf",
+                        "claim": "三个子问题的核心结果均满足可行性约束",
+                        "source": "图表/全部结果.json",
+                        "reader_task": "比较三个子问题结果",
+                        "publish": True,
+                        "placement": "body",
+                    }
+                ],
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+    )
 
 
 def make_s5(workspace: Path) -> None:
@@ -351,27 +372,48 @@ def make_s6(workspace: Path) -> None:
             \usepackage{float}
             \begin{document}
             \section*{摘要}
+            \label{AbstractStart}
             本文针对三个子问题展开建模、求解与分析，并在结果部分给出明确的数值结论。
             \noindent\textbf{关键词：} 多阶段优化；综合评价；鲁棒性分析
+            \label{AbstractEnd}
+            \label{BodyStart}
             \input{章节/1_问题重述.tex}
             \input{章节/2_模型构建.tex}
             \input{章节/3_结果分析.tex}
             \begin{thebibliography}{9}
             \bibitem{ref1} Example Reference
             \end{thebibliography}
+            \label{BodyEnd}
             \appendix
-            附录：代码说明。
+            \input{章节/A_code.tex}
             \end{document}
             """
         ).strip()
         + "\n结果总览图.pdf\n技术路线图.pdf\n"
         + padding,
     )
+    run(
+        str(workspace / "工具" / "build_code_appendix.py"),
+        "--workspace",
+        str(workspace),
+        "--format",
+        "latex",
+        "--output",
+        "论文/章节/A_code.tex",
+    )
 
 
 def make_s7(workspace: Path) -> None:
     pdf = workspace / "论文" / "数模论文.pdf"
-    pdf.write_bytes((b"%PDF-1.4\n% fake compiled pdf\n" + (b"x" * 25000)))
+    page_objects = b"\n".join(b"<< /Type /Page >>" for _ in range(8))
+    pdf.write_bytes(b"%PDF-1.4\n" + page_objects + b"\n% smoke padding\n" + b"x" * 25000)
+    write_text(
+        workspace / "论文" / "论文正文.aux",
+        "\\newlabel{AbstractStart}{{}{1}}\n"
+        "\\newlabel{AbstractEnd}{{}{1}}\n"
+        "\\newlabel{BodyStart}{{}{2}}\n"
+        "\\newlabel{BodyEnd}{{}{7}}\n",
+    )
     write_text(
         workspace / "论文" / "编译日志.log",
         "This is XeTeX, Version mock\nCompilation successful\nUndefined references: 0\nUndefined citations: 0\n",

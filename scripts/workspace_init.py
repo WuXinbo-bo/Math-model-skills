@@ -35,6 +35,7 @@ def main() -> int:
     ensure_workspace_dirs(workspace)
     copy_tree(SKILL_ROOT / "assets" / "shared-scripts", workspace / "工具")
     shutil.copy2(SKILL_ROOT / "scripts" / "docx_export.py", workspace / "工具" / "docx_export.py")
+    shutil.copy2(SKILL_ROOT / "scripts" / "build_code_appendix.py", workspace / "工具" / "build_code_appendix.py")
     profile = competition_profile(args.competition)
     template_source = SKILL_ROOT / "assets" / "templates" / "manuscript-synthesis" / profile["template_dir"]
     copy_tree(template_source, workspace / "模板" / "当前竞赛")

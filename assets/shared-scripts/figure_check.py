@@ -150,9 +150,9 @@ def check_figure_script(filepath: str) -> list:
 
 
 
-    # 10. 高级样式检测 — 检查是否使用了配方级别的视觉增强
+    # 10. 信息优先检查：不再用渐变、圆角标注框和多层叠加数量作为质量得分。
 
-    style_score = 0
+    style_score = 0  # legacy variable retained for compatibility; no longer used as a pass threshold
 
     style_missing = []
 
@@ -182,7 +182,7 @@ def check_figure_script(filepath: str) -> list:
 
         if "annotate" in code or "ax.text(" in code:
 
-            style_missing.append("标注文字缺少 bbox 背景框 — 配方用 bbox=dict(boxstyle='round,pad=0.3', facecolor='white', ...)")
+            style_missing.append("标注文字缺少 bbox 背景框 — 配方用 bbox=dict(boxstyle='square,pad=0.3', facecolor='white', ...)")
 
 
 
@@ -324,21 +324,27 @@ def check_figure_script(filepath: str) -> list:
 
             f"视觉层次偏少（{layers} 层: {', '.join(layer_details) if layer_details else '无'}）"
 
-            f"— 高级配方通常有 3+ 层叠加（如散点+等高线+填充+标注）"
+            f"— 仅在额外图层编码数据、区间或基准时才允许叠加"
 
         )
 
 
 
-    # 评分：8 项满分，低于 3 分警告
+    # 不因图形朴素而判失败；改为拒绝装饰性 AI 风格和无必要复杂度。
+    rounded_boxes = len(re.findall(r"boxstyle\s*=\s*['\"]round", code, flags=re.IGNORECASE))
+    if rounded_boxes:
+        issues.append(f"检测到 {rounded_boxes} 个圆角标注框 — 默认改用无边框文字或直角框")
 
-    if style_score < 3 and not is_3d:
+    decorative_tokens = [
+        token for token in ("SimplePatchShadow", "patheffects", "set_path_effects", "shadow=True")
+        if token.lower() in code.lower()
+    ]
+    if decorative_tokens:
+        issues.append(f"检测到装饰性效果 {decorative_tokens} — 禁止用阴影或路径特效制造高级感")
 
-        issues.append(f"视觉质量偏低（得分 {style_score}/8）— 缺少配方级别的视觉增强:")
-
-        for m in style_missing[:3]:  # 最多报 3 条
-
-            issues.append(f"  → {m}")
+    annotation_count = len(re.findall(r"(?:annotate|\.text)\(", code))
+    if annotation_count > 8 and "smart_labels" not in code:
+        issues.append(f"标注数量过多（{annotation_count}）— 只保留支持核心结论的标注")
 
 
 
@@ -391,4 +397,3 @@ def main():
 if __name__ == "__main__":
 
     main()
-

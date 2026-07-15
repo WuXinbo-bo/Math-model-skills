@@ -74,7 +74,7 @@ for j, (bar, score, drop) in enumerate(zip(bars, scores, drops)):
 
                     fontsize=8, ha='center', va='top', color='white', fontweight='bold',
 
-                    bbox=dict(boxstyle='round,pad=0.15', facecolor=COLORS['down'],
+                    bbox=dict(boxstyle='square,pad=0.15', facecolor=COLORS['down'],
 
                               alpha=0.7, edgecolor='none'))
 
@@ -112,7 +112,7 @@ ax.text(0.98, 0.05, f'Total drop: {scores[0] - scores[-1]:.1f}',
 
         ha='right', va='bottom', style='italic',
 
-        bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+        bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                   edgecolor=COLORS['grid'], alpha=0.9))
 
@@ -220,7 +220,7 @@ ax1.annotate(f'Best: epoch {best_epoch}\nloss={val_loss[best_epoch - 1]:.3f}',
 
              arrowprops=dict(arrowstyle='->', color=COLORS['down'], lw=1.2),
 
-             bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+             bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                        edgecolor=COLORS['down'], alpha=0.9))
 
@@ -400,7 +400,7 @@ for i, cls in enumerate(classes):
 
                 ha='center', va='center',
 
-                bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+                bbox=dict(boxstyle='square,pad=0.4', facecolor='white',
 
                           edgecolor=PALETTE[i], alpha=0.9, linewidth=1))
 
@@ -800,7 +800,7 @@ for idx, (name, (x_vals, y_mean, y_min, y_max)) in enumerate(params.items()):
 
                 ha='center', color=PALETTE[idx],
 
-                bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+                bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                           edgecolor=PALETTE[idx], alpha=0.9, linewidth=0.5))
 
@@ -938,7 +938,7 @@ def add_bracket(ax, x1, x2, y, p_val, d_val, h=1.5):
 
             ha='center', va='bottom', fontsize=7, color=COLORS['text'],
 
-            bbox=dict(boxstyle='round,pad=0.2', facecolor=COLORS['bg_box'],
+            bbox=dict(boxstyle='square,pad=0.2', facecolor=COLORS['bg_box'],
 
                       edgecolor=COLORS['grid'], alpha=0.9, linewidth=0.3))
 
@@ -1352,7 +1352,7 @@ for i, (name, vals) in enumerate(methods.items()):
 
                     color=PALETTE[i], fontweight='bold',
 
-                    bbox=dict(boxstyle='round,pad=0.15', facecolor='white',
+                    bbox=dict(boxstyle='square,pad=0.15', facecolor='white',
 
                               edgecolor=PALETTE[i], alpha=0.85, linewidth=0.4))
 
@@ -1370,7 +1370,7 @@ ax.text(0, 0, f'Area ratio\nvs Ours:\n' + '\n'.join(ratios),
 
         transform=ax.transData,
 
-        bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+        bbox=dict(boxstyle='square,pad=0.4', facecolor='white',
 
                   edgecolor=COLORS['grid'], alpha=0.9))
 

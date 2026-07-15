@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from gate_contracts import body_density_contract, latex_figure_contract_issues  # noqa: E402
+from gate_contracts import body_density_contract, latex_figure_contract_issues, page_policy_measure  # noqa: E402
 
 
 def write_state(workspace: Path, competition: str = "cumcm") -> None:
@@ -37,6 +37,25 @@ def main() -> int:
     units, body_issues = body_density_contract(good)
     assert units >= 3500 and not body_issues, (units, body_issues)
     assert not latex_figure_contract_issues(good)
+    (good / "论文" / "论文正文.aux").write_text(
+        "\\newlabel{AbstractStart}{{}{1}}\n"
+        "\\newlabel{AbstractEnd}{{}{1}}\n"
+        "\\newlabel{BodyStart}{{}{2}}\n"
+        "\\newlabel{BodyEnd}{{}{31}}\n",
+        encoding="utf-8",
+    )
+    measurement, page_issues = page_policy_measure(good, 44)
+    assert measurement["counted_pages"] == 30 and not page_issues, (measurement, page_issues)
+
+    (good / "论文" / "论文正文.aux").write_text(
+        "\\newlabel{AbstractStart}{{}{1}}\n"
+        "\\newlabel{AbstractEnd}{{}{1}}\n"
+        "\\newlabel{BodyStart}{{}{2}}\n"
+        "\\newlabel{BodyEnd}{{}{32}}\n",
+        encoding="utf-8",
+    )
+    _, over_limit = page_policy_measure(good, 45)
+    assert any("exceed limit" in item for item in over_limit), over_limit
 
     bad_figure = base / "bad_figure"
     shutil.copytree(good, bad_figure)
@@ -55,7 +74,7 @@ def main() -> int:
     (thin_dir / "problem1.tex").write_text("model result validation interpretation", encoding="utf-8")
     thin_units, thin_issues = body_density_contract(thin)
     assert thin_units < 3500 and thin_issues
-    print(json.dumps({"good_units": units, "bad_figure_issues": figure_issues, "thin_units": thin_units, "thin_issues": thin_issues}, ensure_ascii=False, indent=2))
+    print(json.dumps({"good_units": units, "page_measurement": measurement, "page_over_limit": over_limit, "bad_figure_issues": figure_issues, "thin_units": thin_units, "thin_issues": thin_issues}, ensure_ascii=False, indent=2))
     return 0
 
 

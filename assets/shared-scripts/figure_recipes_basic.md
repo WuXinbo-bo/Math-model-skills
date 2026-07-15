@@ -94,7 +94,7 @@ for i, (name, vals) in enumerate(groups.items()):
 
                 color=PALETTE[i] if is_best else COLORS['text'],
 
-                bbox=dict(boxstyle='round,pad=0.1', facecolor='white', edgecolor='none', alpha=0.7) if is_best else {})
+                bbox=dict(boxstyle='square,pad=0.1', facecolor='white', edgecolor='none', alpha=0.7) if is_best else {})
 
 # 水平参考线：全局均值
 
@@ -106,7 +106,7 @@ ax.text(len(categories) - 0.3, global_mean + 0.5, f'均值 {global_mean:.1f}',
 
         fontsize=8, color=COLORS['ref_line'], ha='right', style='italic',
 
-        bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='none', alpha=0.8))
+        bbox=dict(boxstyle='square,pad=0.2', facecolor='white', edgecolor='none', alpha=0.8))
 
 ax.set_xticks(x)
 
@@ -250,7 +250,7 @@ for i, (name, vals) in enumerate(components.items()):
 
                 fontsize=7, color=color, fontweight='bold', va='center',
 
-                bbox=dict(boxstyle='round,pad=0.15', facecolor='white',
+                bbox=dict(boxstyle='square,pad=0.15', facecolor='white',
 
                           edgecolor=color, alpha=0.8, linewidth=0.5))
 
@@ -374,7 +374,7 @@ for i, (name, y) in enumerate(series.items()):
 
                     arrowprops=dict(arrowstyle='->', color=PALETTE[i], lw=1.2),
 
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+                    bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                               edgecolor=PALETTE[i], alpha=0.9))
 
@@ -506,7 +506,7 @@ ax_main.text(0.05, 0.92, f'R² = {r2:.3f}\ny = {z[0]:.2f}x + {z[1]:.2f}\nn = {n}
 
              transform=ax_main.transAxes, fontsize=9, verticalalignment='top',
 
-             bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+             bbox=dict(boxstyle='square,pad=0.4', facecolor='white',
 
                        edgecolor=PALETTE[0], alpha=0.9, linewidth=0.8))
 
@@ -816,7 +816,7 @@ for i, (wedge, label, size, prev) in enumerate(zip(wedges, labels, sizes, prev_s
 
             fontweight='bold',
 
-            bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                       edgecolor=PALETTE[i], alpha=0.8, linewidth=0.5))
 
@@ -946,7 +946,7 @@ for i, (name, d) in enumerate(zip(groups, data)):
 
             ha='right', va='center', fontweight='bold',
 
-            bbox=dict(boxstyle='round,pad=0.15', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.15', facecolor='white',
 
                       edgecolor='none', alpha=0.7))
 
@@ -1048,7 +1048,7 @@ for year, event in events.items():
 
             rotation=90, va='top', ha='left',
 
-            bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                       edgecolor=COLORS['ref_line'], alpha=0.8, linewidth=0.5))
 
@@ -1064,7 +1064,7 @@ for i, (name, vals) in enumerate(data.items()):
 
             fontsize=8, color=PALETTE[i], fontweight='bold', va='center',
 
-            bbox=dict(boxstyle='round,pad=0.15', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.15', facecolor='white',
 
                       edgecolor=PALETTE[i], alpha=0.8, linewidth=0.5))
 
@@ -1184,7 +1184,7 @@ ax2.text(len(items) - 0.5, 81, '80%', fontsize=9, color=COLORS['down'],
 
          fontweight='bold', ha='right',
 
-         bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+         bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                    edgecolor=COLORS['down'], alpha=0.8))
 
@@ -1196,7 +1196,7 @@ ax1.text(threshold_idx / 2, max(values) * 0.9, '关键少数 (80%)',
 
          ha='center', fontsize=9, color=PALETTE[0], style='italic',
 
-         bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+         bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                    edgecolor=PALETTE[0], alpha=0.8))
 
@@ -1310,7 +1310,7 @@ ax2.annotate(f'峰值 {line_data[peak_idx]:.1f}%',
 
              arrowprops=dict(arrowstyle='->', color=PALETTE[1], lw=1.2),
 
-             bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+             bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                        edgecolor=PALETTE[1], alpha=0.9))
 
@@ -1322,7 +1322,7 @@ ax1.text(0.02, 0.95, f'r = {corr:.3f}',
 
          transform=ax1.transAxes, fontsize=9, va='top',
 
-         bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+         bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                    edgecolor=COLORS['grid'], alpha=0.9, linewidth=0.8))
 
@@ -1442,7 +1442,7 @@ for i, d in enumerate(data):
 
             va='center', fontweight='bold',
 
-            bbox=dict(boxstyle='round,pad=0.1', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.1', facecolor='white',
 
                       edgecolor='none', alpha=0.7))
 
@@ -1458,7 +1458,7 @@ def add_significance(ax, x1, x2, y, p_val, h=2):
 
             ha='center', va='bottom', fontsize=7, color=COLORS['text'],
 
-            bbox=dict(boxstyle='round,pad=0.15', facecolor=COLORS['bg_box'],
+            bbox=dict(boxstyle='square,pad=0.15', facecolor=COLORS['bg_box'],
 
                       edgecolor=COLORS['grid'], alpha=0.9, linewidth=0.3))
 

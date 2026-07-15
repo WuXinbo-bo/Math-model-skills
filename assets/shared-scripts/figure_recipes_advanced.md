@@ -10,7 +10,7 @@ subtle grids (alpha=0.15), and minimal decoration. Titles are handled by LaTeX c
 
 > **标题规范**: 所有配方不使用 `set_title()`，而由 LaTeX `\caption{}` 处理。
 
-> **格式标准**: 统一去掉 top/right spines；标注框统一用 `bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor=..., alpha=0.9)`。
+> **格式标准**: 统一去掉 top/right spines；标注框统一用 `bbox=dict(boxstyle='square,pad=0.3', facecolor='white', edgecolor=..., alpha=0.9)`。
 
 > **曲线原则**: 不采用多段拟合模拟（n_seg=30/40/50/60/80），而用简单的 `plot()`/`hlines()`/`fill_between()`。
 
@@ -178,7 +178,7 @@ ax.text(median_val, -0.9, f'中位数 {median_val:.3f}',
 
         fontsize=8, color=COLORS['ref_line'], ha='center', va='bottom',
 
-        bbox=dict(boxstyle='round,pad=0.25', facecolor='white',
+        bbox=dict(boxstyle='square,pad=0.25', facecolor='white',
 
                   edgecolor=COLORS['ref_line'], alpha=0.85))
 
@@ -432,7 +432,7 @@ for i, m in enumerate(methods):
 
                 ha='left', va='center', fontsize=8, color=rank_color,
 
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor=rank_color, alpha=0.9))
+                bbox=dict(boxstyle='square,pad=0.3', facecolor='white', edgecolor=rank_color, alpha=0.9))
 
     else:
 
@@ -562,7 +562,7 @@ ax.annotate('★ Ours: Rank #1 in 3/4 datasets',
 
             arrowprops=dict(arrowstyle='->', color=PALETTE[0], lw=1.2),
 
-            bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                       edgecolor=PALETTE[0], alpha=0.9))
 
@@ -832,7 +832,7 @@ for i in range(n):
 
             color=c,
 
-            bbox=dict(boxstyle='round,pad=0.15', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.15', facecolor='white',
 
                       edgecolor=c if (i == 0 or i == n-1) else 'none',
 
@@ -846,7 +846,7 @@ ax.text(0.97, 0.95, f'Total: +{total_delta:.2f} (+{total_delta/deltas[0]*100:.1f
 
         fontweight='bold', color=COLORS['up'],
 
-        bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+        bbox=dict(boxstyle='square,pad=0.4', facecolor='white',
 
                   edgecolor=COLORS['up'], alpha=0.9, linewidth=1.0), zorder=15)
 
@@ -1136,7 +1136,7 @@ for idx in outliers:
 
                 arrowprops=dict(arrowstyle='->', color=COLORS['down'], lw=0.8),
 
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+                bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                           edgecolor=COLORS['down'], alpha=0.9))
 
@@ -1288,7 +1288,7 @@ if med_treat is not None:
 
                 arrowprops=dict(arrowstyle='->', color=PALETTE[0], lw=0.8),
 
-                bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8))
+                bbox=dict(boxstyle='square,pad=0.2', facecolor='white', alpha=0.8))
 
 if med_ctrl is not None:
 
@@ -1306,7 +1306,7 @@ if med_ctrl is not None:
 
                 arrowprops=dict(arrowstyle='->', color=PALETTE[3], lw=0.8),
 
-                bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8))
+                bbox=dict(boxstyle='square,pad=0.2', facecolor='white', alpha=0.8))
 
 # Log-rank p-value annotation
 
@@ -1316,7 +1316,7 @@ ax.annotate('Log-rank p = 0.003',
 
             fontsize=9, fontweight='bold',
 
-            bbox=dict(boxstyle='round,pad=0.4', facecolor=_lighten(PALETTE[0], 0.7),
+            bbox=dict(boxstyle='square,pad=0.4', facecolor=_lighten(PALETTE[0], 0.7),
 
                       edgecolor=PALETTE[0], alpha=0.9))
 
@@ -1500,7 +1500,7 @@ if len(all_sig) > 0:
 
                     arrowprops=dict(arrowstyle='->', color=COLORS['text'], lw=0.7),
 
-                    bbox=dict(boxstyle='round,pad=0.15', facecolor='white',
+                    bbox=dict(boxstyle='square,pad=0.15', facecolor='white',
 
                               edgecolor=COLORS['neutral'], alpha=0.85))
 
@@ -1628,7 +1628,7 @@ ax_cal.annotate(f'Brier Score\nOurs: {brier_a:.3f}\nBaseline: {brier_b:.3f}',
 
                 fontsize=8.5, va='top',
 
-                bbox=dict(boxstyle='round,pad=0.4', facecolor=_lighten(PALETTE[0], 0.7),
+                bbox=dict(boxstyle='square,pad=0.4', facecolor=_lighten(PALETTE[0], 0.7),
 
                           edgecolor=PALETTE[0], alpha=0.9))
 
@@ -1766,7 +1766,7 @@ for i in range(n_studies):
 
                     arrowprops=dict(arrowstyle='->', color=COLORS['down'], lw=0.7),
 
-                    bbox=dict(boxstyle='round,pad=0.15', facecolor=COLORS['bg_box'],
+                    bbox=dict(boxstyle='square,pad=0.15', facecolor=COLORS['bg_box'],
 
                               edgecolor=COLORS['down'], alpha=0.7))
 
@@ -1778,7 +1778,7 @@ ax.annotate("Egger's test: t = 1.42, p = 0.167\nNo significant asymmetry",
 
             fontsize=8, va='bottom',
 
-            bbox=dict(boxstyle='round,pad=0.4', facecolor=_lighten(PALETTE[0], 0.7),
+            bbox=dict(boxstyle='square,pad=0.4', facecolor=_lighten(PALETTE[0], 0.7),
 
                       edgecolor=PALETTE[0], alpha=0.9))
 
@@ -2064,7 +2064,7 @@ ax_heat.text(0.98, 0.02, 'Silhouette = 0.42',
 
              transform=ax_heat.transAxes, fontsize=8, ha='right', va='bottom',
 
-             bbox=dict(boxstyle='round,pad=0.3', facecolor=_lighten(PALETTE[0], 0.7),
+             bbox=dict(boxstyle='square,pad=0.3', facecolor=_lighten(PALETTE[0], 0.7),
 
                        edgecolor=PALETTE[0], alpha=0.9))
 
@@ -2664,7 +2664,7 @@ smart_labels(ax, label_xs, label_ys, feature_names,
 
              offset=(5, 0),
 
-             bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+             bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                        edgecolor=PALETTE[0], alpha=0.8, linewidth=0.5),
 
@@ -2936,7 +2936,7 @@ for i, (bar, d) in enumerate(zip(bars, deltas)):
 
             fontsize=9, fontweight='bold', color=base_colors[i],
 
-            bbox=dict(boxstyle='round,pad=0.1', facecolor='white', edgecolor='none', alpha=0.7))
+            bbox=dict(boxstyle='square,pad=0.1', facecolor='white', edgecolor='none', alpha=0.7))
 
 # Highlight "Ours" row
 
@@ -3044,7 +3044,7 @@ for i in range(len(categories)):
 
             fontsize=7.5, fontweight='bold', color=COLORS['text'],
 
-            bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                       edgecolor=COLORS['grid'], alpha=0.9))
 
@@ -3148,7 +3148,7 @@ ax.text(0.5, (mean_before + mean_after) / 2 + 2,
 
         color=PALETTE[0],
 
-        bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+        bbox=dict(boxstyle='square,pad=0.3', facecolor='white',
 
                   edgecolor=PALETTE[0], alpha=0.9))
 

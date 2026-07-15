@@ -28,17 +28,19 @@
 
 ## COMPUTATION `computational-realization`
 
-- 务必有 `程序/主程序.py`、`计算结果.md`、`图表/全部结果.json`、`依赖清单.txt`
+- 务必有 `程序/主程序.py`、`计算结果.md`、`图表/全部结果.json`、`依赖清单.txt`、`程序/code_manifest.json`
 - `problem*.py` 和 `problem_*_结果.json` 数量不可少于子问题数
 - 不准许把 PDF 证据图谱构建职责偷跑到当前阶段
 - 务必为后续 `evidence-visualization` 留下结构化 JSON 结果
 - `计算结果.md` 务必逐问写明数值结果
 - `程序/主程序.py` 务必有聚合入口并写出 `全部结果.json`
+- `code_manifest.json` 务必登记当前源码哈希、入口和逐问程序，哈希不得陈旧
 - 有附件数据时务必给出 `程序/data_verify.py`
 
 ## EVIDENCE `evidence-visualization`
 
 - 务必有 `图表/图表引用.tex`
+- 务必有 `图表/figure_manifest.json`，正文图登记 `claim/source/reader_task/publish/placement`
 - 若出现 `图表/全部结果.json`，一般情况下应产出不少于一张 `fig_*.pdf/png`
 - 若 `论文规划.md` 清晰标明写无图形与表格，可用空 `图表引用.tex` 作为占位
 - 产物重点是数据图，不是 DrawIO / TikZ
@@ -60,7 +62,8 @@
 - 不准许保留模板占位符
 - 务必嵌入前序图形与表格与关键结果
 - 务必有摘要与结论性内容
-- `图表/` 下全部产出的 PDF/PNG 都务必在论文正文中被引用
+- `figure_manifest.json` 中 `publish=true` 的 PDF/PNG 务必在论文正文中被引用；诊断图、调试图和替代版本不得强制塞入正文
+- 务必有由 `build_code_appendix.py` 生成的真实代码清单；CUMCM 完整源码、其他赛制 Profile 要求的核心源码覆盖率必须为 100%
 - 务必有关键词、正文引用、参考文献条目，并满足上标引用风格
 - `图表引用.tex` / `TABLE_*.tex` 中的 label 若出现，务必在正文中真正落地
 
@@ -71,6 +74,7 @@
 - PDF 不应早于 `论文/论文正文.tex`；DOCX 报告必须对应当前 `论文/论文正文.md`
 - 若 `图表/全部结果.json` 更新过，PDF 不应明显陈旧
 - 匿名、页数、图形与表格嵌入、模板完整性是当前阶段重点
+- CUMCM 摘要按标签核验不超过 1 页，正文按 `BodyStart/BodyEnd` 核验不超过 30 页；附录不计入正文页数
 - 论文源文件中严禁残留明显的队号/队员/指导老师等匿名性破坏标记
 - 务必有 `论文/编译日志.log`，且不含明显的 undefined reference / citation、LaTeX 致命数学错误、Undefined control sequence
 - 编译后的论文源仍应保留正文引用和参考文献条目

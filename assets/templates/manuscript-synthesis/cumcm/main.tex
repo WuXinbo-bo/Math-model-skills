@@ -17,11 +17,13 @@
 \begin{document}
 \maketitle
 \begin{abstract}
+\label{AbstractStart}
 [中文摘要内容：问题概述、逐问方法、关键数值、验证结论和总体结论。]
 \keywords{[关键词1]\quad [关键词2]\quad [关键词3]\quad [关键词4]}
+\label{AbstractEnd}
 \end{abstract}
-\tableofcontents
-\clearpage
+% CUMCM 2026 格式规范要求正文不要目录。
+\label{BodyStart}
 \input{sections/1_restatement}
 \input{sections/2_analysis}
 \input{sections/3_assumptions}
@@ -34,6 +36,7 @@
 \begin{thebibliography}{99}
 % \bibitem{ref1} 作者. 标题[J]. 期刊, 年份.
 \end{thebibliography}
+\label{BodyEnd}
 \begin{appendices}
 \input{sections/A_code}
 \end{appendices}

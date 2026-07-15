@@ -152,6 +152,29 @@ def all_generated_figure_files(workspace: Path) -> list[Path]:
     return sorted(files)
 
 
+def figure_manifest(workspace: Path) -> dict[str, Any]:
+    path = workspace / "图表" / "figure_manifest.json"
+    if not path.exists():
+        return {}
+    try:
+        return load_json(path)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def published_figure_files(workspace: Path) -> list[Path]:
+    manifest = figure_manifest(workspace)
+    entries = manifest.get("figures", []) if isinstance(manifest, dict) else []
+    files: list[Path] = []
+    for item in entries:
+        if not item.get("publish", False):
+            continue
+        rel = str(item.get("path") or "")
+        if rel:
+            files.append(workspace / rel)
+    return files
+
+
 def has_user_data_files(workspace: Path) -> bool:
     user_dir = workspace / "用户数据"
     return user_dir.exists() and any(path.is_file() for path in user_dir.iterdir())
@@ -212,9 +235,18 @@ def pdf_page_count(pdf_path: Path) -> int | None:
 
 
 def latex_label_page(workspace: Path, label: str) -> int | None:
-    aux = read_text(workspace / "论文" / "论文正文.aux")
-    match = re.search(r"\\newlabel\{" + re.escape(label) + r"\}\{\{[^}]*\}\{(\d+)\}", aux)
-    return int(match.group(1)) if match else None
+    paper_dir = workspace / "论文"
+    candidates = [paper_dir / "论文正文.aux", paper_dir / "main.aux", *sorted(paper_dir.glob("*.aux"))]
+    seen: set[Path] = set()
+    for path in candidates:
+        if path in seen:
+            continue
+        seen.add(path)
+        aux = read_text(path)
+        match = re.search(r"\\newlabel\{" + re.escape(label) + r"\}\{\{[^}]*\}\{(\d+)\}", aux)
+        if match:
+            return int(match.group(1))
+    return None
 
 
 def anonymous_markers(text: str) -> list[str]:
@@ -350,6 +382,109 @@ def body_density_contract(workspace: Path) -> tuple[int, list[str]]:
     if not has_any(corpus, ["解释", "表明", "说明", "意味着", "interpret", "indicate", "imply", "discussion"]):
         issues.append("manuscript lacks result interpretation")
     return units, issues
+
+
+def code_appendix_contract_issues(workspace: Path, corpus: str) -> list[str]:
+    _, profile = active_profile(workspace)
+    policy = profile.get("code_appendix", {})
+    manifest_path = workspace / "程序" / "code_manifest.json"
+    if not manifest_path.exists():
+        return ["程序/code_manifest.json is missing"] if policy.get("require_manifest", True) else []
+    try:
+        manifest = load_json(manifest_path)
+    except (json.JSONDecodeError, OSError) as exc:
+        return [f"code manifest is unreadable: {exc}"]
+    issues: list[str] = []
+    files = manifest.get("files", [])
+    if manifest.get("no_program_declared"):
+        if not has_any(corpus, ["本论文没有用到程序", "no program was used", "No program was used"]):
+            issues.append("no-program manifest requires an explicit appendix declaration")
+        return issues
+    if not files:
+        return ["code manifest contains no source files"]
+    entrypoint = manifest.get("entrypoint")
+    if not entrypoint:
+        issues.append("code manifest has no entrypoint")
+    required_lines = 0
+    required_count = 0
+    for item in files:
+        rel = str(item.get("path") or "")
+        if not rel:
+            issues.append("code manifest contains an empty path")
+            continue
+        source = workspace / Path(rel)
+        if not source.exists():
+            issues.append(f"missing source file: {rel}")
+            continue
+        actual_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+        if item.get("sha256") != actual_hash:
+            issues.append(f"stale source hash: {rel}")
+        if item.get("required_in_appendix"):
+            required_count += 1
+            actual_lines = len(read_text(source).splitlines())
+            required_lines += actual_lines
+            normalized = rel.replace("\\", "/")
+            marker = f"CODE_FILE: {normalized}"
+            if marker not in corpus and normalized not in corpus and Path(normalized).name not in corpus:
+                issues.append(f"required code is not embedded in appendix: {normalized}")
+    if required_count == 0:
+        issues.append("code manifest selects no required appendix files")
+    minimum = int(policy.get("minimum_code_lines", 20))
+    if required_lines < minimum:
+        issues.append(f"embedded source lines {required_lines} < required {minimum}")
+    if not re.search(r"\\lstinputlisting|\\begin\{lstlisting\}|```(?:python|r|matlab|julia|cpp|c|java|sql|text)?", corpus, flags=re.IGNORECASE):
+        issues.append("appendix contains no actual code listing")
+    return issues
+
+
+def page_policy_measure(workspace: Path, total_pages: int) -> tuple[dict[str, Any], list[str]]:
+    key, profile = active_profile(workspace)
+    policy = profile.get("page_policy") or {}
+    if not policy and profile.get("page_limit"):
+        policy = {"scope": "total", "limit": profile.get("page_limit")}
+    if not policy or not policy.get("limit"):
+        return {"competition": key, "scope": "unlimited", "total_pages": total_pages}, []
+    scope = policy.get("scope", "total")
+    issues: list[str] = []
+    counted_pages = total_pages
+    if scope == "body":
+        start = latex_label_page(workspace, policy.get("start_marker", "BodyStart"))
+        end = latex_label_page(workspace, policy.get("end_marker", "BodyEnd"))
+        if start is None or end is None:
+            issues.append("body page markers are missing from compiled aux")
+        elif end < start:
+            issues.append(f"invalid body page markers: start={start}, end={end}")
+        else:
+            counted_pages = end - start + 1
+    elif scope == "solution":
+        marker = policy.get("end_marker") or profile.get("page_limit_marker")
+        end = latex_label_page(workspace, marker) if marker else None
+        if end is None:
+            issues.append(f"solution page marker is missing: {marker}")
+        else:
+            counted_pages = end
+    limit = int(policy["limit"])
+    if counted_pages > limit:
+        issues.append(f"{scope} pages {counted_pages} exceed limit {limit}")
+    measurement: dict[str, Any] = {
+        "competition": key,
+        "scope": scope,
+        "counted_pages": counted_pages,
+        "limit": limit,
+        "total_pages": total_pages,
+    }
+    abstract_limit = policy.get("abstract_limit")
+    if abstract_limit:
+        start = latex_label_page(workspace, policy.get("abstract_start_marker", "AbstractStart"))
+        end = latex_label_page(workspace, policy.get("abstract_end_marker", "AbstractEnd"))
+        if start is None or end is None:
+            issues.append("abstract page markers are missing from compiled aux")
+        else:
+            abstract_pages = end - start + 1
+            measurement["abstract_pages"] = abstract_pages
+            if abstract_pages > int(abstract_limit):
+                issues.append(f"abstract pages {abstract_pages} exceed limit {abstract_limit}")
+    return measurement, issues
 
 
 class GateResult:
@@ -510,6 +645,24 @@ def check_s3(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     if has_user_data_files(workspace):
         result.require((workspace / "程序" / "数据校验.py").exists(), "data_check_script", "data-bearing workflows include 程序/数据校验.py")
     result.warn_if(not (workspace / "程序" / "通用工具.py").exists(), "utils_skeleton", "程序/通用工具.py is missing")
+    code_manifest_path = workspace / "程序" / "code_manifest.json"
+    result.require(code_manifest_path.exists(), "code_manifest", "程序/code_manifest.json exists")
+    if code_manifest_path.exists():
+        try:
+            code_manifest = load_json(code_manifest_path)
+        except (json.JSONDecodeError, OSError):
+            code_manifest = {}
+        code_files = code_manifest.get("files", [])
+        result.require(bool(code_files) or bool(code_manifest.get("no_program_declared")), "code_manifest_files", "code manifest lists source files or explicitly declares no program")
+        entrypoint = code_manifest.get("entrypoint")
+        result.require(bool(entrypoint) and (workspace / str(entrypoint)).exists(), "code_manifest_entrypoint", f"code manifest entrypoint exists: {entrypoint}")
+        stale = []
+        for item in code_files:
+            rel = str(item.get("path") or "")
+            source = workspace / rel
+            if not source.exists() or item.get("sha256") != hashlib.sha256(source.read_bytes()).hexdigest():
+                stale.append(rel or "<empty>")
+        result.require(not stale, "code_manifest_hashes", f"code manifest hashes match sources: {stale or 'all ok'}")
     return result.to_dict()
 
 
@@ -527,6 +680,22 @@ def check_s4(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     planned_data = planned_data_figure_stems(plan_text)
     planned_ai = planned_ai_image_files(plan_text)
     result.require(includes.exists(), "output:图表/图表引用.tex", "图表引用.tex exists")
+    manifest_path = workspace / "图表" / "figure_manifest.json"
+    result.require(manifest_path.exists(), "figure_manifest", "图表/figure_manifest.json exists")
+    manifest = figure_manifest(workspace)
+    manifest_entries = manifest.get("figures", []) if isinstance(manifest, dict) else []
+    result.require(isinstance(manifest_entries, list), "figure_manifest_schema", "figure manifest has a figures list")
+    for item in manifest_entries if isinstance(manifest_entries, list) else []:
+        if not item.get("publish", False):
+            continue
+        rel = str(item.get("path") or "")
+        claim = str(item.get("claim") or "").strip()
+        source = str(item.get("source") or "").strip()
+        result.require(bool(rel) and (workspace / rel).exists(), f"published_figure:{rel}", f"published figure exists: {rel}")
+        result.require(bool(claim), f"figure_claim:{rel}", f"published figure has an explicit evidence claim: {rel}")
+        result.require(bool(source), f"figure_source:{rel}", f"published figure records its data source: {rel}")
+        if rel:
+            result.require(Path(rel).name in includes_text or Path(rel).stem in includes_text, f"published_include:{rel}", f"published figure is included by LaTeX: {rel}")
     if figure_files:
         result.require(includes.exists() and includes.stat().st_size > 0, "latex_includes", "图表引用.tex is present for generated figures")
     else:
@@ -542,6 +711,18 @@ def check_s4(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     if planned_ai:
         for name in planned_ai:
             result.require((workspace / "图表" / name).exists(), f"planned_ai_image:{name}", f"{name} planned in docs and generated")
+    visual_script_issues: list[str] = []
+    for script in sorted((workspace / "图表").glob("gen_fig*.py")):
+        code = read_text(script)
+        if re.search(r"boxstyle\s*=\s*['\"]round", code, flags=re.IGNORECASE):
+            visual_script_issues.append(f"{script.name}: rounded annotation box")
+        if has_any(code.lower(), ["simplepatchshadow", "set_path_effects", "shadow=true"]):
+            visual_script_issues.append(f"{script.name}: decorative shadow/path effect")
+        if "setup_style" not in code:
+            visual_script_issues.append(f"{script.name}: missing setup_style")
+        if re.search(r"(?:plt\.title|set_title)\(", code):
+            visual_script_issues.append(f"{script.name}: in-figure title")
+    result.require(not visual_script_issues, "visual_script_contract", f"figure scripts are restrained and publication-safe: {visual_script_issues or 'all ok'}")
     result.require((workspace / "图表" / "全部结果.json").exists(), "all_results_json", "figure stage has upstream aggregated json")
     return result.to_dict()
 
@@ -586,6 +767,25 @@ def check_s5(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
             result.require(source.exists(), f"planned_tikz:{rel}", f"{rel} planned in docs and generated")
             result.require(source.with_suffix(".pdf").exists(), f"planned_tikz_pdf:{rel}", f"{source.with_suffix('.pdf').name} exists")
             result.require(source.stem in includes_text or source.with_suffix(".pdf").name in includes_text, f"planned_tikz_include:{rel}", f"{rel} is referenced from 图表引用.tex")
+        diagram_style_issues: list[str] = []
+        for path in drawios:
+            content = read_text(path)
+            for cell in re.findall(r'<mxCell\b[^>]*vertex="1"[^>]*>', content):
+                style_match = re.search(r'style="([^"]*)"', cell)
+                if not style_match:
+                    continue
+                style = style_match.group(1)
+                if ("shape=" not in style or "swimlane" in style) and "rounded=1" in style:
+                    diagram_style_issues.append(f"{path.name}: rounded rectangle")
+            if "gradientColor" in content:
+                diagram_style_issues.append(f"{path.name}: decorative gradient")
+            if "shadow=1" in content:
+                diagram_style_issues.append(f"{path.name}: decorative shadow")
+        for path in tikz:
+            content = read_text(path)
+            if re.search(r"rectangle[^\n]*rounded corners|rounded corners[^\n]*rectangle", content):
+                diagram_style_issues.append(f"{path.name}: rounded rectangle")
+        result.require(not diagram_style_issues, "diagram_style_contract", f"flowchart rectangles are straight and decoration is restrained: {diagram_style_issues or 'all ok'}")
     else:
         result.require(no_diagram_plan(workspace), "no_diagram_exception", "diagram-free run must be explicitly declared")
     return result.to_dict()
@@ -670,7 +870,9 @@ def competition_source_checks(workspace: Path, main_tex: str, corpus: str, resul
     if declared_font is not None:
         result.require(declared_font >= minimum_font, "competition_minimum_font", f"base font {declared_font}pt >= required {minimum_font}pt")
     if key == "mcm-icm":
-        chinese_chars = len(re.findall(r"[\u4e00-\u9fff]", corpus))
+        visible_corpus = re.sub(r"(?m)%.*$", " ", corpus)
+        visible_corpus = re.sub(r"\\(?:input|include|includegraphics|lstinputlisting)(?:\[[^]]*\])?\{[^}]*\}", " ", visible_corpus)
+        chinese_chars = len(re.findall(r"[\u4e00-\u9fff]", visible_corpus))
         result.require(chinese_chars == 0, "english_only", f"MCM/ICM paper contains no Chinese characters ({chinese_chars} found)")
         result.require(bool(re.search(r"\\problemchoice\{[A-F]\}", main_tex, flags=re.IGNORECASE)), "mcm_problem_choice", "MCM/ICM problem choice A-F is populated")
         result.require(bool(re.search(r"\\controlnumber\{(?!\[)[^}]+\}", main_tex, flags=re.IGNORECASE)), "mcm_control_number", "Control Number is populated")
@@ -699,12 +901,16 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         forbidden = [term for term in profile.get("forbidden_identity_terms", []) if term.lower() in markdown.lower()]
         result.require(not forbidden, "docx_identity", f"forbidden identity fields absent: {forbidden or 'none'}")
         if key == "mcm-icm":
-            result.require(not re.search(r"[\u4e00-\u9fff]", markdown), "docx_english_only", "MCM/ICM DOCX source is English-only")
+            visible_markdown = re.sub(r"<!--.*?-->", " ", markdown, flags=re.DOTALL)
+            visible_markdown = re.sub(r"```.*?```", " ", visible_markdown, flags=re.DOTALL)
+            result.require(not re.search(r"[\u4e00-\u9fff]", visible_markdown), "docx_english_only", "MCM/ICM visible DOCX prose is English-only")
             result.require(bool(re.search(r"Control\s*Number\s*\*{0,2}:\*{0,2}\s*(?!\[)\S+", markdown, flags=re.IGNORECASE)), "docx_control_number", "Control Number is populated")
             result.require(bool(re.search(r"Problem\s*\*{0,2}:\*{0,2}\s*[A-F]\b", markdown, flags=re.IGNORECASE)), "docx_problem_choice", "Problem A-F is populated")
             result.require("Report on Use of AI Tools" in markdown, "docx_ai_report", "AI use report is present")
         if key == "51mcm":
             result.require(bool(re.search(r"报名号[：:]\s*(?!\[)\S+", markdown)), "docx_51mcm_registration", "51MCM registration number is populated")
+        code_issues = code_appendix_contract_issues(workspace, markdown)
+        result.require(not code_issues, "docx_code_appendix", f"DOCX code appendix is source-linked and complete: {code_issues or 'all ok'}")
         result.require(not any(re.search(pattern, markdown) for pattern in placeholder_patterns()), "docx_placeholders", "DOCX source contains no template placeholders")
         return result.to_dict()
     main_tex = read_text(workspace / "论文" / "论文正文.tex")
@@ -727,10 +933,13 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require(not figure_contract_issues, "figure_size_contract", f"LaTeX figures fit the page body: {figure_contract_issues or 'all ok'}")
     body_units, body_issues = body_density_contract(workspace)
     result.require(not body_issues, "body_density_contract", f"effective body units={body_units}; issues={body_issues or 'none'}")
-    result.require(has_any(corpus, ["代码", "程序", "Code Appendix"]), "code_appendix", "appendix mentions code or program materials")
+    code_issues = code_appendix_contract_issues(workspace, corpus)
+    result.require(not code_issues, "code_appendix", f"code appendix embeds current source files: {code_issues or 'all ok'}")
     missing_placeholders = placeholders_present(workspace)
     result.require(not missing_placeholders, "template_placeholders", f"placeholders removed: {missing_placeholders or 'none'}")
-    figure_files = all_generated_figure_files(workspace)
+    figure_files = published_figure_files(workspace)
+    if not figure_files and not figure_manifest(workspace):
+        figure_files = all_generated_figure_files(workspace)
     if figure_files:
         missing_refs = [path.name for path in figure_files if path.name not in corpus]
         result.require(not missing_refs, "embedded_figures", f"all generated figures are embedded: {', '.join(missing_refs) if missing_refs else 'all ok'}")
@@ -774,12 +983,24 @@ def check_s7(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         minimum = int(profile.get("minimum_body_units", 3500))
         units = int(report.get("effective_body_units") or 0)
         result.require(units >= minimum, "docx_body_density", f"effective body units {units} >= {minimum}")
-        limit = profile.get("page_limit")
+        markdown = read_text(source_path)
+        code_issues = code_appendix_contract_issues(workspace, markdown)
+        result.require(not code_issues, "docx_code_appendix", f"DOCX code appendix remains source-linked: {code_issues or 'all ok'}")
+        page_policy = profile.get("page_policy") or {}
+        limit = page_policy.get("limit") or profile.get("page_limit")
         if limit:
             pages = report.get("page_count")
             result.require(pages is not None, "docx_page_count", "page-limited DOCX requires LibreOffice PDF preview for page counting")
-            if pages is not None:
-                result.require(int(pages) <= int(limit), "docx_page_limit", f"DOCX preview has {pages}/{limit} pages")
+            scope = page_policy.get("scope", "total")
+            counted = report.get("body_page_count") if scope == "body" else pages
+            result.require(counted is not None, "docx_counted_pages", f"DOCX report provides {scope} page count")
+            if counted is not None:
+                result.require(int(counted) <= int(limit), "docx_page_limit", f"DOCX {scope} has {counted}/{limit} pages (total {pages})")
+            if page_policy.get("abstract_limit"):
+                abstract_pages = report.get("abstract_page_count")
+                result.require(abstract_pages is not None, "docx_abstract_pages", "DOCX report provides abstract page count")
+                if abstract_pages is not None:
+                    result.require(int(abstract_pages) <= int(page_policy["abstract_limit"]), "docx_abstract_page_limit", f"DOCX abstract has {abstract_pages}/{page_policy['abstract_limit']} pages")
         return result.to_dict()
     pdf_path = workspace / "论文" / "数模论文.pdf"
     main_tex = workspace / "论文" / "论文正文.tex"
@@ -790,22 +1011,18 @@ def check_s7(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     pages = pdf_page_count(pdf_path)
     if pages is not None:
         result.require(pages > 0, "pdf_pages", f"pdf has {pages} pages")
-        key, profile = active_profile(workspace)
-        limit = profile.get("page_limit")
-        if limit:
-            marker = profile.get("page_limit_marker")
-            counted_pages = latex_label_page(workspace, marker) if marker else pages
-            if marker:
-                result.require(counted_pages is not None, "competition_page_marker", f"compiled aux records {marker}")
-            if counted_pages is not None:
-                result.require(counted_pages <= int(limit), "competition_page_limit", f"{key} counted solution has {counted_pages}/{limit} pages (PDF total {pages})")
+        measurement, page_issues = page_policy_measure(workspace, pages)
+        result.require(not page_issues, "competition_page_limit", f"competition page policy: {measurement}; issues={page_issues or 'none'}")
     else:
         key, profile = active_profile(workspace)
-        if profile.get("page_limit"):
+        page_limit = (profile.get("page_policy") or {}).get("limit") or profile.get("page_limit")
+        if page_limit:
             result.require(False, "pdf_pages_required", f"{key} requires a readable PDF page count")
         else:
             result.warn_if(True, "pdf_pages_unknown", "PyPDF2 unavailable or page count unreadable")
     result.require((workspace / "论文" / "编译日志.log").exists(), "compile_log", "论文/编译日志.log exists after compile")
+    code_issues = code_appendix_contract_issues(workspace, corpus)
+    result.require(not code_issues, "code_appendix", f"compiled paper uses current source-linked code appendix: {code_issues or 'all ok'}")
     if log_text:
         result.require("undefined" not in log_text.lower() or "undefined references: 0" in log_text.lower(), "no_undefined_refs", "compile log has no undefined references or citations")
         fatal_patterns = [

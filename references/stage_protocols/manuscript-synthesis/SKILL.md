@@ -1053,7 +1053,7 @@ Follow the interleaving, embedding, and LaTeX rules from `工具/writing_rules.m
 
 **⛔ 图文并茂硬规则（每个章节都必须遵守）：**
 
-- 所有 `\begin{figure}` 必须用 `[H]`，不要用 `[htbp]`
+- 普通图表使用 `[htbp]`，在章节边界用 `\FloatBarrier` 收束；禁止全篇强制 `[H]` 造成大块空白和页数膨胀
 
 - 每张图/表后面必须有 ≥5 行分析文字（数值解读+对比+结论），然后才能放下一张图
 
@@ -1153,7 +1153,7 @@ echo "当前章节: $chars 字符 (~$(echo "scale=1; $chars/900" | bc) 页)"
 
 #### 写作深度参照
 
-**国赛一等奖 (25-30 pages, 3 sub-problems)**:
+**国赛高质量论文（正文上限 30 页，不设填满目标，3 个子问题示例）**:
 
 - 问题重述+分析 (2-3p): restate in own words, extract core problems — not copying the problem statement
 
@@ -1193,7 +1193,7 @@ Common traits of award-winning papers:
 
 |------|-------|-----------|------------|
 
-| 数模国赛 (30p limit) | 25-30 | 18000-25000 | ≥10 |
+| 数模国赛（正文上限 30 页） | 以论证完整为准，不设下限目标 | 以有效论证为准 | ≥10 |
 
 | 华为杯 | 40-50 | 30000-40000 | ≥15 |
 
@@ -1499,7 +1499,7 @@ Read 问题分析.md (or the established problem statement in 用户数据/) and
 
 如果发现矛盾，修改论文正文（不是修改约束）。如果是代码结果本身违反约束，说明代码有 bug，需要回到 computational-realization 修复。
 
-**⛔ Page count pre-verify (MUST pass before finishing — do NOT leave this to compile step):**
+**⛔ Page count pre-verify (MUST pass before finishing — do NOT rely on character estimates):**
 
 ```bash
 
@@ -1527,7 +1527,21 @@ echo "不得仅因估算页数低于上限的 80% 就扩写；只有论证链缺
 
 ```
 
-If a chapter is substantively incomplete, read 建模报告.md and 计算结果.md and add missing derivation, result analysis, validation, parameter discussion, or limitations. Do not expand merely to approach the page ceiling.
+字符估算只用于发现异常薄弱章节。必须在章节骨架完成、图表嵌入完成和终稿完成后三次实际编译，并依据竞赛 Profile 的页码标签读取摘要、正文和附录页数。CUMCM 摘要不得超过 1 页，正文不得超过 30 页，附录单独计数且页数不限。若章节实质不完整，再从建模报告和计算结果补充必要论证；不得为了接近上限扩写。
+
+**⛔ 代码附录生成（完成正文后、最终门禁前必须执行）：**
+
+```bash
+python 工具/build_code_appendix.py --workspace . --format latex
+```
+
+CUMCM 必须把 `程序/code_manifest.json` 登记的全部源程序通过 `\lstinputlisting` 直接嵌入附录；51MCM 与 MCM/ICM 按竞赛 Profile 嵌入主程序和逐问核心实现。DOCX 路线执行：
+
+```bash
+python 工具/build_code_appendix.py --workspace . --format markdown --insert-into 论文/论文正文.md
+```
+
+严禁只写“代码见支撑材料”或手工复制一份可能过期的代码。
 
 **Figure embedding verification (must pass before finishing)**:
 
@@ -1672,4 +1686,3 @@ echo "模板核验: $TMPL_OK 通过, $TMPL_FAIL 失败"
   - ❌ 错误：`cat << EOF > 论文/章节/4_problem1.tex`（无引号，`\\` 变成 `\`，导致表格 `Misplaced \noalign` 错误）
 
   - 这是表格编译失败的最常见原因——40+ 处 `\\` 全部变成 `\`，编译器只报第一个错就停了
-

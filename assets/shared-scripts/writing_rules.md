@@ -18,7 +18,7 @@ that separates human-written papers from AI-generated ones.
 
 为了分析各子问题的求解精度，我们将模型预测值与实际值进行对比，结果如图\ref{fig:compare}所示。
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 
   \centering
 
@@ -78,7 +78,7 @@ As shown in Figure~\ref{fig:main}, we compare our method against three baselines
 
 across all evaluation metrics.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 
   \centering
 
@@ -128,9 +128,9 @@ which aligns with our hypothesis that the benefit scales with sequence length.
 
 ```latex
 
-\begin{figure}[H]...\end{figure}
+\begin{figure}[htbp]...\end{figure}
 
-\begin{figure}[H]...\end{figure}  % consecutive figures with no text between them
+\begin{figure}[htbp]...\end{figure}  % consecutive figures with no text between them
 
 \begin{table}[H]...\end{table}    % still no analysis
 

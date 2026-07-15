@@ -8,6 +8,22 @@
     "minimum_font_pt": 10.5,
     "minimum_body_units": 3500,
     "page_limit": null,
+    "page_policy": {
+      "scope": "body",
+      "limit": 30,
+      "abstract_limit": 1,
+      "appendix_counted": false,
+      "toc_allowed": false,
+      "start_marker": "BodyStart",
+      "end_marker": "BodyEnd",
+      "abstract_start_marker": "AbstractStart",
+      "abstract_end_marker": "AbstractEnd"
+    },
+    "code_appendix": {
+      "mode": "full",
+      "require_manifest": true,
+      "minimum_code_lines": 20
+    },
     "allowed_identity": [],
     "required_source_terms": ["cumcmthesis"],
     "required_content_terms": ["摘要", "关键词"],
@@ -23,6 +39,11 @@
     "minimum_font_pt": 10.5,
     "minimum_body_units": 3500,
     "page_limit": null,
+    "code_appendix": {
+      "mode": "core",
+      "require_manifest": true,
+      "minimum_code_lines": 20
+    },
     "allowed_identity": ["报名号"],
     "required_source_terms": ["51mcmthesis", "withoutpreface", "\\tihao", "\\duihao", "\\zubie"],
     "required_content_terms": ["摘要", "关键词"],
@@ -39,6 +60,18 @@
     "minimum_body_units": 3000,
     "page_limit": 25,
     "page_limit_marker": "LastSolutionPage",
+    "page_policy": {
+      "scope": "solution",
+      "limit": 25,
+      "end_marker": "LastSolutionPage",
+      "appendix_counted": true,
+      "toc_allowed": true
+    },
+    "code_appendix": {
+      "mode": "core",
+      "require_manifest": true,
+      "minimum_code_lines": 20
+    },
     "page_limit_excludes": ["Report on Use of AI Tools"],
     "allowed_identity": ["Control Number"],
     "required_source_terms": ["mcmicm", "\\controlnumber", "\\problemchoice", "\\papertitle", "summarysheet"],

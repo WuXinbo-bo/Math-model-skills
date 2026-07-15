@@ -1,139 +1,269 @@
-% 模板 9：圆形编号 + 卡片分层（高级经管/实证风格）
-% 统一精致配色：蓝色主节点+teal子节点+微阴影
-% 编译命令：xelatex demo_roadmap_research_premium.tex
-\documentclass[border=5pt]{standalone}
-\usepackage{ctex}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, calc, shadows}
-
-\begin{document}
-\begin{tikzpicture}[
-    phasenum/.style={circle, fill=blue!70, minimum size=20pt,
-        font=\scriptsize\bfseries, text=white, inner sep=0pt,
-        drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}},
-    phasename/.style={font=\small\bfseries, color=blue!70, anchor=west},
-    method/.style={rectangle, rounded corners=3pt,
-        minimum width=3.4cm, minimum height=0.7cm, align=center,
-        draw=blue!80, line width=0.7pt, fill=blue!6, font=\small,
-        drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}},
-    tool/.style={rectangle, rounded corners=2pt,
-        minimum width=1.8cm, minimum height=0.5cm, align=center,
-        draw=teal!70, line width=0.5pt, fill=white, font=\scriptsize},
-    outputtag/.style={fill=blue!65, rounded corners=10pt,
-        minimum width=1.5cm, minimum height=0.38cm, align=center,
-        font=\tiny\bfseries, text=white, inner sep=2pt},
-    pipe/.style={-stealth, line width=1.4pt, color=blue!70},
-    inner/.style={-stealth, line width=0.5pt, color=gray!50},
-    card/.style={fill=gray!2, rounded corners=4pt,
-        draw=gray!25, dashed, line width=0.7pt},
-]
-
-% ====== Phase 1: 研究设计 ======
-\node[phasenum] at (0, 2.6) {1};
-\node[phasename] at (0.6, 2.6) {研究设计};
-\fill[card] (-0.5, 2.2) rectangle (15.5, -0.5);
-
-\node[method] (rq) at (3.2, 1.2) {研究问题提出};
-\node[method] (lit) at (7.2, 1.2) {系统文献综述};
-\node[method] (hypo) at (11.2, 1.2) {假设与框架构建};
-\draw[inner] (rq) -- (lit); \draw[inner] (lit) -- (hypo);
-
-\node[tool] at (3.2, 0.2) {文献计量};
-\node[tool] at (5.5, 0.2) {知识图谱};
-\node[tool] at (8.2, 0.2) {理论推演};
-\node[tool] at (11.2, 0.2) {概念模型};
-\node[outputtag] at (14.2, 1.2) {理论模型};
-
-\draw[pipe] (7.2, -0.5) -- (7.2, -1.4);
-
-% ====== Phase 2: 数据准备 ======
-\node[phasenum] at (0, -1.5) {2};
-\node[phasename] at (0.6, -1.5) {数据准备};
-\fill[card] (-0.5, -1.9) rectangle (15.5, -6.2);
-
-\node[method] (collect) at (3.2, -2.5) {数据采集};
-\node[method] (clean) at (7.2, -2.5) {数据清洗与融合};
-\node[method] (eda) at (11.2, -2.5) {探索性分析};
-\draw[inner] (collect) -- (clean); \draw[inner] (clean) -- (eda);
-
-\node[tool] at (2, -3.5) {多源采集};
-\node[tool] at (4.2, -3.5) {缺失值处理};
-\node[tool] at (6.5, -3.5) {异常值检测};
-\node[tool] at (9, -3.5) {分布检验};
-\node[tool] at (11.2, -3.5) {可视化};
-
-\node[method] (vardef) at (3.2, -4.6) {变量操作化};
-\node[method] (feateng) at (7.2, -4.6) {变量构建};
-\node[method] (descstat) at (11.2, -4.6) {描述性统计};
-\draw[inner] (vardef) -- (feateng); \draw[inner] (feateng) -- (descstat);
-
-\node[tool] at (2.2, -5.5) {标准化};
-\node[tool] at (4.5, -5.5) {交互项};
-\node[tool] at (7.2, -5.5) {多重共线性};
-\node[tool] at (10, -5.5) {相关矩阵};
-\node[outputtag] at (14.2, -2.5) {分析数据集};
-
-\draw[pipe] (7.2, -6.2) -- (7.2, -7.1);
-
-% ====== Phase 3: 实证分析 ======
-\node[phasenum] at (0, -7.2) {3};
-\node[phasename] at (0.6, -7.2) {实证分析};
-\fill[card] (-0.5, -7.6) rectangle (15.5, -15.5);
-
-\node[method] (spec) at (3.2, -8.2) {模型设定};
-\node[method] (ident) at (7.2, -8.2) {识别策略};
-\node[method] (est) at (11.2, -8.2) {参数估计};
-\draw[inner] (spec) -- (ident); \draw[inner] (ident) -- (est);
-
-\node[tool] at (1.8, -9.2) {固定效应};
-\node[tool] at (4, -9.2) {DID};
-\node[tool] at (6.2, -9.2) {工具变量};
-\node[tool] at (8.4, -9.2) {PSM};
-\node[tool] at (10.4, -9.2) {RDD};
-\node[tool] at (12.4, -9.2) {GMM};
-
-\node[method] (mech2) at (3.2, -10.5) {机制检验};
-\node[method] (hetero2) at (7.2, -10.5) {异质性分析};
-\node[method] (ext) at (11.2, -10.5) {拓展分析};
-\draw[inner] (spec.south) -- ++(0,-0.5) -- (mech2.north);
-\draw[inner] (ident.south) -- ++(0,-0.5) -- (hetero2.north);
-\draw[inner] (est.south) -- ++(0,-0.5) -- (ext.north);
-
-\node[tool] at (1.8, -11.5) {中介效应};
-\node[tool] at (4, -11.5) {调节效应};
-\node[tool] at (6.5, -11.5) {分组回归};
-\node[tool] at (9, -11.5) {分位数};
-\node[tool] at (11.2, -11.5) {空间溢出};
-\node[tool] at (13.2, -11.5) {动态面板};
-
-\node[method] (robust2) at (7.2, -12.8) {稳健性检验};
-\draw[inner] (mech2.south) -- ++(0,-0.3) -| ([xshift=-8pt]robust2.north);
-\draw[inner] (ext.south) -- ++(0,-0.3) -| ([xshift=8pt]robust2.north);
-
-\node[tool] at (2.2, -13.8) {替换变量};
-\node[tool] at (4.8, -13.8) {缩尾处理};
-\node[tool] at (7.5, -13.8) {安慰剂检验};
-\node[tool] at (10.2, -13.8) {子样本};
-\node[tool] at (12.6, -13.8) {Heckman};
-\node[outputtag] at (14.2, -8.2) {估计结果};
-
-\draw[pipe] (7.2, -15.5) -- (7.2, -16.4);
-
-% ====== Phase 4: 结论建议 ======
-\node[phasenum] at (0, -16.5) {4};
-\node[phasename] at (0.6, -16.5) {结论建议};
-\fill[card] (-0.5, -16.9) rectangle (15.5, -20.0);
-
-\node[method] (findings) at (3.2, -17.5) {核心发现};
-\node[method] (contrib) at (7.2, -17.5) {理论贡献};
-\node[method] (policy2) at (11.2, -17.5) {政策启示};
-\draw[inner] (findings) -- (contrib); \draw[inner] (contrib) -- (policy2);
-
-\node[method] (limit) at (5, -18.8) {研究局限};
-\node[method] (future2) at (9.5, -18.8) {未来方向};
-\draw[inner] (findings.south) -- ++(0,-0.3) -| (limit.north);
-\draw[inner] (policy2.south) -- ++(0,-0.3) -| (future2.north);
-\node[outputtag] at (14.2, -17.5) {研究成果};
-
-\end{tikzpicture}
-\end{document}
+% 模板 9：圆形编号 + 卡片分层（高级经管/实证风格）
+
+% 统一精致配色：蓝色主节点+teal子节点+微阴影
+
+% 编译命令：xelatex demo_roadmap_research_premium.tex
+
+\documentclass[border=5pt]{standalone}
+
+\usepackage{ctex}
+
+\usepackage{tikz}
+
+\usetikzlibrary{arrows.meta, positioning, calc, shadows}
+
+
+
+\begin{document}
+
+\begin{tikzpicture}[
+
+    phasenum/.style={circle, fill=blue!70, minimum size=20pt,
+
+        font=\scriptsize\bfseries, text=white, inner sep=0pt,
+
+        drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}},
+
+    phasename/.style={font=\small\bfseries, color=blue!70, anchor=west},
+
+    method/.style={rectangle, minimum width=3.4cm, minimum height=0.7cm, align=center,
+
+        draw=blue!80, line width=0.7pt, fill=blue!6, font=\small,
+
+        drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}},
+
+    tool/.style={rectangle, minimum width=1.8cm, minimum height=0.5cm, align=center,
+
+        draw=teal!70, line width=0.5pt, fill=white, font=\scriptsize},
+
+    outputtag/.style={fill=blue!65, minimum width=1.5cm, minimum height=0.38cm, align=center,
+
+        font=\tiny\bfseries, text=white, inner sep=2pt},
+
+    pipe/.style={-stealth, line width=1.4pt, color=blue!70},
+
+    inner/.style={-stealth, line width=0.5pt, color=gray!50},
+
+    card/.style={fill=gray!2, draw=gray!25, dashed, line width=0.7pt},
+
+]
+
+
+
+% ====== Phase 1: 研究设计 ======
+
+\node[phasenum] at (0, 2.6) {1};
+
+\node[phasename] at (0.6, 2.6) {研究设计};
+
+\fill[card] (-0.5, 2.2) rectangle (15.5, -0.5);
+
+
+
+\node[method] (rq) at (3.2, 1.2) {研究问题提出};
+
+\node[method] (lit) at (7.2, 1.2) {系统文献综述};
+
+\node[method] (hypo) at (11.2, 1.2) {假设与框架构建};
+
+\draw[inner] (rq) -- (lit); \draw[inner] (lit) -- (hypo);
+
+
+
+\node[tool] at (3.2, 0.2) {文献计量};
+
+\node[tool] at (5.5, 0.2) {知识图谱};
+
+\node[tool] at (8.2, 0.2) {理论推演};
+
+\node[tool] at (11.2, 0.2) {概念模型};
+
+\node[outputtag] at (14.2, 1.2) {理论模型};
+
+
+
+\draw[pipe] (7.2, -0.5) -- (7.2, -1.4);
+
+
+
+% ====== Phase 2: 数据准备 ======
+
+\node[phasenum] at (0, -1.5) {2};
+
+\node[phasename] at (0.6, -1.5) {数据准备};
+
+\fill[card] (-0.5, -1.9) rectangle (15.5, -6.2);
+
+
+
+\node[method] (collect) at (3.2, -2.5) {数据采集};
+
+\node[method] (clean) at (7.2, -2.5) {数据清洗与融合};
+
+\node[method] (eda) at (11.2, -2.5) {探索性分析};
+
+\draw[inner] (collect) -- (clean); \draw[inner] (clean) -- (eda);
+
+
+
+\node[tool] at (2, -3.5) {多源采集};
+
+\node[tool] at (4.2, -3.5) {缺失值处理};
+
+\node[tool] at (6.5, -3.5) {异常值检测};
+
+\node[tool] at (9, -3.5) {分布检验};
+
+\node[tool] at (11.2, -3.5) {可视化};
+
+
+
+\node[method] (vardef) at (3.2, -4.6) {变量操作化};
+
+\node[method] (feateng) at (7.2, -4.6) {变量构建};
+
+\node[method] (descstat) at (11.2, -4.6) {描述性统计};
+
+\draw[inner] (vardef) -- (feateng); \draw[inner] (feateng) -- (descstat);
+
+
+
+\node[tool] at (2.2, -5.5) {标准化};
+
+\node[tool] at (4.5, -5.5) {交互项};
+
+\node[tool] at (7.2, -5.5) {多重共线性};
+
+\node[tool] at (10, -5.5) {相关矩阵};
+
+\node[outputtag] at (14.2, -2.5) {分析数据集};
+
+
+
+\draw[pipe] (7.2, -6.2) -- (7.2, -7.1);
+
+
+
+% ====== Phase 3: 实证分析 ======
+
+\node[phasenum] at (0, -7.2) {3};
+
+\node[phasename] at (0.6, -7.2) {实证分析};
+
+\fill[card] (-0.5, -7.6) rectangle (15.5, -15.5);
+
+
+
+\node[method] (spec) at (3.2, -8.2) {模型设定};
+
+\node[method] (ident) at (7.2, -8.2) {识别策略};
+
+\node[method] (est) at (11.2, -8.2) {参数估计};
+
+\draw[inner] (spec) -- (ident); \draw[inner] (ident) -- (est);
+
+
+
+\node[tool] at (1.8, -9.2) {固定效应};
+
+\node[tool] at (4, -9.2) {DID};
+
+\node[tool] at (6.2, -9.2) {工具变量};
+
+\node[tool] at (8.4, -9.2) {PSM};
+
+\node[tool] at (10.4, -9.2) {RDD};
+
+\node[tool] at (12.4, -9.2) {GMM};
+
+
+
+\node[method] (mech2) at (3.2, -10.5) {机制检验};
+
+\node[method] (hetero2) at (7.2, -10.5) {异质性分析};
+
+\node[method] (ext) at (11.2, -10.5) {拓展分析};
+
+\draw[inner] (spec.south) -- ++(0,-0.5) -- (mech2.north);
+
+\draw[inner] (ident.south) -- ++(0,-0.5) -- (hetero2.north);
+
+\draw[inner] (est.south) -- ++(0,-0.5) -- (ext.north);
+
+
+
+\node[tool] at (1.8, -11.5) {中介效应};
+
+\node[tool] at (4, -11.5) {调节效应};
+
+\node[tool] at (6.5, -11.5) {分组回归};
+
+\node[tool] at (9, -11.5) {分位数};
+
+\node[tool] at (11.2, -11.5) {空间溢出};
+
+\node[tool] at (13.2, -11.5) {动态面板};
+
+
+
+\node[method] (robust2) at (7.2, -12.8) {稳健性检验};
+
+\draw[inner] (mech2.south) -- ++(0,-0.3) -| ([xshift=-8pt]robust2.north);
+
+\draw[inner] (ext.south) -- ++(0,-0.3) -| ([xshift=8pt]robust2.north);
+
+
+
+\node[tool] at (2.2, -13.8) {替换变量};
+
+\node[tool] at (4.8, -13.8) {缩尾处理};
+
+\node[tool] at (7.5, -13.8) {安慰剂检验};
+
+\node[tool] at (10.2, -13.8) {子样本};
+
+\node[tool] at (12.6, -13.8) {Heckman};
+
+\node[outputtag] at (14.2, -8.2) {估计结果};
+
+
+
+\draw[pipe] (7.2, -15.5) -- (7.2, -16.4);
+
+
+
+% ====== Phase 4: 结论建议 ======
+
+\node[phasenum] at (0, -16.5) {4};
+
+\node[phasename] at (0.6, -16.5) {结论建议};
+
+\fill[card] (-0.5, -16.9) rectangle (15.5, -20.0);
+
+
+
+\node[method] (findings) at (3.2, -17.5) {核心发现};
+
+\node[method] (contrib) at (7.2, -17.5) {理论贡献};
+
+\node[method] (policy2) at (11.2, -17.5) {政策启示};
+
+\draw[inner] (findings) -- (contrib); \draw[inner] (contrib) -- (policy2);
+
+
+
+\node[method] (limit) at (5, -18.8) {研究局限};
+
+\node[method] (future2) at (9.5, -18.8) {未来方向};
+
+\draw[inner] (findings.south) -- ++(0,-0.3) -| (limit.north);
+
+\draw[inner] (policy2.south) -- ++(0,-0.3) -| (future2.north);
+
+\node[outputtag] at (14.2, -17.5) {研究成果};
+
+
+
+\end{tikzpicture}
+
+\end{document}

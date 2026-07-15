@@ -120,7 +120,8 @@
       },
       "companion_files": [
         "图表/全部结果.json",
-        "依赖清单.txt"
+        "依赖清单.txt",
+        "程序/code_manifest.json"
       ],
       "checkpoint_type": "approve",
       "gates": [
@@ -128,7 +129,8 @@
         "per-question_implementation",
         "result_generation",
         "data_support_readiness",
-        "execution_reality"
+        "execution_reality",
+        "code_manifest_contract"
       ],
       "subagents": [
         {
@@ -157,12 +159,15 @@
       "min_output_bytes": {
         "图表/图表引用.tex": 500
       },
-      "companion_files": [],
+      "companion_files": [
+        "图表/figure_manifest.json"
+      ],
       "checkpoint_type": null,
       "gates": [
         "figure_output_contract",
         "planned_figure_coverage",
-        "publication_quality_floor"
+        "publication_quality_floor",
+        "visual_script_contract"
       ],
       "subagents": [
         {
@@ -192,7 +197,8 @@
       "gates": [
         "diagram_output_contract",
         "planned_diagram_coverage",
-        "drawio_or_tikz_presence"
+        "drawio_or_tikz_presence",
+        "diagram_style_contract"
       ],
       "subagents": [
         {
@@ -224,7 +230,8 @@
         "competition_template_alignment",
         "chapter_completeness",
         "figure_embedding_completeness",
-        "citation_style_compliance"
+        "citation_style_compliance",
+        "code_appendix_coverage"
       ],
       "subagents": [
         {

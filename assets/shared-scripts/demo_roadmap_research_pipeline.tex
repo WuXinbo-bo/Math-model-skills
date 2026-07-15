@@ -1,91 +1,175 @@
-% 模板 10：管道分段 + 并行分支 + 汇聚（数据科学/竞赛风格）
-% 统一精致配色：蓝色主节点+teal子节点+微阴影
-% 编译命令：xelatex demo_roadmap_research_pipeline.tex
-\documentclass[border=5pt]{standalone}
-\usepackage{ctex}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, calc, shadows}
-
-\begin{document}
-\begin{tikzpicture}[
-    dashbox/.style={rectangle, rounded corners=4pt,
-        draw=gray!40, dashed, line width=0.7pt, fill=gray!2},
-    main/.style={rectangle, rounded corners=3pt,
-        minimum width=3.8cm, minimum height=1.4cm, align=center,
-        draw=blue!80, line width=0.7pt, fill=blue!6, font=\small,
-        drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}},
-    sub/.style={rectangle, rounded corners=2pt,
-        minimum width=2.2cm, minimum height=0.5cm, align=center,
-        draw=teal!70, line width=0.5pt, fill=white, font=\scriptsize},
-    bigarrow/.style={-stealth, line width=1.4pt, color=blue!70},
-    smarrow/.style={-stealth, line width=0.5pt, color=gray!50},
-    label/.style={font=\small\bfseries, color=black!70},
-    branch/.style={-stealth, line width=0.6pt, color=blue!50, densely dashed},
-    merge/.style={circle, fill=blue!65, minimum size=11pt,
-        font=\tiny\bfseries, text=white, inner sep=0pt},
-]
-
-% ====== Stage 1: 问题定义 ======
-\node[dashbox, minimum width=14cm, minimum height=2.8cm] (box1) at (0, 0) {};
-\node[label, anchor=north west] at (box1.north west) {\scriptsize 阶段一：问题定义与数据获取};
-\node[main] (p1a) at (-4, 0) {\textbf{问题建模}\\[2pt]{\scriptsize 目标函数/约束}};
-\node[main] (p1b) at (0, 0) {\textbf{数据采集}\\[2pt]{\scriptsize 多源异构数据}};
-\node[main] (p1c) at (4, 0) {\textbf{质量评估}\\[2pt]{\scriptsize 完整性/一致性}};
-\draw[smarrow] (p1a) -- (p1b); \draw[smarrow] (p1b) -- (p1c);
-
-\draw[bigarrow] (0, -1.7) -- (0, -2.5);
-
-% ====== Stage 2: 特征工程 ======
-\node[dashbox, minimum width=14cm, minimum height=2.8cm] (box2) at (0, -4.2) {};
-\node[label, anchor=north west] at (box2.north west) {\scriptsize 阶段二：特征工程与预处理};
-\node[main] (p2a) at (-4, -4.2) {\textbf{缺失值处理}\\[2pt]{\scriptsize 多重插补/KNN}};
-\node[main] (p2b) at (0, -4.2) {\textbf{特征构造}\\[2pt]{\scriptsize 交互项/滞后}};
-\node[main] (p2c) at (4, -4.2) {\textbf{降维与选择}\\[2pt]{\scriptsize PCA/LASSO}};
-\draw[smarrow] (p2a) -- (p2b); \draw[smarrow] (p2b) -- (p2c);
-
-\draw[bigarrow] (0, -5.9) -- (0, -6.7);
-
-% ====== Stage 3: 模型构建（并行分支） ======
-\node[dashbox, minimum width=14cm, minimum height=5.5cm] (box3) at (0, -9.8) {};
-\node[label, anchor=north west] at (box3.north west) {\scriptsize 阶段三：模型构建与训练};
-
-\node[font=\scriptsize, color=blue!50] at (0, -7.2) {$\longleftarrow$ 并行建模对比 $\longrightarrow$};
-
-\node[main, minimum width=3.5cm] (p3a) at (-4.2, -8.8) {\textbf{统计/计量模型}\\[2pt]{\scriptsize FE/DID/IV-2SLS}};
-\node[main, minimum width=3.5cm] (p3b) at (0, -8.8) {\textbf{机器学习模型}\\[2pt]{\scriptsize XGBoost/RF/SVM}};
-\node[main, minimum width=3.5cm] (p3c) at (4.2, -8.8) {\textbf{深度学习模型}\\[2pt]{\scriptsize LSTM/Transformer}};
-
-\draw[branch] (-2, -7.0) -- (p3a.north);
-\draw[branch] (0, -7.0) -- (p3b.north);
-\draw[branch] (2, -7.0) -- (p3c.north);
-
-\node[merge] (m3) at (0, -10.2) {$\Sigma$};
-\draw[smarrow] (p3a.south) |- (m3);
-\draw[smarrow] (p3b.south) -- (m3);
-\draw[smarrow] (p3c.south) |- (m3);
-
-\node[main, minimum width=5.5cm] (tune) at (0, -11.4) {\textbf{超参数优化与模型选择}\\[2pt]{\scriptsize 网格搜索/贝叶斯优化/交叉验证}};
-\draw[smarrow] (m3) -- (tune);
-
-\draw[bigarrow] (0, -12.4) -- (0, -13.2);
-
-% ====== Stage 4: 评估验证 ======
-\node[dashbox, minimum width=14cm, minimum height=2.8cm] (box4) at (0, -14.9) {};
-\node[label, anchor=north west] at (box4.north west) {\scriptsize 阶段四：评估验证与结果解释};
-\node[main] (p4a) at (-4, -14.9) {\textbf{性能评估}\\[2pt]{\scriptsize RMSE/$R^2$/AUC}};
-\node[main] (p4b) at (0, -14.9) {\textbf{可解释性分析}\\[2pt]{\scriptsize SHAP/偏依赖图}};
-\node[main] (p4c) at (4, -14.9) {\textbf{稳健性检验}\\[2pt]{\scriptsize 消融/敏感性}};
-\draw[smarrow] (p4a) -- (p4b); \draw[smarrow] (p4b) -- (p4c);
-
-\draw[bigarrow] (0, -16.6) -- (0, -17.4);
-
-% ====== Stage 5: 结论 ======
-\node[dashbox, minimum width=14cm, minimum height=2cm] (box5) at (0, -18.6) {};
-\node[label, anchor=north west] at (box5.north west) {\scriptsize 阶段五：结论与决策建议};
-\node[main] (p5a) at (-4, -18.6) {\textbf{核心发现}\\[2pt]{\scriptsize 关键变量识别}};
-\node[main] (p5b) at (0, -18.6) {\textbf{方案优化}\\[2pt]{\scriptsize 最优策略输出}};
-\node[main] (p5c) at (4, -18.6) {\textbf{政策建议}\\[2pt]{\scriptsize 实施路径}};
-\draw[smarrow] (p5a) -- (p5b); \draw[smarrow] (p5b) -- (p5c);
-
-\end{tikzpicture}
-\end{document}
+% 模板 10：管道分段 + 并行分支 + 汇聚（数据科学/竞赛风格）
+
+% 统一精致配色：蓝色主节点+teal子节点+微阴影
+
+% 编译命令：xelatex demo_roadmap_research_pipeline.tex
+
+\documentclass[border=5pt]{standalone}
+
+\usepackage{ctex}
+
+\usepackage{tikz}
+
+\usetikzlibrary{arrows.meta, positioning, calc, shadows}
+
+
+
+\begin{document}
+
+\begin{tikzpicture}[
+
+    dashbox/.style={rectangle, draw=gray!40, dashed, line width=0.7pt, fill=gray!2},
+
+    main/.style={rectangle, minimum width=3.8cm, minimum height=1.4cm, align=center,
+
+        draw=blue!80, line width=0.7pt, fill=blue!6, font=\small,
+
+        drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}},
+
+    sub/.style={rectangle, minimum width=2.2cm, minimum height=0.5cm, align=center,
+
+        draw=teal!70, line width=0.5pt, fill=white, font=\scriptsize},
+
+    bigarrow/.style={-stealth, line width=1.4pt, color=blue!70},
+
+    smarrow/.style={-stealth, line width=0.5pt, color=gray!50},
+
+    label/.style={font=\small\bfseries, color=black!70},
+
+    branch/.style={-stealth, line width=0.6pt, color=blue!50, densely dashed},
+
+    merge/.style={circle, fill=blue!65, minimum size=11pt,
+
+        font=\tiny\bfseries, text=white, inner sep=0pt},
+
+]
+
+
+
+% ====== Stage 1: 问题定义 ======
+
+\node[dashbox, minimum width=14cm, minimum height=2.8cm] (box1) at (0, 0) {};
+
+\node[label, anchor=north west] at (box1.north west) {\scriptsize 阶段一：问题定义与数据获取};
+
+\node[main] (p1a) at (-4, 0) {\textbf{问题建模}\\[2pt]{\scriptsize 目标函数/约束}};
+
+\node[main] (p1b) at (0, 0) {\textbf{数据采集}\\[2pt]{\scriptsize 多源异构数据}};
+
+\node[main] (p1c) at (4, 0) {\textbf{质量评估}\\[2pt]{\scriptsize 完整性/一致性}};
+
+\draw[smarrow] (p1a) -- (p1b); \draw[smarrow] (p1b) -- (p1c);
+
+
+
+\draw[bigarrow] (0, -1.7) -- (0, -2.5);
+
+
+
+% ====== Stage 2: 特征工程 ======
+
+\node[dashbox, minimum width=14cm, minimum height=2.8cm] (box2) at (0, -4.2) {};
+
+\node[label, anchor=north west] at (box2.north west) {\scriptsize 阶段二：特征工程与预处理};
+
+\node[main] (p2a) at (-4, -4.2) {\textbf{缺失值处理}\\[2pt]{\scriptsize 多重插补/KNN}};
+
+\node[main] (p2b) at (0, -4.2) {\textbf{特征构造}\\[2pt]{\scriptsize 交互项/滞后}};
+
+\node[main] (p2c) at (4, -4.2) {\textbf{降维与选择}\\[2pt]{\scriptsize PCA/LASSO}};
+
+\draw[smarrow] (p2a) -- (p2b); \draw[smarrow] (p2b) -- (p2c);
+
+
+
+\draw[bigarrow] (0, -5.9) -- (0, -6.7);
+
+
+
+% ====== Stage 3: 模型构建（并行分支） ======
+
+\node[dashbox, minimum width=14cm, minimum height=5.5cm] (box3) at (0, -9.8) {};
+
+\node[label, anchor=north west] at (box3.north west) {\scriptsize 阶段三：模型构建与训练};
+
+
+
+\node[font=\scriptsize, color=blue!50] at (0, -7.2) {$\longleftarrow$ 并行建模对比 $\longrightarrow$};
+
+
+
+\node[main, minimum width=3.5cm] (p3a) at (-4.2, -8.8) {\textbf{统计/计量模型}\\[2pt]{\scriptsize FE/DID/IV-2SLS}};
+
+\node[main, minimum width=3.5cm] (p3b) at (0, -8.8) {\textbf{机器学习模型}\\[2pt]{\scriptsize XGBoost/RF/SVM}};
+
+\node[main, minimum width=3.5cm] (p3c) at (4.2, -8.8) {\textbf{深度学习模型}\\[2pt]{\scriptsize LSTM/Transformer}};
+
+
+
+\draw[branch] (-2, -7.0) -- (p3a.north);
+
+\draw[branch] (0, -7.0) -- (p3b.north);
+
+\draw[branch] (2, -7.0) -- (p3c.north);
+
+
+
+\node[merge] (m3) at (0, -10.2) {$\Sigma$};
+
+\draw[smarrow] (p3a.south) |- (m3);
+
+\draw[smarrow] (p3b.south) -- (m3);
+
+\draw[smarrow] (p3c.south) |- (m3);
+
+
+
+\node[main, minimum width=5.5cm] (tune) at (0, -11.4) {\textbf{超参数优化与模型选择}\\[2pt]{\scriptsize 网格搜索/贝叶斯优化/交叉验证}};
+
+\draw[smarrow] (m3) -- (tune);
+
+
+
+\draw[bigarrow] (0, -12.4) -- (0, -13.2);
+
+
+
+% ====== Stage 4: 评估验证 ======
+
+\node[dashbox, minimum width=14cm, minimum height=2.8cm] (box4) at (0, -14.9) {};
+
+\node[label, anchor=north west] at (box4.north west) {\scriptsize 阶段四：评估验证与结果解释};
+
+\node[main] (p4a) at (-4, -14.9) {\textbf{性能评估}\\[2pt]{\scriptsize RMSE/$R^2$/AUC}};
+
+\node[main] (p4b) at (0, -14.9) {\textbf{可解释性分析}\\[2pt]{\scriptsize SHAP/偏依赖图}};
+
+\node[main] (p4c) at (4, -14.9) {\textbf{稳健性检验}\\[2pt]{\scriptsize 消融/敏感性}};
+
+\draw[smarrow] (p4a) -- (p4b); \draw[smarrow] (p4b) -- (p4c);
+
+
+
+\draw[bigarrow] (0, -16.6) -- (0, -17.4);
+
+
+
+% ====== Stage 5: 结论 ======
+
+\node[dashbox, minimum width=14cm, minimum height=2cm] (box5) at (0, -18.6) {};
+
+\node[label, anchor=north west] at (box5.north west) {\scriptsize 阶段五：结论与决策建议};
+
+\node[main] (p5a) at (-4, -18.6) {\textbf{核心发现}\\[2pt]{\scriptsize 关键变量识别}};
+
+\node[main] (p5b) at (0, -18.6) {\textbf{方案优化}\\[2pt]{\scriptsize 最优策略输出}};
+
+\node[main] (p5c) at (4, -18.6) {\textbf{政策建议}\\[2pt]{\scriptsize 实施路径}};
+
+\draw[smarrow] (p5a) -- (p5b); \draw[smarrow] (p5b) -- (p5c);
+
+
+
+\end{tikzpicture}
+
+\end{document}

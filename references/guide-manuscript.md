@@ -23,4 +23,6 @@
 - 图表嵌入时必须按版心缩放：LaTeX 默认不超过 `0.85\linewidth × 0.70\textheight` 并启用 `keepaspectratio`；DOCX 不超过页面可用正文宽度，常规 A4 推荐 13.5--15.0 cm。
 - 页数限制是上限而非目标。接近上限时先压缩空白、重复图表和冗余表达，必须保留逐问的模型机制、推导、结果、验证和解释；正文不足时禁止用放大图片或套话补页。
 - 摘要、关键词、结论、参考文献与程序附录不可缺失。
+- 使用 `工具/build_code_appendix.py` 从 `程序/code_manifest.json` 生成真实代码附录；CUMCM 附录完整嵌入全部可运行源程序，其他赛制按 Profile 嵌入核心实现。
+- CUMCM 模板不得生成目录；必须保留 `AbstractStart/AbstractEnd` 与 `BodyStart/BodyEnd` 页码标签，实际编译后验收摘要 1 页和正文 30 页上限。
 

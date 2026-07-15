@@ -54,7 +54,10 @@ grep -q 'rotate=90' "$tikz_file" 2>/dev/null && echo "WARNING: 发现 rotate=90�
 grep -q 'bigarrow\|line width=1.8pt\|line width=2pt' "$tikz_file" 2>/dev/null || echo "WARNING: 没有粗箭头"
 
 # 圆角
-grep -q 'rounded corners' "$tikz_file" 2>/dev/null || echo "WARNING: 没有圆角"
+if grep -q 'rectangle.*rounded corners\|rounded corners.*rectangle' "$tikz_file" 2>/dev/null; then
+    echo "CRITICAL: 流程图矩形节点不得使用 rounded corners；保留 rectangle 并删除圆角参数"
+    exit 1
+fi
 
 # 节点重叠检测
 echo "--- 重叠检测 ---"

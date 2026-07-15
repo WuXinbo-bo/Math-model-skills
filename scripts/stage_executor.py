@@ -65,6 +65,7 @@ def prepare_stage_resources(workspace: Path, state: dict[str, Any], step: dict[s
         shutil.rmtree(stage_dir)
     copy_tree(SKILL_ROOT / "assets" / "shared-scripts", workspace / "工具")
     shutil.copy2(SKILL_ROOT / "scripts" / "docx_export.py", workspace / "工具" / "docx_export.py")
+    shutil.copy2(SKILL_ROOT / "scripts" / "build_code_appendix.py", workspace / "工具" / "build_code_appendix.py")
     source_dir = SKILL_ROOT / "references" / "stage_protocols" / step["skill_name"]
     copy_tree(source_dir / "references", refs_dir)
     if step["stage_id"] == "MANUSCRIPT":

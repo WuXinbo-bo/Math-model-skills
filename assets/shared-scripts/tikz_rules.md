@@ -36,7 +36,7 @@ TikZ 擅长：过程图、技术路线图、变量关系图、算法过程图（
 
 ### ⛔ 技术路线图务必按论文类别选模板，同类别内随机（禁止每篇都用同一个）
 
-技术路线图有 3 种风格模板（模板 4/9/10），**先按论文类别筛选可用模板，再在可用模板中随机选一个**。
+技术路线图保留 3 种拓扑模板（模板 4/9/10），应按节点数量、依赖关系和版面选择，不得随机选择或为了风格变化增加装饰。
 
 #### 按论文类别选模板
 
@@ -178,7 +178,7 @@ bigarrow/.style={-stealth, line width=1.4pt, color=green!70!black},
 
 - `drop shadow={opacity=0.15}` 微阴影
 
-- `rounded corners=3pt` 圆角
+- 矩形节点不得设置 `rounded corners`，统一使用直角；其他几何形状保持不变
 
 - `fill=主色!5~!6` 极浅填充（不是纯白也不是深色，参照 6 套配色方案的填充列）
 
@@ -402,7 +402,7 @@ bash 工具/tikz_check.sh 图表/结构示意图.tex 2>/dev/null || bash skills/
 
 **精致度基线（全部 TikZ 图务必达到）**：
 
-- 全部节点务必有 `rounded corners=3pt`
+- 全部矩形节点务必删除 `rounded corners`；菱形、圆形、六边形、圆柱等语义形状保持不变
 
 - 主节点务必有 `drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}`
 
@@ -549,4 +549,3 @@ bash 工具/tikz_check.sh 图表/结构示意图.tex 2>/dev/null || bash skills/
 - **用引线从轮廓拉出**：`\draw[thin, ->] (surface_point) -- ++(1, 0.5) node[right] {$P_0$}`
 
 - **坐标轴标注放在轴的末端**：`x`/`y`/`z` 轴标签放在箭头末端的外侧，避免放在轴线中间
-

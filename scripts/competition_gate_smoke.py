@@ -37,6 +37,10 @@ def main() -> int:
         assert has_section_inputs(main_tex), key
         assert font_pt is not None and font_pt >= float(profile["minimum_font_pt"]), (key, font_pt)
         assert not missing_contracts, (key, missing_contracts)
+        if key == "cumcm":
+            assert "\\tableofcontents" not in main_tex
+            for marker in ("AbstractStart", "AbstractEnd", "BodyStart", "BodyEnd"):
+                assert f"\\label{{{marker}}}" in main_tex, marker
         state_dir = base / key / "状态"
         state_dir.mkdir(parents=True, exist_ok=True)
         (state_dir / "工作流状态.json").write_text(json.dumps({"competition": key}), encoding="utf-8")

@@ -282,7 +282,7 @@ ax.text(0, n - 0.1, '基准值', ha='center', va='bottom', fontsize=8,
 
         color=COLORS['ref_line'],
 
-        bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+        bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                   edgecolor=COLORS['grid'], alpha=0.85))
 
@@ -390,7 +390,7 @@ ax.annotate('缺水最小极端解\n(min$G_t$，$Z_1$ 最小)',
 
             arrowprops=dict(arrowstyle='->', color=COLORS['up'], lw=1.2),
 
-            bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.4', facecolor='white',
 
                       edgecolor=COLORS['up'], alpha=0.9))
 
@@ -412,7 +412,7 @@ ax.annotate('均衡折中解（膝点）\n$\\omega_1 Z_1 + \\omega_2 G_t$ 最优
 
             arrowprops=dict(arrowstyle='->', color=COLORS['highlight'], lw=1.2),
 
-            bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.4', facecolor='white',
 
                       edgecolor=COLORS['highlight'], alpha=0.9))
 
@@ -432,7 +432,7 @@ ax.annotate('产量最大化极端解\n(max$Z_1$，$G_t$ 较大)',
 
             arrowprops=dict(arrowstyle='->', color=COLORS['down'], lw=1.2),
 
-            bbox=dict(boxstyle='round,pad=0.4', facecolor='white',
+            bbox=dict(boxstyle='square,pad=0.4', facecolor='white',
 
                       edgecolor=COLORS['down'], alpha=0.9))
 
@@ -544,7 +544,7 @@ ax1.fill_between([5,105],[0,100],[10,110], alpha=0.06, color=PALETTE[0])
 
 ax1.text(0.05, 0.92, f'R² = {r2:.4f}\nRMSE = {rmse:.2f}', transform=ax1.transAxes, fontsize=10,
 
-         verticalalignment='top', bbox=dict(boxstyle='round,pad=0.4', facecolor='white', edgecolor=COLORS['grid'], alpha=0.9))
+         verticalalignment='top', bbox=dict(boxstyle='square,pad=0.4', facecolor='white', edgecolor=COLORS['grid'], alpha=0.9))
 
 ax1.set_xlabel('实际值', fontsize=11); ax1.set_ylabel('预测值', fontsize=11)
 
@@ -900,7 +900,7 @@ if HAS_GPD:
 
                     fontsize=7, fontweight='bold', color='#333333',
 
-                    bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+                    bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                               edgecolor='#999999', linewidth=0.6, alpha=0.92))
 
@@ -1006,7 +1006,7 @@ else:
 
                 fontsize=7, fontweight='bold', color='#333333',
 
-                bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+                bbox=dict(boxstyle='square,pad=0.2', facecolor='white',
 
                           edgecolor='#999999', linewidth=0.6, alpha=0.92))
 
@@ -1558,7 +1558,7 @@ ax.annotate('全局最优\n(1.0, 1.0)', xy=(1, 1), xytext=(1.8, 2.2),
 
             arrowprops=dict(arrowstyle='->', color=COLORS['down'], lw=1.2),
 
-            bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor=COLORS['down'], alpha=0.9))
+            bbox=dict(boxstyle='square,pad=0.3', facecolor='white', edgecolor=COLORS['down'], alpha=0.9))
 
 fig.colorbar(cf, ax=ax, shrink=0.8, label='$\\log_{10}(f+1)$')
 
@@ -1632,7 +1632,7 @@ ax.text(makespan, -0.8, f'Makespan={makespan}h',
 
         ha='center', va='center', fontsize=9, fontweight='bold', color=COLORS['down'],
 
-        bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor=COLORS['down'], alpha=0.9))
+        bbox=dict(boxstyle='square,pad=0.3', facecolor='white', edgecolor=COLORS['down'], alpha=0.9))
 
 # 图例
 
