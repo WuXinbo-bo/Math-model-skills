@@ -1,0 +1,190 @@
+% TikZ 额外参考模板 — 神经网络 / 蛛网图 / 状态自动机
+
+% Meta-model-agent 生成 TikZ 时可参考这些绘图模式（不要直接复制，根据实际内容改编）
+
+
+
+%% ============================================================
+
+%% 模板 A: 神经网络图（输入层-隐藏层-输出层）
+
+%% 适用：机器学习模型架构、多层感知机、集成学习结构
+
+%% 关键技巧：\foreach 循环画节点，双重循环画连线
+
+%% ============================================================
+
+% \def\layersep{2.5cm}
+
+% \begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
+
+%   \tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
+
+%   \tikzstyle{input neuron}=[neuron, fill=green!50];
+
+%   \tikzstyle{output neuron}=[neuron, fill=red!50];
+
+%   \tikzstyle{hidden neuron}=[neuron, fill=blue!50];
+
+%   \tikzstyle{annot} = [text width=4em, text centered]
+
+%   % 输入层
+
+%   \foreach \name / \y in {1,...,4}
+
+%     \node[input neuron, pin=left:Input \#\y] (I-\name) at (0,-\y) {};
+
+%   % 隐藏层
+
+%   \foreach \name / \y in {1,...,5}
+
+%     \path[yshift=0.5cm] node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
+
+%   % 输出层
+
+%   \node[output neuron,pin={[pin edge={->}]right:Output}, right of=H-3] (O) {};
+
+%   % 全连接
+
+%   \foreach \source in {1,...,4}
+
+%     \foreach \dest in {1,...,5}
+
+%       \path (I-\source) edge (H-\dest);
+
+%   \foreach \source in {1,...,5}
+
+%     \path (H-\source) edge (O);
+
+%   % 层标注
+
+%   \node[annot,above of=H-1, node distance=1cm] (hl) {Hidden layer};
+
+%   \node[annot,left of=hl] {Input layer};
+
+%   \node[annot,right of=hl] {Output layer};
+
+% \end{tikzpicture}
+
+
+
+
+
+%% ============================================================
+
+%% 模板 B: 蛛网图 / 雷达图（多维度评估对比）
+
+%% 适用：模型评价、多指标对比、方案优劣分析
+
+%% 关键技巧：极坐标 + \foreach 画网格 + 半透明路径叠加
+
+%% ============================================================
+
+% \newcommand{\D}{7}          % 维度数
+
+% \newcommand{\U}{7}          % 刻度数
+
+% \newdimen\R \R=3.5cm        % 最大半径
+
+% \newdimen\L \L=4cm          % 标签半径
+
+% \newcommand{\A}{360/\D}     % 角度间隔
+
+% \begin{tikzpicture}[scale=1]
+
+%   \path (0:0cm) coordinate (O);
+
+%   % 画蛛网骨架
+
+%   \foreach \X in {1,...,\D}{\draw (\X*\A:0) -- (\X*\A:\R);}
+
+%   \foreach \Y in {0,...,\U}{
+
+%     \foreach \X in {1,...,\D}{
+
+%       \path (\X*\A:\Y*\R/\U) coordinate (D\X-\Y);
+
+%       \fill (D\X-\Y) circle (1pt);}
+
+%     \draw [opacity=0.3] (0:\Y*\R/\U)
+
+%       \foreach \X in {1,...,\D}{-- (\X*\A:\Y*\R/\U)} -- cycle;}
+
+%   % 维度标签
+
+%   \path (1*\A:\L) node {\tiny 安全性};
+
+%   \path (2*\A:\L) node {\tiny 准确率};
+
+%   \path (3*\A:\L) node {\tiny 效率};
+
+%   \path (4*\A:\L) node {\tiny 稳定性};
+
+%   \path (5*\A:\L) node {\tiny 可用性};
+
+%   \path (6*\A:\L) node {\tiny 泛化性};
+
+%   \path (7*\A:\L) node {\tiny 可解释性};
+
+%   % 方案 A（红色半透明）
+
+%   \draw [color=red,line width=1.5pt,opacity=0.5]
+
+%     (D1-5) -- (D2-6) -- (D3-4) -- (D4-5) -- (D5-3) -- (D6-4) -- (D7-6) -- cycle;
+
+%   % 方案 B（蓝色半透明）
+
+%   \draw [color=blue,line width=1.5pt,opacity=0.5]
+
+%     (D1-3) -- (D2-4) -- (D3-6) -- (D4-3) -- (D5-5) -- (D6-6) -- (D7-2) -- cycle;
+
+% \end{tikzpicture}
+
+
+
+%% ============================================================
+
+%% 模板 C: 有限状态自动机 / 状态转移图
+
+%% 适用：算法状态机、马尔可夫链、决策过程
+
+%% 关键技巧：automata 库 + state 样式 + bend/loop 连线
+
+%% ============================================================
+
+% \usetikzlibrary{arrows,automata}
+
+% \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm,semithick]
+
+%   \tikzstyle{every state}=[fill=red!30,draw=red!60,text=black]
+
+%   \node[initial,state] (A)                    {$q_a$};
+
+%   \node[state]         (B) [above right of=A] {$q_b$};
+
+%   \node[state]         (D) [below right of=A] {$q_d$};
+
+%   \node[state]         (C) [below right of=B] {$q_c$};
+
+%   \node[state]         (E) [below of=D]       {$q_e$};
+
+%   \path (A) edge              node {0,1,L} (B)
+
+%             edge              node {1,1,R} (C)
+
+%         (B) edge [loop above] node {1,1,L} (B)
+
+%             edge              node {0,1,L} (C)
+
+%         (C) edge              node {0,1,L} (D)
+
+%             edge [bend left]  node {1,0,R} (E)
+
+%         (D) edge [loop below] node {1,1,R} (D)
+
+%             edge              node {0,1,R} (A)
+
+%         (E) edge [bend left]  node {1,0,R} (A);
+
+% \end{tikzpicture}
+

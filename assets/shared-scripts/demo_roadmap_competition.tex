@@ -1,0 +1,91 @@
+% 模板 4 竞赛专用 demo — 多问题多行主节点 + 星号标注最优方法
+% 配色：blue!80 主节点 + teal!70 子节点 + gray!40 虚线框
+% 特点：每个问题可有 2 行（主节点+子节点），子节点 4 个一排，星号标注核心方法
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.0,
+  main/.style={rectangle, rounded corners=3pt,
+    minimum width=5.5cm, minimum height=0.7cm,
+    draw=blue!80, line width=0.7pt, fill=blue!6,
+    font=\small\bfseries, align=center,
+    drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}},
+  sub/.style={rectangle, rounded corners=2pt,
+    minimum width=2.4cm, minimum height=0.6cm,
+    draw=teal!70, line width=0.5pt, fill=white,
+    font=\footnotesize, align=center},
+  dashbox/.style={rectangle, rounded corners=4pt,
+    draw=gray!40, dashed, line width=0.7pt,
+    fill=gray!2},
+  bigarrow/.style={-stealth, line width=1.4pt, color=blue!70},
+  smarrow/.style={-stealth, line width=0.5pt, color=gray!50},
+  label/.style={font=\small\bfseries, color=black!70}
+]
+
+% 数据预处理
+\node[dashbox, minimum width=13cm, minimum height=2cm] (box0) at (0, 0) {};
+\node[label, anchor=north west] at (box0.north west) {\scriptsize 数据预处理};
+\node[main] (m0) at (0, 0.35) {数据预处理与探索性分析};
+\node[sub] (s0a) at (-4.2, -0.65) {异常值检测};
+\node[sub] (s0b) at (-1.4, -0.65) {Z-score标准化};
+\node[sub] (s0c) at (1.4, -0.65) {描述性统计};
+\node[sub] (s0d) at (4.2, -0.65) {相关性分析};
+\foreach \x in {s0a,s0b,s0c,s0d} {\draw[smarrow] (m0) -- (\x);}
+
+\draw[bigarrow] (0, -1.4) -- (0, -2.0);
+
+% 问题1（双行：特征筛选 + 贡献度分析）
+\node[dashbox, minimum width=13cm, minimum height=4.2cm] (box1) at (0, -4.2) {};
+\node[label, anchor=north west] at (box1.north west) {\scriptsize 问题一};
+\node[main] (m1) at (0, -2.5) {多维度特征筛选};
+\node[sub] (s1a) at (-4.2, -3.4) {Spearman相关};
+\node[sub] (s1b) at (-1.4, -3.4) {LASSO回归};
+\node[sub] (s1c) at (1.4, -3.4) {随机森林};
+\node[sub] (s1d) at (4.2, -3.4) {交集融合$^{\bigstar}$};
+\foreach \x in {s1a,s1b,s1c,s1d} {\draw[smarrow] (m1) -- (\x);}
+
+\node[main] (m1b) at (0, -4.7) {九种体质贡献度分析};
+\node[sub] (s1e) at (-2.8, -5.6) {XGBoost分类$^{\bigstar}$};
+\node[sub] (s1f) at (0, -5.6) {SHAP值分解};
+\node[sub] (s1g) at (2.8, -5.6) {贡献度排序};
+\foreach \x in {s1e,s1f,s1g} {\draw[smarrow] (m1b) -- (\x);}
+
+\draw[bigarrow] (0, -6.3) -- (0, -6.9);
+
+% 问题2（双行：预警模型 + 风险分层）
+\node[dashbox, minimum width=13cm, minimum height=4.2cm] (box2) at (0, -9.1) {};
+\node[label, anchor=north west] at (box2.north west) {\scriptsize 问题二};
+\node[main] (m2) at (0, -7.4) {风险预警模型构建};
+\node[sub] (s2a) at (-4.2, -8.3) {XGBoost$^{\bigstar}$};
+\node[sub] (s2b) at (-1.4, -8.3) {随机森林};
+\node[sub] (s2c) at (1.4, -8.3) {SVM};
+\node[sub] (s2d) at (4.2, -8.3) {逻辑回归};
+\foreach \x in {s2a,s2b,s2c,s2d} {\draw[smarrow] (m2) -- (\x);}
+
+\node[main] (m2b) at (0, -9.6) {三级风险分层与规则挖掘};
+\node[sub] (s2e) at (-3.6, -10.5) {概率阈值映射};
+\node[sub] (s2f) at (-1.0, -10.5) {CART决策树};
+\node[sub] (s2g) at (1.8, -10.5) {Apriori关联};
+\node[sub] (s2h) at (4.4, -10.5) {核心组合};
+\foreach \x in {s2e,s2f,s2g,s2h} {\draw[smarrow] (m2b) -- (\x);}
+
+\draw[bigarrow] (0, -11.2) -- (0, -11.8);
+
+% 问题3（双行：优化 + 匹配）
+\node[dashbox, minimum width=13cm, minimum height=4.2cm] (box3) at (0, -14.0) {};
+\node[label, anchor=north west] at (box3.north west) {\scriptsize 问题三};
+\node[main] (m3) at (0, -12.3) {个性化干预方案优化};
+\node[sub] (s3a) at (-4.2, -13.2) {MINLP建模};
+\node[sub] (s3b) at (-1.4, -13.2) {遗传算法$^{\bigstar}$};
+\node[sub] (s3c) at (1.4, -13.2) {枚举验证};
+\node[sub] (s3d) at (4.2, -13.2) {敏感性分析};
+\foreach \x in {s3a,s3b,s3c,s3d} {\draw[smarrow] (m3) -- (\x);}
+
+\node[main] (m3b) at (0, -14.5) {匹配规律提取};
+\node[sub] (s3e) at (-2.8, -15.4) {特征分组};
+\node[sub] (s3f) at (0, -15.4) {方案映射};
+\node[sub] (s3g) at (2.8, -15.4) {个案输出};
+\foreach \x in {s3e,s3f,s3g} {\draw[smarrow] (m3b) -- (\x);}
+
+\end{tikzpicture}
+\caption{研究技术路线图}\label{fig:roadmap}
+\end{figure}

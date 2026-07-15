@@ -1,0 +1,273 @@
+{
+  "version": 2,
+  "template_key": "comp_cumcm",
+  "display_name": "国赛数学建模 (CUMCM)",
+  "phase_order": [
+    "baseline",
+    "enhancement"
+  ],
+  "quality_modes": {
+    "standard": {
+      "championship_review_required": false
+    },
+    "championship": {
+      "championship_review_required": true,
+      "minimum_rounds": 3,
+      "maximum_rounds": 5,
+      "passing_score": 85,
+      "maximum_p0": 0,
+      "maximum_p1": 2,
+      "protocol": "references/stage_protocols/championship-review/SKILL.md",
+      "knowledge_base": "references/championship-review-method.md"
+    }
+  },
+  "workspace_dirs": [
+    "用户数据",
+    "程序",
+    "图表",
+    "论文",
+    "状态",
+    "日志",
+    "审查",
+    "当前任务",
+    "工具",
+    "参考资料",
+    "模板"
+  ],
+  "steps": [
+    {
+      "stage_id": "DISCOVERY",
+      "skill_name": "problem-intelligence",
+      "display_name": "问题情境解构",
+      "stage_guide": "references/guide-discovery.md",
+      "source_prompt": "references/stage_protocols/problem-intelligence/SKILL.md",
+      "output_files": [
+        "问题分析.md"
+      ],
+      "min_output_bytes": {
+        "问题分析.md": 1500
+      },
+      "companion_files": [],
+      "checkpoint_type": "approve",
+      "gates": [
+        "output_contract",
+        "problem_text_priority",
+        "assumption_precheck",
+        "sentence_audit",
+        "classic_problem_enhancement_scan",
+        "figure_plan_contract"
+      ],
+      "subagents": [
+        {
+          "name": "problem-reader",
+          "objective": "Read extracted problem text and attachments with the defined evidence priority."
+        },
+        {
+          "name": "problem-analyst",
+          "objective": "Split the problem into sub-questions, variables, constraints, and recommended modeling directions."
+        },
+        {
+          "name": "enhancement-checker",
+          "objective": "Check whether the problem should be enhanced from a classic template to a more specific competition variant."
+        }
+      ]
+    },
+    {
+      "stage_id": "FORMULATION",
+      "skill_name": "model-formulation",
+      "display_name": "数学机制构造",
+      "stage_guide": "references/guide-formulation.md",
+      "source_prompt": "references/stage_protocols/model-formulation/SKILL.md",
+      "output_files": [
+        "建模报告.md"
+      ],
+      "min_output_bytes": {
+        "建模报告.md": 2000
+      },
+      "companion_files": [],
+      "checkpoint_type": "feedback",
+      "gates": [
+        "output_contract",
+        "recommended_method_alignment",
+        "parameterized_assumptions",
+        "validation_checkpoint_export",
+        "enhancement_suggestion_review"
+      ],
+      "subagents": [
+        {
+          "name": "model-proposer",
+          "objective": "Propose candidate mathematical models grounded in 问题分析.md."
+        },
+        {
+          "name": "method-critic",
+          "objective": "Challenge deviations from the recommended methods and force explicit justification."
+        }
+      ]
+    },
+    {
+      "stage_id": "COMPUTATION",
+      "skill_name": "computational-realization",
+      "display_name": "计算实验实现",
+      "stage_guide": "references/guide-computation.md",
+      "source_prompt": "references/stage_protocols/computational-realization/SKILL.md",
+      "output_files": [
+        "程序/主程序.py",
+        "计算结果.md"
+      ],
+      "min_output_bytes": {
+        "程序/主程序.py": 500,
+        "计算结果.md": 1024
+      },
+      "companion_files": [
+        "图表/全部结果.json",
+        "依赖清单.txt"
+      ],
+      "checkpoint_type": "approve",
+      "gates": [
+        "output_contract",
+        "per-question_implementation",
+        "result_generation",
+        "data_support_readiness",
+        "execution_reality"
+      ],
+      "subagents": [
+        {
+          "name": "implementation-planner",
+          "objective": "Map each modeled sub-problem to concrete scripts, result files, and figure data."
+        },
+        {
+          "name": "solver-builder",
+          "objective": "Implement executable code, run the calculations, and materialize outputs."
+        },
+        {
+          "name": "results-verifier",
+          "objective": "Cross-check that each sub-problem has matching code, JSON result artifacts, and narrative results."
+        }
+      ]
+    },
+    {
+      "stage_id": "EVIDENCE",
+      "skill_name": "evidence-visualization",
+      "display_name": "证据图谱构建",
+      "stage_guide": "references/guide-evidence.md",
+      "source_prompt": "references/stage_protocols/evidence-visualization/SKILL.md",
+      "output_files": [
+        "图表/图表引用.tex"
+      ],
+      "min_output_bytes": {
+        "图表/图表引用.tex": 500
+      },
+      "companion_files": [],
+      "checkpoint_type": null,
+      "gates": [
+        "figure_output_contract",
+        "planned_figure_coverage",
+        "publication_quality_floor"
+      ],
+      "subagents": [
+        {
+          "name": "data-figure-builder",
+          "objective": "Generate data-driven publication figures and keep latex include files coherent."
+        },
+        {
+          "name": "figure-inspector",
+          "objective": "Check that every planned data figure or AI image is generated and wired into 图表引用.tex."
+        }
+      ]
+    },
+    {
+      "stage_id": "SCHEMATICS",
+      "skill_name": "systems-diagramming",
+      "display_name": "系统逻辑制图",
+      "stage_guide": "references/guide-schematics.md",
+      "source_prompt": "references/stage_protocols/systems-diagramming/SKILL.md",
+      "output_files": [
+        "图表/图表引用.tex"
+      ],
+      "min_output_bytes": {
+        "图表/图表引用.tex": 500
+      },
+      "companion_files": [],
+      "checkpoint_type": null,
+      "gates": [
+        "diagram_output_contract",
+        "planned_diagram_coverage",
+        "drawio_or_tikz_presence"
+      ],
+      "subagents": [
+        {
+          "name": "diagram-builder",
+          "objective": "Generate draw.io or TikZ-based process / architecture diagrams without breaking previous figure outputs."
+        },
+        {
+          "name": "diagram-inspector",
+          "objective": "Check that each planned roadmap or flow diagram has source, PDF, and latex include entries."
+        }
+      ]
+    },
+    {
+      "stage_id": "MANUSCRIPT",
+      "skill_name": "manuscript-synthesis",
+      "display_name": "竞赛文稿集成",
+      "stage_guide": "references/guide-manuscript.md",
+      "source_prompt": "references/stage_protocols/manuscript-synthesis/SKILL.md",
+      "output_files": [
+        "论文/论文正文.tex"
+      ],
+      "min_output_bytes": {
+        "论文/论文正文.tex": 5000
+      },
+      "companion_files": [],
+      "checkpoint_type": "approve",
+      "gates": [
+        "paper_output_contract",
+        "competition_template_alignment",
+        "chapter_completeness",
+        "figure_embedding_completeness",
+        "citation_style_compliance"
+      ],
+      "subagents": [
+        {
+          "name": "paper-writer",
+          "objective": "Assemble the full Chinese competition paper from upstream reports, figures, and code outputs."
+        },
+        {
+          "name": "format-checker",
+          "objective": "Check template choice, section structure, and body completeness before compile."
+        }
+      ]
+    },
+    {
+      "stage_id": "ASSURANCE",
+      "skill_name": "delivery-assurance",
+      "display_name": "提交质量验收",
+      "stage_guide": "references/guide-assurance.md",
+      "source_prompt": "references/stage_protocols/delivery-assurance/SKILL.md",
+      "output_files": [
+        "论文/数模论文.pdf"
+      ],
+      "min_output_bytes": {
+        "论文/数模论文.pdf": 20000
+      },
+      "companion_files": [],
+      "checkpoint_type": null,
+      "gates": [
+        "compile_success",
+        "page_limit_check",
+        "anonymous_compliance",
+        "stale_figure_check",
+        "compile_log_health"
+      ],
+      "subagents": [
+        {
+          "name": "compile-operator",
+          "objective": "Compile the LaTeX project and apply the defined cleanup and retry policy."
+        },
+        {
+          "name": "compliance-checker",
+          "objective": "Check PDF size, page count, anonymous formatting, and competition-specific constraints."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meta-model-agent"
+  short_description: "辅助研究并产出高质量、可复现的数学建模论文"
+  default_prompt: "使用 $meta-model-agent 在 Codex 工作区中辅助当前数学建模研究，从问题分析、建模求解和计算验证推进到图表、论文与最终验收；所有关键结果和最终材料由我负责核验。"

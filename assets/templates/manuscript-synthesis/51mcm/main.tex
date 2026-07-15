@@ -1,0 +1,50 @@
+% 51MCM complete paper project. XeLaTeX is required.
+% 51mcmthesis.cls: Nicole Logan, CC BY-NC 4.0. See LICENSE-CC-BY-NC-4.0.txt.
+% Electronic submission: withoutpreface removes the commitment/identity cover.
+\documentclass[withoutpreface]{51mcmthesis}
+
+\usepackage[section]{placeins}
+\usepackage{needspace}
+\usepackage{algorithm2e}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+
+\lstset{language=Python,basicstyle=\small\ttfamily,breaklines=true,frame=single,numbers=left,numberstyle=\tiny}
+
+% Only anonymous registration metadata may remain in the electronic paper.
+\title{[论文标题]}
+\tihao{[题号]}
+\duihao{[报名号]}
+\zubie{[本科/研究生]}
+
+\begin{document}
+\maketitle
+
+\begin{kwabstract}{[关键词1]\quad [关键词2]\quad [关键词3]\quad [关键词4]}
+[摘要必须依次给出问题背景、每问方法、关键数值结果、验证结论和总体结论，不写学校或队员信息。]
+\end{kwabstract}
+
+% 五一赛电子论文通常不放目录；当届通知明确要求时再启用。
+% \tableofcontents
+% \clearpage
+
+\input{sections/1_restatement}
+\input{sections/2_analysis}
+\input{sections/3_assumptions}
+\input{sections/4_symbols}
+\input{sections/5_problem1}
+\input{sections/6_problem2}
+\input{sections/7_problem3}
+\input{sections/8_validation}
+\input{sections/9_evaluation}
+\input{sections/10_conclusion}
+
+\begin{thebibliography}{99}
+% \bibitem{ref1} 作者. 文献标题[J]. 期刊, 年份, 卷(期): 页码.
+\end{thebibliography}
+
+\begin{appendices}
+\input{sections/A_code}
+\input{sections/B_additional_results}
+\end{appendices}
+\end{document}
