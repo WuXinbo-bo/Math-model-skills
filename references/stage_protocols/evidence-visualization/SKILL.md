@@ -823,7 +823,7 @@ setup_style()  # defaults to Soft palette; alternatives: tableau/npg/nejm/scienc
 
 **⛔ 地图类图形与表格（中国省级热力图）环境阐明：**
 
-- 环境已预装 `geopandas`，直接 `import geopandas as gpd` 即可
+- `geopandas` 是按题安装的可选依赖；使用前先确认 `import geopandas as gpd` 成功
 
 - GeoJSON 文件：`工具/china_provinces.geojson`（首次运行自动化从 `skills/shared-scripts/` 复制或从阿里云 DataV 下载）
 
@@ -1584,4 +1584,3 @@ echo ""
 - One script per visual, independently re-runnable
 
 - Read data from JSON/CSV, avoid hardcode values
-
