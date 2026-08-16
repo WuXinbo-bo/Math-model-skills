@@ -32,18 +32,66 @@ def valid_markdown(competition: str) -> str:
     if competition == "mcm-icm":
         return (
             "# Complete Modeling Paper\n\n**Control Number:** 1234567　　**Problem:** A\n\n"
-            "## Summary\n" + sentence * 35 + "\n\n**Keywords:** model; validation; optimization\n\n"
-            "## 1 Model Development, Results, and Validation\n" + sentence * 125 +
-            "\n\n## 2 Discussion and Interpretation\n" + sentence * 30 +
+            "## Summary\nThis study addresses capacity-constrained allocation and establishes a Capacity-Constrained Mixed-Integer Linear Programming Model.\n\n"
+            "For Problem 1, the Capacity-Constrained Mixed-Integer Linear Programming Model uses the canonical Mixed-Integer Linear Programming family and the HiGHS branch-and-bound algorithm, obtains an optimal value of 10, and passes constraint validation.\n\n"
+            "The model is interpretable, robust, and transferable, while its recommendations remain limited by the assumed capacity range.\n\n"
+            "**Keywords:** Mixed-Integer Linear Programming; HiGHS branch-and-bound algorithm\n\n"
+            "## 1 Model Development, Results, and Validation\nThe Capacity-Constrained Mixed-Integer Linear Programming Model belongs to Mixed-Integer Linear Programming and is solved by the HiGHS branch-and-bound algorithm.\n" + sentence * 155 +
+            "\n\n## 2 Discussion and Interpretation\n" + sentence * 40 +
             "\n\n## References\n[1] Test reference.\n\n<!-- CODE_APPENDIX_START -->\n## Appendix: Code and Reproducibility Notes\n<!-- CODE_APPENDIX_END -->"
             "\n\n## Report on Use of AI Tools\nNo AI-generated claim was accepted without human verification."
         )
     header = "**题号：** A　　**报名号：** 51001234　　**组别：** 本科\n\n" if competition == "51mcm" else ""
     return (
-        "# 完整数学建模论文\n\n" + header + "## 摘要\n" + sentence * 20 +
-        "\n\n**关键词：** 模型；验证；优化\n\n## 问题一模型、结果与验证\n" + sentence * 90 +
-        "\n\n## 结论与解释\n" + sentence * 20 + "\n\n## 参考文献\n[1] 测试文献。"
+        "# 完整数学建模论文\n\n" + header +
+        "## 摘要\n本文针对容量约束下的资源配置问题，建立考虑容量约束的混合整数线性规划模型完成方案优化。\n\n"
+        "针对问题一，建立考虑容量约束的混合整数线性规划模型，标准模型族为混合整数线性规划，采用HiGHS分支定界算法求解，得到最优值10，并通过约束回代验证结果可行。\n\n"
+        "该模型结构清晰，具有可解释、稳健和可推广的优点，同时适用范围受容量参数假设限制。\n\n"
+        "**关键词：** 混合整数线性规划；HiGHS分支定界算法\n\n"
+        "## 问题一模型、结果与验证\n建立考虑容量约束的混合整数线性规划模型，标准模型族为混合整数线性规划，采用HiGHS分支定界算法求解。\n" + sentence * 110 +
+        "\n\n## 结论与解释\n" + sentence * 25 + "\n\n## 参考文献\n[1] 测试文献。"
         "\n\n<!-- CODE_APPENDIX_START -->\n## 附录：程序与复现说明\n<!-- CODE_APPENDIX_END -->"
+    )
+
+
+def prepare_model_context(workspace: Path, competition: str) -> None:
+    (workspace / "问题分析.md").write_text(
+        "本赛题共 1 个子问题。\n数据模式: none\n预处理: skipped\n本题无附件数据。\n",
+        encoding="utf-8",
+    )
+    if competition == "mcm-icm":
+        name = "Capacity-Constrained Mixed-Integer Linear Programming Model"
+        family = "Mixed-Integer Linear Programming"
+        algorithm = "HiGHS branch-and-bound algorithm"
+        report = (
+            "# Modeling Report\n\n## Problem 1\n"
+            f"MODEL DEFINITION Q1 | ACADEMIC NAME: {name} | CANONICAL MODEL FAMILY: {family} | SOLVER ALGORITHM: {algorithm}\n"
+            "MODEL STRUCTURE Q1 | DECISION/STATE VARIABLES: allocation and activation variables | OBJECTIVE/STATISTICAL RELATION: minimize total cost | CORE CONSTRAINTS/EQUATIONS: capacity and balance constraints | CUSTOM MECHANISM: problem-specific capacity limits\n"
+            "Data mode: none; preprocessing: skipped.\n"
+        )
+    else:
+        name = "考虑容量约束的混合整数线性规划模型"
+        family = "混合整数线性规划"
+        algorithm = "HiGHS分支定界算法"
+        report = (
+            "# 建模报告\n\n## 问题一\n"
+            f"模型定义 Q1 | 正式名称: {name} | 标准模型族: {family} | 求解算法: {algorithm}\n"
+            "模型结构 Q1 | 决策变量/状态量: 配置量与启用变量 | 目标函数/统计关系: 最小化总成本 | 核心约束/方程: 容量与平衡约束 | 定制机制: 题目容量上限\n"
+            "数据模式: none\n预处理: skipped\n"
+        )
+    (workspace / "建模报告.md").write_text(report, encoding="utf-8")
+    result = {
+        "model_identity": {
+            "Q1": {
+                "academic_name": name,
+                "canonical_model_family": family,
+                "solver_algorithm": algorithm,
+            }
+        }
+    }
+    (workspace / "图表").mkdir(parents=True, exist_ok=True)
+    (workspace / "图表" / "全部结果.json").write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
 
@@ -67,6 +115,7 @@ def assert_competition_contract(competition: str) -> dict:
     if workspace.exists():
         shutil.rmtree(workspace)
     run(str(INIT), "--workspace", str(workspace), "--competition", competition, "--output-format", "docx")
+    prepare_model_context(workspace, competition)
     source = workspace / "论文" / "论文正文.md"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text(valid_markdown(competition), encoding="utf-8")
@@ -95,6 +144,7 @@ def main() -> int:
     if workspace.exists():
         shutil.rmtree(workspace)
     run(str(INIT), "--workspace", str(workspace), "--competition", "cumcm", "--output-format", "docx")
+    prepare_model_context(workspace, "cumcm")
     source = workspace / "论文" / "论文正文.md"
     source.parent.mkdir(parents=True, exist_ok=True)
     image_path = workspace / "论文" / "oversized_source.png"

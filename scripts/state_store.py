@@ -65,6 +65,12 @@ def default_state(workspace: Path, title: str = "Meta-model-agent", competition:
             "final_paper": None,
             "completed_at": None
         },
+        "data_preparation": {
+            "mode": "undetermined",
+            "required": None,
+            "status": "pending",
+            "detected_files": []
+        },
         "workflow_status": "initialized",
         "workspace_dir": str(workspace.resolve()),
         "current_stage_id": manifest["steps"][0]["stage_id"],
@@ -73,6 +79,27 @@ def default_state(workspace: Path, title: str = "Meta-model-agent", competition:
         "created_at": now_iso(),
         "updated_at": now_iso()
     }
+
+
+def refresh_data_preparation_state(workspace: Path, state: dict[str, Any]) -> None:
+    suffixes = {".csv", ".tsv", ".xlsx", ".xls", ".json", ".parquet", ".feather", ".txt", ".dat", ".mat", ".sav", ".dta", ".nc", ".geojson", ".shp"}
+    user_dir = workspace / "用户数据"
+    files = sorted(
+        path.relative_to(workspace).as_posix()
+        for path in user_dir.rglob("*")
+        if path.is_file() and path.suffix.lower() in suffixes
+    ) if user_dir.exists() else []
+    analysis_path = workspace / "问题分析.md"
+    analysis = analysis_path.read_text(encoding="utf-8", errors="replace").lower() if analysis_path.exists() else ""
+    detected_mode = "collected" if files and ("数据模式: collected" in analysis or "数据模式：collected" in analysis) else ("supplied" if files else "none")
+    current = state.setdefault("data_preparation", {})
+    unchanged_completed = current.get("status") == "completed" and current.get("detected_files") == files
+    current.update({
+        "mode": detected_mode,
+        "required": bool(files),
+        "status": "completed" if files and unchanged_completed else ("pending" if files else "skipped"),
+        "detected_files": files,
+    })
 
 
 def init_state(workspace: Path, title: str = "Meta-model-agent", competition: str = "cumcm", output_format: str = "pdf", force: bool = False) -> dict[str, Any]:

@@ -5,6 +5,16 @@ description: "Meta-model-agent 完成编译、版式、匿名、页数、引用�
 
 # 提交质量验收
 
+## 数据准备一致性验收
+
+有数据时，核对论文独立“数据预处理”小节、`全部结果.json.data_preparation`、`数据/processed/` 文件哈希和模型代码读取路径一致，并确认处理前后质量统计与泄漏说明真实可复核。无数据时确认存在明确豁免且没有伪造的处理后数据或清洗结论。
+
+## 模型身份与摘要一致性验收
+
+逐问核验正式名称、标准模型族、定制机制和求解算法。正式名称必须显式暴露线性/整数/鲁棒/随机规划、回归、时间序列、状态空间、车辆路径、网络流、多指标决策等标准结构；仅写“优化模型、决策模型、预测模型、综合模型”或只写 HiGHS、遗传算法等求解器/算法时不得交付。摘要和正文必须先说明建立了什么模型，再说明采用什么算法；关键词至少包含一个标准模型族。
+
+同时核验 `建模报告.md`、`全部结果.json.model_identity`、摘要和正文四处身份逐字一致，防止计算后改名或论文使用陈旧模型名称。
+
 ## 必读的版面子协议
 
 - 始终读取 `参考资料/paper-layout/core.md` 与 `body-density.md`。
@@ -563,7 +573,7 @@ Verify items:
 
 6. **No undefined references/citations**
 
-“Code appendix exists”不得只检查标题或“代码/程序”关键词。必须读取 `程序/code_manifest.json`，逐项核验源码存在、SHA-256 未陈旧、`required_in_appendix=true` 的文件均有 `CODE_FILE` 标记和真实 `\lstinputlisting`/代码块。CUMCM 要求全部完整可运行源程序；其他赛制按 Profile 核验核心实现。
+“Code appendix exists”不得只检查标题或“代码/程序”关键词。必须读取 `程序/code_manifest.json`，逐项核验源码存在、SHA-256 未陈旧、`required_in_appendix=true` 的文件均有 `CODE_FILE` 标记和真实 `\lstinputlisting`/代码块。三种赛制均只核验主程序和逐问核心实现；辅助源码只能列入支撑材料清单，附录显示名必须为英文代码名。
 
 CUMCM 页数必须读取编译后的 `AbstractStart/AbstractEnd` 与 `BodyStart/BodyEnd` 标签：摘要不超过 1 页，正文不超过 30 页，附录页数单独报告且不计入正文。模板含目录、标签缺失或仅用字符数估算时直接失败。
 

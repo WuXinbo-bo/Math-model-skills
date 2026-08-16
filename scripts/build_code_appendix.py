@@ -40,14 +40,14 @@ def source_files(workspace: Path) -> list[Path]:
         for path in program_dir.rglob("*")
         if path.is_file()
         and path.suffix in SUPPORTED_SUFFIXES
-        and not any(part.startswith(".") or part == "__pycache__" for part in path.parts)
+        and not any(part.startswith(".") or part == "__pycache__" for part in path.relative_to(program_dir).parts)
     ]
     return sorted(files, key=lambda path: (path.name != "主程序.py", path.as_posix().lower()))
 
 
 def role_for(path: Path, english: bool = False) -> str:
     name = path.stem.lower()
-    if path.name == "主程序.py" or name in {"main", "run", "solver"}:
+    if path.stem == "主程序" or name in {"main", "run", "solver"}:
         return "Unified execution entry point" if english else "统一运行入口"
     if re.search(r"(?:problem|问题)[_-]?\d+", name):
         return "Per-problem solver implementation" if english else "子问题求解实现"
@@ -56,6 +56,33 @@ def role_for(path: Path, english: bool = False) -> str:
     if "工具" in name or "util" in name or "common" in name:
         return "Shared utilities" if english else "公共函数与工具"
     return "Model computation source" if english else "模型计算源程序"
+
+
+def display_name_for(path: Path) -> str:
+    """Return a stable English publication name without renaming source files."""
+    name = path.stem.lower()
+    if path.stem == "主程序" or name in {"main", "run", "solver"}:
+        return f"main{path.suffix.lower()}"
+    match = re.search(r"(?:problem|问题)[_-]?(\d+)", name, flags=re.IGNORECASE)
+    if match:
+        return f"problem_{match.group(1)}{path.suffix.lower()}"
+    aliases = {
+        "数据处理": "data_processing",
+        "数据清洗": "data_cleaning",
+        "结果校验": "result_validation",
+        "校验": "validation",
+        "绘图": "plotting",
+        "绘图工具": "plot_utils",
+        "参数配置": "config",
+        "依赖": "dependencies",
+    }
+    if path.stem in aliases:
+        return f"{aliases[path.stem]}{path.suffix.lower()}"
+    safe = re.sub(r"[^a-z0-9]+", "_", path.stem.lower()).strip("_")
+    if not safe:
+        digest = hashlib.sha1(path.as_posix().encode("utf-8")).hexdigest()[:8]
+        safe = f"supporting_source_{digest}"
+    return f"{safe}{path.suffix.lower()}"
 
 
 def build_manifest(workspace: Path) -> dict[str, Any]:
@@ -68,10 +95,11 @@ def build_manifest(workspace: Path) -> dict[str, Any]:
     entries = []
     for path in files:
         relative = path.relative_to(workspace).as_posix()
-        is_core = path.name == "主程序.py" or bool(re.search(r"(?:problem|问题)[_-]?\d+", path.stem, re.IGNORECASE))
+        is_core = path.stem == "主程序" or path.stem.lower() in {"main", "run", "solver"} or bool(re.search(r"(?:problem|问题)[_-]?\d+", path.stem, re.IGNORECASE))
         entries.append(
             {
                 "path": relative,
+                "display_name": display_name_for(path),
                 "role": role_for(path, english=english),
                 "language": LANGUAGE_BY_SUFFIX.get(path.suffix, "text"),
                 "lines": len(path.read_text(encoding="utf-8", errors="replace").splitlines()),
@@ -79,15 +107,17 @@ def build_manifest(workspace: Path) -> dict[str, Any]:
                 "required_in_appendix": mode == "full" or is_core,
             }
         )
-    entrypoint = next((item["path"] for item in entries if item["path"].endswith("主程序.py")), None)
-    if entrypoint is None and entries:
-        entrypoint = entries[0]["path"]
+    entrypoint_item = next((item for item in entries if Path(item["display_name"]).stem == "main"), None)
+    if entrypoint_item is None and entries:
+        entrypoint_item = entries[0]
+    entrypoint = entrypoint_item["path"] if entrypoint_item else None
     manifest = {
-        "version": 1,
+        "version": 2,
         "competition": state.get("competition", "cumcm"),
         "appendix_mode": mode,
         "entrypoint": entrypoint,
-        "command": f"python {entrypoint}" if entrypoint and entrypoint.endswith(".py") else "",
+        "command": f"python {entrypoint_item['display_name']}" if entrypoint_item and entrypoint.endswith(".py") else "",
+        "audit_command": f"python {entrypoint}" if entrypoint and entrypoint.endswith(".py") else "",
         "dependencies": "依赖清单.txt" if (workspace / "依赖清单.txt").exists() else None,
         "result_artifact": "图表/全部结果.json" if (workspace / "图表" / "全部结果.json").exists() else None,
         "no_program_declared": not bool(entries),
@@ -129,27 +159,45 @@ def render_latex(manifest: dict[str, Any]) -> str:
     lines.extend([
         "This appendix references the current source files directly so the paper and computation remain synchronized."
         if english else "本附录列出支撑材料文件并直接引用当前工作区源程序，保证论文附录与实际计算代码一致。",
+        r"\subsection{Appendix Directory}" if english else r"\subsection{附录目录}",
+        r"\begin{center}",
+        r"\begin{tabular}{|p{0.28\linewidth}|p{0.62\linewidth}|}",
+        r"\hline",
+        (r"\multicolumn{2}{|l|}{\textbf{Appendix 1: Appendix Directory}}\\"
+         if english else r"\multicolumn{2}{|l|}{\textbf{附录 1：附录目录}}\\"),
+        r"\hline",
+        (r"Appendix 2: Core Code & Main and per-problem solver implementations.\\"
+         if english else r"附录 2：核心代码 & 主程序与各子问题求解程序。\\"),
+        r"\hline",
+        (r"Appendix 3: Supporting Materials & Data, validation, and utility files.\\"
+         if english else r"附录 3：支撑材料 & 数据、校验和工具文件。\\"),
+        r"\hline",
+        (r"Appendix 4: Reproducibility Notes & Execution command, dependencies, and hashes.\\"
+         if english else r"附录 4：复现说明 & 运行命令、依赖环境与哈希。\\"),
+        r"\hline",
+        r"\end{tabular}",
+        r"\end{center}",
         r"\subsection{Source File List}" if english else r"\subsection{支撑材料文件列表}",
         r"\begin{enumerate}",
     ])
     for file_index, item in enumerate(manifest.get("files", []), 1):
         if english:
             status = "included below" if item.get("required_in_appendix") else "included in supporting materials"
-            lines.append(rf"\item Source file {file_index}: {latex_escape(item['role'])}, {item['lines']} lines, {status}.")
+            lines.append(rf"\item \texttt{{{latex_escape(item['display_name'])}}}: {latex_escape(item['role'])}, {item['lines']} lines, {status}.")
         else:
-            status = "附录完整列出" if item.get("required_in_appendix") else "随支撑材料提交"
-            lines.append(rf"\item \texttt{{{latex_escape(item['path'])}}}：{latex_escape(item['role'])}，{item['lines']} 行，{status}。")
+            status = "下文展示核心实现" if item.get("required_in_appendix") else "仅列入支撑材料"
+            lines.append(rf"\item \texttt{{{latex_escape(item['display_name'])}}}：{latex_escape(item['role'])}，{item['lines']} 行，{status}。")
     lines.append(r"\end{enumerate}")
     if manifest.get("command"):
-        lines.extend([r"\subsection{Execution}" if english else r"\subsection{运行方式}", r"\begin{verbatim}", manifest["command"], r"\end{verbatim}"])
+        lines.extend([r"\subsection{Execution Alias}" if english else r"\subsection{复现入口（英文别名）}", r"\begin{verbatim}", manifest["command"], r"\end{verbatim}"])
     for index, item in enumerate(required_files(manifest), 1):
         source_path = item["path"]
         relative_from_paper = "../" + source_path
         lines.extend(
             [
                 f"% CODE_FILE: {source_path} SHA256: {item['sha256']}",
-                (rf"\subsection{{Implementation {index}: {latex_escape(item['role'])}}}" if english else rf"\subsection{{{latex_escape(item['role'])}：{latex_escape(Path(source_path).name)}}}"),
-                rf"\lstinputlisting[language={item['language']},caption={{{'Source implementation ' + str(index) if english else latex_escape(Path(source_path).name)}}}]"
+                (rf"\subsection{{Implementation {index}: {latex_escape(item['display_name'])}}}" if english else rf"\subsection{{核心实现 {index}：{latex_escape(item['display_name'])}}}"),
+                rf"\lstinputlisting[language={item['language']},caption={{{'Source implementation ' + str(index) + ': ' + latex_escape(item['display_name']) if english else latex_escape(item['display_name'])}}}]"
                 rf"{{{relative_from_paper}}}",
             ]
         )
@@ -166,23 +214,31 @@ def render_markdown(workspace: Path, manifest: dict[str, Any]) -> str:
     if manifest.get("no_program_declared"):
         lines.append("No program was used in this paper." if english else "本论文没有用到程序。")
         return "\n".join(lines) + "\n"
-    lines.extend(["### Source File List" if english else "### 支撑材料文件列表", ""])
+    lines.extend([
+        "### Appendix Directory" if english else "### 附录目录", "",
+        "| Appendix | Contents |", "|---|---|",
+        "| Appendix 1: Appendix Directory | Directory and descriptions of all appendix sections |" if english else "| 附录 1：附录目录 | 附录项目及内容说明 |",
+        "| Appendix 2: Core Code | Main and per-problem solver implementations |" if english else "| 附录 2：核心代码 | 主程序与各子问题求解程序 |",
+        "| Appendix 3: Supporting Materials | Data, validation, and utility files |" if english else "| 附录 3：支撑材料 | 数据、校验和工具文件 |",
+        "| Appendix 4: Reproducibility Notes | Execution command, dependencies, and hashes |" if english else "| 附录 4：复现说明 | 运行命令、依赖环境与哈希 |",
+        "", "### Source File List" if english else "### 支撑材料文件列表", ""
+    ])
     for file_index, item in enumerate(manifest.get("files", []), 1):
         if english:
             status = "included below" if item.get("required_in_appendix") else "included in supporting materials"
-            lines.append(f"- Source file {file_index}: {item['role']}, {item['lines']} lines, {status}.")
+            lines.append(f"- `{item['display_name']}`: {item['role']}, {item['lines']} lines, {status}.")
         else:
-            status = "附录完整列出" if item.get("required_in_appendix") else "随支撑材料提交"
-            lines.append(f"- `{item['path']}`：{item['role']}，{item['lines']} 行，{status}。")
+            status = "下文展示核心实现" if item.get("required_in_appendix") else "仅列入支撑材料"
+            lines.append(f"- `{item['display_name']}`：{item['role']}，{item['lines']} 行，{status}。")
     if manifest.get("command"):
-        lines.extend(["", "### Execution" if english else "### 运行方式", "", "```text", manifest["command"], "```"])
+        lines.extend(["", "### Execution Alias" if english else "### 复现入口（英文别名）", "", "```text", manifest["command"], "```"])
     for item in required_files(manifest):
         path = workspace / item["path"]
         lines.extend(
             [
                 "",
                 f"<!-- CODE_FILE: {item['path']} SHA256: {item['sha256']} -->",
-                (f"### Implementation: {item['role']}" if english else f"### {item['role']}：{Path(item['path']).name}"),
+                (f"### Implementation: {item['display_name']}" if english else f"### Core implementation: {item['display_name']}"),
                 "",
                 f"```{fence_for(item['language'])}",
                 path.read_text(encoding="utf-8", errors="replace").rstrip(),

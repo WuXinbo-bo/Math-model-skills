@@ -33,6 +33,13 @@ def read_bytes(path: Path) -> bytes:
     return path.read_bytes() if path.exists() else b""
 
 
+def visible_manuscript_text(text: str) -> str:
+    text = re.sub(r"(?m)(?<!\\)%.*$", " ", text)
+    text = re.sub(r"<!--.*?-->", " ", text, flags=re.DOTALL)
+    text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)
+    return text
+
+
 def load_json(path: Path) -> Any:
     if not path.exists():
         return {}
@@ -81,6 +88,272 @@ def expected_problem_count(workspace: Path) -> int:
         if counted:
             candidates.append(counted)
     return max(candidates) if candidates else 0
+
+
+MODEL_DEFINITION_RE = re.compile(
+    r"(?mi)^模型定义\s*Q(?P<question>\d+)\s*\|\s*正式名称\s*[:：]\s*(?P<name>[^|\n]+)"
+    r"\s*\|\s*标准模型族\s*[:：]\s*(?P<family>[^|\n]+)"
+    r"\s*\|\s*求解算法\s*[:：]\s*(?P<algorithm>[^|\n]+)"
+)
+
+MODEL_DEFINITION_EN_RE = re.compile(
+    r"(?mi)^model\s+definition\s+Q(?P<question>\d+)\s*\|\s*academic\s+name\s*[:：]\s*(?P<name>[^|\n]+)"
+    r"\s*\|\s*canonical\s+model\s+family\s*[:：]\s*(?P<family>[^|\n]+)"
+    r"\s*\|\s*solver\s+algorithm\s*[:：]\s*(?P<algorithm>[^|\n]+)"
+)
+
+MODEL_STRUCTURE_RE = re.compile(
+    r"(?mi)^模型结构\s*Q(?P<question>\d+)\s*\|\s*决策变量/状态量\s*[:：]\s*(?P<variables>[^|\n]+)"
+    r"\s*\|\s*目标函数/统计关系\s*[:：]\s*(?P<objective>[^|\n]+)"
+    r"\s*\|\s*核心约束/方程\s*[:：]\s*(?P<constraints>[^|\n]+)"
+    r"\s*\|\s*定制机制\s*[:：]\s*(?P<mechanism>[^|\n]+)"
+)
+
+MODEL_STRUCTURE_EN_RE = re.compile(
+    r"(?mi)^model\s+structure\s+Q(?P<question>\d+)\s*\|\s*decision/state\s+variables\s*[:：]\s*(?P<variables>[^|\n]+)"
+    r"\s*\|\s*objective/statistical\s+relation\s*[:：]\s*(?P<objective>[^|\n]+)"
+    r"\s*\|\s*core\s+constraints/equations\s*[:：]\s*(?P<constraints>[^|\n]+)"
+    r"\s*\|\s*custom\s+mechanism\s*[:：]\s*(?P<mechanism>[^|\n]+)"
+)
+
+CANONICAL_MODEL_FAMILIES: dict[str, tuple[str, ...]] = {
+    "linear_programming": (r"(?<!非)(?<!整数)线性规划", r"(?i)(?<!integer )\blinear programming\b", r"(?i)\bLP\b"),
+    "integer_programming": (r"(?<!混合)整数规划", r"(?i)(?<!mixed-)(?<!mixed )\binteger programming\b", r"(?i)\bIP\b"),
+    "mixed_integer_programming": (r"混合整数(?:线性|非线性)?规划", r"(?i)\bmixed[- ]integer(?: linear| nonlinear)? programming\b", r"(?i)\bMI(?:L|N)?P\b"),
+    "nonlinear_programming": (r"非线性规划", r"(?i)\bnonlinear programming\b", r"(?i)\bNLP\b"),
+    "quadratic_programming": (r"二次规划", r"(?i)\bquadratic programming\b", r"(?i)\bQP\b"),
+    "multiobjective_optimization": (r"多目标(?:规划|优化)", r"(?i)\bmulti[- ]objective (?:programming|optimization|optimisation)\b"),
+    "robust_optimization": (r"鲁棒优化", r"(?i)\brobust (?:optimization|optimisation)\b"),
+    "stochastic_programming": (r"随机规划", r"(?i)\bstochastic programming\b"),
+    "chance_constrained_programming": (r"机会约束规划", r"(?i)\bchance[- ]constrained programming\b"),
+    "network_flow": (r"网络流|最短路|最大流", r"(?i)\bnetwork flow|shortest path|maximum flow\b"),
+    "vehicle_routing": (r"车辆路径|取送货路径|拨号乘车", r"(?i)\bvehicle routing|pickup and delivery|dial[- ]a[- ]ride\b", r"(?i)\bVRP\b"),
+    "facility_location": (r"设施选址|选址分配", r"(?i)\bfacility location|location[- ]allocation\b"),
+    "assignment": (r"线性指派|二分图匹配|线性分配模型", r"(?i)\blinear assignment|bipartite matching\b"),
+    "scheduling": (r"机组承诺|作业车间调度|流水车间调度|并行机调度", r"(?i)\bunit commitment|job[- ]shop scheduling|flow[- ]shop scheduling|parallel[- ]machine scheduling\b"),
+    "regression": (r"回归模型|动态回归", r"(?i)\bregression model|dynamic regression\b"),
+    "time_series": (r"时间序列|ARIMA|SARIMA", r"(?i)\btime[- ]series|ARIMA|SARIMA\b"),
+    "state_space": (r"状态空间", r"(?i)\bstate[- ]space\b"),
+    "grey_prediction": (r"灰色预测|GM\s*\(1\s*,\s*1\)", r"(?i)\bgrey prediction|gray prediction|GM\s*\(1\s*,\s*1\)\b"),
+    "markov": (r"马尔可夫", r"(?i)\bMarkov\b"),
+    "queueing": (r"排队模型|排队论", r"(?i)\bqueueing model|queuing model\b"),
+    "differential_equation": (r"微分方程", r"(?i)\bdifferential equation\b"),
+    "difference_equation": (r"差分方程", r"(?i)\bdifference equation\b"),
+    "compartmental": (r"SIR|SEIR|仓室模型", r"(?i)\bSIR|SEIR|compartmental model\b"),
+    "bayesian": (r"贝叶斯", r"(?i)\bBayesian\b"),
+    "multicriteria_decision": (r"多指标决策|多准则决策|层次分析|TOPSIS|数据包络分析", r"(?i)\bmulti[- ]criteria decision|AHP|TOPSIS|data envelopment analysis\b", r"(?i)\bDEA\b"),
+    "dimension_reduction": (r"主成分分析|因子分析", r"(?i)\bprincipal component analysis|factor analysis\b", r"(?i)\bPCA\b"),
+    "clustering_classification": (r"聚类模型|分类模型", r"(?i)\bclustering model|classification model\b"),
+    "machine_learning": (r"神经网络|随机森林|支持向量机|梯度提升", r"(?i)\bneural network|random forest|support vector machine|gradient boosting\b", r"(?i)\bSVM|XGBoost\b"),
+    "simulation": (r"系统动力学|元胞自动机|智能体仿真|蒙特卡洛仿真", r"(?i)\bsystem dynamics|cellular automaton|agent[- ]based simulation|Monte Carlo simulation\b"),
+    "game_theory": (r"博弈模型|博弈论", r"(?i)\bgame[- ]theoretic model|game theory\b"),
+    "graphical_model": (r"图模型|贝叶斯网络", r"(?i)\bgraphical model|Bayesian network\b"),
+    "control": (r"最优控制|模型预测控制", r"(?i)\boptimal control|model predictive control\b", r"(?i)\bMPC\b"),
+}
+
+VAGUE_MODEL_FAMILIES = {
+    "优化", "优化模型", "决策", "决策模型", "预测", "预测模型", "评价", "评价模型",
+    "综合模型", "数学模型", "智能模型", "advanced model", "optimization model",
+    "decision model", "prediction model", "evaluation model", "mathematical model",
+}
+
+
+def matched_model_families(text: str) -> set[str]:
+    return {
+        family
+        for family, patterns in CANONICAL_MODEL_FAMILIES.items()
+        if any(re.search(pattern, text) for pattern in patterns)
+    }
+
+
+def model_identity_issues(name: str, family: str, algorithm: str, english_route: bool) -> list[str]:
+    issues: list[str] = []
+    family_matches = matched_model_families(family)
+    name_matches = matched_model_families(name)
+    if family.strip().lower() in VAGUE_MODEL_FAMILIES or not family_matches:
+        issues.append("canonical model family is vague or not recognized")
+    if not name_matches:
+        issues.append("academic model name does not expose a canonical mathematical model family")
+    elif family_matches and not family_matches.intersection(name_matches):
+        issues.append("academic model name and canonical model family identify different structures")
+    if english_route:
+        if not re.search(r"(?i)model|regression|programming|optimization|optimisation|routing|analysis|control|simulation|network", name):
+            issues.append("English academic model name is not publication-facing")
+    elif "模型" not in name:
+        issues.append("Chinese academic model name must contain 模型")
+    if len(algorithm.strip()) < 2:
+        issues.append("solver algorithm is empty or too vague")
+    return issues
+
+
+def model_definition_records(text: str) -> dict[str, dict[str, str]]:
+    records: dict[str, dict[str, str]] = {}
+    for match in MODEL_DEFINITION_RE.finditer(text):
+        question = f"Q{match.group('question')}"
+        records[question] = {
+            "academic_name": match.group("name").strip(),
+            "model_family": match.group("family").strip(),
+            "solver_algorithm": match.group("algorithm").strip(),
+        }
+    for match in MODEL_DEFINITION_EN_RE.finditer(text):
+        question = f"Q{match.group('question')}"
+        records[question] = {
+            "academic_name": match.group("name").strip(),
+            "model_family": match.group("family").strip(),
+            "solver_algorithm": match.group("algorithm").strip(),
+        }
+    for pattern in (MODEL_STRUCTURE_RE, MODEL_STRUCTURE_EN_RE):
+        for match in pattern.finditer(text):
+            question = f"Q{match.group('question')}"
+            if question in records:
+                records[question].update({
+                    "variables": match.group("variables").strip(),
+                    "objective_relation": match.group("objective").strip(),
+                    "constraints_equations": match.group("constraints").strip(),
+                    "custom_mechanism": match.group("mechanism").strip(),
+                })
+    return records
+
+
+def model_definition_contract_issues(workspace: Path, expected: int) -> list[str]:
+    records = model_definition_records(read_text(workspace / "建模报告.md"))
+    profile_key, _ = active_profile(workspace)
+    english_route = profile_key == "mcm-icm"
+    issues: list[str] = []
+    for index in range(1, expected + 1):
+        question = f"Q{index}"
+        record = records.get(question)
+        if not record:
+            issues.append(f"{question}: missing explicit model definition (name, canonical family, and solver algorithm)")
+            continue
+        issues.extend(
+            f"{question}: {issue}"
+            for issue in model_identity_issues(
+                record["academic_name"], record["model_family"], record["solver_algorithm"], english_route
+            )
+        )
+        structure_fields = ("variables", "objective_relation", "constraints_equations", "custom_mechanism")
+        missing_structure = [field for field in structure_fields if len(record.get(field, "").strip()) < 2]
+        if missing_structure:
+            issues.append(f"{question}: model structure card is incomplete: {missing_structure}")
+    return issues
+
+
+def result_model_identity_issues(workspace: Path, expected: int) -> list[str]:
+    report_records = model_definition_records(read_text(workspace / "建模报告.md"))
+    aggregate = load_json(workspace / "图表" / "全部结果.json")
+    payload = aggregate.get("model_identity", {}) if isinstance(aggregate, dict) else {}
+    if not isinstance(payload, dict):
+        return ["全部结果.json.model_identity must be an object keyed by Q1/Q2/..."]
+    issues: list[str] = []
+    for index in range(1, expected + 1):
+        question = f"Q{index}"
+        report = report_records.get(question)
+        result = payload.get(question)
+        if not isinstance(result, dict):
+            issues.append(f"{question}: 全部结果.json lacks model_identity evidence")
+            continue
+        if not report:
+            issues.append(f"{question}: report model identity is missing")
+            continue
+        expected_values = {
+            "academic_name": report["academic_name"],
+            "canonical_model_family": report["model_family"],
+            "solver_algorithm": report["solver_algorithm"],
+        }
+        for field, expected_value in expected_values.items():
+            if str(result.get(field) or "").strip() != expected_value:
+                issues.append(f"{question}: result {field} does not match the formulation identity")
+    return issues
+
+
+def abstract_source(text: str) -> str:
+    visible = visible_manuscript_text(text)
+    patterns = [
+        r"(?is)\\begin\{summarysheet\}(.*?)\\end\{summarysheet\}",
+        r"(?is)\\begin\{kwabstract\}.*?\}(.*?)\\end\{kwabstract\}",
+        r"(?is)\\begin\{abstract\}(.*?)\\end\{abstract\}",
+        r"(?is)\\section\*?\{\s*(?:摘要|Summary|Abstract)\s*\}(.*?)(?=\\label\{AbstractEnd\}|\\section|\\input|\\label\{BodyStart\}|\Z)",
+        r"(?is)(?:^|\n)##?\s*(?:摘要|Summary|Abstract)\b(.*?)(?=\n(?:#|\\section|\\input|\\label\{BodyStart\})|\Z)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, visible)
+        if match:
+            return match.group(1).strip()
+    return ""
+
+
+def abstract_structure_issues(workspace: Path, source: str, expected: int) -> list[str]:
+    abstract = abstract_source(source)
+    if not abstract:
+        return ["abstract content cannot be isolated for structural validation"]
+    report_records = model_definition_records(read_text(workspace / "建模报告.md"))
+    paragraphs = [part.strip() for part in re.split(r"\n\s*\n", abstract) if part.strip()]
+    key, _ = active_profile(workspace)
+    minimum_paragraphs = expected + 2 if key in {"cumcm", "51mcm"} else 3
+    issues: list[str] = []
+    if len(paragraphs) < minimum_paragraphs:
+        issues.append(f"abstract has {len(paragraphs)} paragraphs; requires at least {minimum_paragraphs} structured paragraphs")
+    lowered = abstract.lower()
+    for question, record in sorted(report_records.items()):
+        if record["academic_name"].lower() not in lowered:
+            issues.append(f"{question}: abstract omits the registered academic model name")
+        if record["model_family"].lower() not in lowered:
+            issues.append(f"{question}: abstract omits the registered canonical model family")
+        if record["solver_algorithm"].lower() not in lowered:
+            issues.append(f"{question}: abstract omits the registered solver algorithm")
+    result_terms = ["结果", "得到", "目标值", "达到", "降低", "提高", "最优", "result", "achieved", "reduced", "improved", "optimal", "score", "value"]
+    validation_terms = ["验证", "检验", "灵敏度", "稳健", "validation", "test", "sensitivity", "robust"]
+    cn_by_index = {value: key for key, value in CN_DIGITS.items()}
+    for index in range(1, expected + 1):
+        cn_label = cn_by_index.get(index, str(index))
+        question_pattern = rf"(?:问题\s*(?:{index}|{cn_label})|problem\s*{index}|q{index})"
+        question_paragraphs = [p.lower() for p in paragraphs if re.search(question_pattern, p, flags=re.IGNORECASE)]
+        if not question_paragraphs:
+            issues.append(f"Q{index}: abstract lacks a dedicated per-question paragraph")
+            continue
+        joined = " ".join(question_paragraphs)
+        if not any(term.lower() in joined for term in result_terms):
+            issues.append(f"Q{index}: per-question abstract paragraph lacks a result statement")
+        if not any(term.lower() in joined for term in validation_terms):
+            issues.append(f"Q{index}: per-question abstract paragraph lacks a validation statement")
+    visible_source = visible_manuscript_text(source)
+    keyword_text = ""
+    for pattern in (
+        r"(?is)\\keywords\{([^}]*)\}",
+        r"(?is)\\begin\{kwabstract\}\{([^}]*)\}",
+        r"(?im)^(?:\*\*)?(?:关键词|keywords?)\s*[:：]\s*(.*?)(?:\*\*)?\s*$",
+        r"(?is)(?:关键词|keywords?)\s*[:：]\s*(.*?)(?:\n\s*\\end\{|\Z)",
+    ):
+        keyword_match = re.search(pattern, visible_source)
+        if keyword_match:
+            keyword_text = keyword_match.group(1).strip()
+            break
+    if not keyword_text:
+        issues.append("abstract keywords cannot be isolated")
+    else:
+        keyword_text = re.sub(r"[{}\\]|quad|qquad", " ", keyword_text)
+        keywords = [item.strip(" \t;；,，*") for item in re.split(r"[;；,，]", keyword_text) if item.strip(" \t;；,，*")]
+        family_ids = {
+            family
+            for record in report_records.values()
+            for family in matched_model_families(record["model_family"])
+        }
+        algorithms = [record["solver_algorithm"].lower() for record in report_records.values()]
+        invalid_keywords = []
+        for keyword in keywords:
+            keyword_lower = keyword.lower()
+            model_keyword = bool(matched_model_families(keyword).intersection(family_ids))
+            algorithm_keyword = any(keyword_lower in value or value in keyword_lower for value in algorithms)
+            if not model_keyword and not algorithm_keyword:
+                invalid_keywords.append(keyword)
+        if not keywords:
+            issues.append("abstract has no keywords")
+        elif invalid_keywords:
+            issues.append(f"abstract keywords are not canonical model families or registered solver algorithms: {invalid_keywords}")
+        if keywords and not any(matched_model_families(keyword).intersection(family_ids) for keyword in keywords):
+            issues.append("abstract keywords must include at least one canonical mathematical model family")
+    return issues
 
 
 def has_any(text: str, keywords: list[str]) -> bool:
@@ -175,9 +448,135 @@ def published_figure_files(workspace: Path) -> list[Path]:
     return files
 
 
-def has_user_data_files(workspace: Path) -> bool:
+DATA_FILE_SUFFIXES = {
+    ".csv", ".tsv", ".xlsx", ".xls", ".json", ".parquet", ".feather",
+    ".txt", ".dat", ".mat", ".sav", ".dta", ".nc", ".geojson", ".shp",
+}
+
+
+def user_data_files(workspace: Path) -> list[Path]:
     user_dir = workspace / "用户数据"
-    return user_dir.exists() and any(path.is_file() for path in user_dir.iterdir())
+    if not user_dir.exists():
+        return []
+    return sorted(
+        path for path in user_dir.rglob("*")
+        if path.is_file() and path.suffix.lower() in DATA_FILE_SUFFIXES
+    )
+
+
+def has_user_data_files(workspace: Path) -> bool:
+    return bool(user_data_files(workspace))
+
+
+def data_preparation_payload(aggregate: Any) -> dict[str, Any]:
+    if isinstance(aggregate, dict) and isinstance(aggregate.get("data_preparation"), dict):
+        return aggregate["data_preparation"]
+    if isinstance(aggregate, list):
+        for item in aggregate:
+            if isinstance(item, dict) and isinstance(item.get("data_preparation"), dict):
+                return item["data_preparation"]
+    return {}
+
+
+def data_preparation_contract_issues(workspace: Path) -> list[str]:
+    data_files = user_data_files(workspace)
+    planning = planning_text(workspace)
+    if not data_files:
+        if not has_any(planning.lower(), ["数据模式: none", "数据模式：none", "无附件数据", "无外部数据", "no supplied data"]):
+            return ["data-free workflow lacks an explicit preprocessing waiver"]
+        return []
+
+    issues: list[str] = []
+    script = workspace / "程序" / "data_preprocessing.py"
+    if not script.exists():
+        issues.append("missing 程序/data_preprocessing.py for a data-bearing workflow")
+    aggregate = load_json(workspace / "图表" / "全部结果.json")
+    payload = data_preparation_payload(aggregate)
+    if not payload:
+        return issues + ["全部结果.json lacks data_preparation evidence"]
+    if payload.get("mode") not in {"supplied", "collected"} or payload.get("status") != "completed":
+        issues.append("data_preparation mode/status must be supplied|collected and completed")
+    source_entries = payload.get("source_files")
+    registered: dict[str, str] = {}
+    if isinstance(source_entries, list):
+        for item in source_entries:
+            if isinstance(item, dict) and item.get("path") and item.get("sha256"):
+                registered[str(item["path"]).replace("\\", "/")] = str(item["sha256"])
+    expected_sources = {
+        path.relative_to(workspace).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in data_files
+    }
+    if registered != expected_sources:
+        issues.append("data_preparation source file paths or hashes do not match current user data")
+    processed = payload.get("processed_file")
+    if not isinstance(processed, dict) or not processed.get("path") or not processed.get("sha256"):
+        issues.append("data_preparation processed_file contract is missing")
+    else:
+        processed_path = (workspace / str(processed["path"])).resolve()
+        processed_root = (workspace / "数据" / "processed").resolve()
+        if not processed_path.exists() or processed_root not in processed_path.parents:
+            issues.append("processed model input must exist under 数据/processed")
+        elif hashlib.sha256(processed_path.read_bytes()).hexdigest() != processed.get("sha256"):
+            issues.append("processed model input hash is stale")
+        else:
+            code_dir = workspace / "程序"
+            code_corpus = "\n".join(
+                read_text(path)
+                for path in code_dir.rglob("*")
+                if path.is_file() and path.suffix.lower() in {".py", ".r", ".m", ".jl", ".cpp", ".c", ".java"}
+                and path.name != "data_preprocessing.py"
+            ) if code_dir.exists() else ""
+            if processed_path.name not in code_corpus and str(processed["path"]).replace("\\", "/") not in code_corpus:
+                issues.append("model programs do not reference the frozen processed input")
+    if not isinstance(payload.get("steps"), list) or not payload.get("steps"):
+        issues.append("data_preparation steps are missing")
+    for field in ("quality_before", "quality_after"):
+        if not isinstance(payload.get(field), dict) or not payload.get(field):
+            issues.append(f"data_preparation {field} statistics are missing")
+    leakage = payload.get("leakage_control")
+    if not isinstance(leakage, dict) or not leakage:
+        issues.append("data_preparation leakage_control is missing")
+    elif leakage.get("applicable", True):
+        if leakage.get("split_before_fit") is not True or leakage.get("train_only_fit") is not True:
+            issues.append("preprocessing must split before fitting and fit transformations on training data only")
+    elif not str(leakage.get("reason") or "").strip():
+        issues.append("non-applicable leakage control requires a reason")
+    return issues
+
+
+def manuscript_data_preparation_issues(workspace: Path, text: str) -> list[str]:
+    if not has_user_data_files(workspace):
+        return []
+    visible = visible_manuscript_text(text)
+    issues: list[str] = []
+    heading = re.search(
+        r"(?im)^(?:#{1,6}\s*|\\(?:sub)*section\*?\{)\s*(?:数据预处理|Data Preprocessing)",
+        visible,
+    )
+    if not heading:
+        return ["data-bearing manuscript lacks an independent data preprocessing subsection under model preparation"]
+    tail = visible[heading.end():]
+    next_heading = re.search(r"(?im)^(?:#{1,6}\s+|\\(?:sub)*section\*?\{)", tail)
+    section_text = tail[:next_heading.start()] if next_heading else tail
+    context_checks = {
+        "source/provenance": ["数据来源", "来源", "provenance", "source"],
+        "frozen model input": ["冻结模型输入", "冻结输入", "processed input", "frozen model input"],
+    }
+    section_checks = {
+        "preprocessing method": ["缺失", "异常", "编码", "标准化", "归一化", "清洗", "missing", "outlier", "encoding", "standardization", "normalization", "cleaning", "transformation"],
+        "before-processing quality evidence": ["处理前", "预处理前", "before preprocessing", "before-processing"],
+        "after-processing quality evidence": ["处理后", "预处理后", "after preprocessing", "after-processing"],
+        "leakage control": ["泄漏", "先划分", "训练集拟合", "leakage", "split before", "training data only"],
+    }
+    visible_lowered = visible.lower()
+    for label, terms in context_checks.items():
+        if not any(term.lower() in visible_lowered for term in terms):
+            issues.append(f"data preparation chapter lacks {label}")
+    lowered = section_text.lower()
+    for label, terms in section_checks.items():
+        if not any(term.lower() in lowered for term in terms):
+            issues.append(f"data preprocessing subsection lacks {label}")
+    return issues
 
 
 def placeholder_patterns() -> list[str]:
@@ -396,6 +795,8 @@ def code_appendix_contract_issues(workspace: Path, corpus: str) -> list[str]:
         return [f"code manifest is unreadable: {exc}"]
     issues: list[str] = []
     files = manifest.get("files", [])
+    if manifest.get("appendix_mode") != "core":
+        issues.append("code appendix must use core mode; full-source embedding is not allowed")
     if manifest.get("no_program_declared"):
         if not has_any(corpus, ["本论文没有用到程序", "no program was used", "No program was used"]):
             issues.append("no-program manifest requires an explicit appendix declaration")
@@ -419,14 +820,21 @@ def code_appendix_contract_issues(workspace: Path, corpus: str) -> list[str]:
         actual_hash = hashlib.sha256(source.read_bytes()).hexdigest()
         if item.get("sha256") != actual_hash:
             issues.append(f"stale source hash: {rel}")
+        display_name = str(item.get("display_name") or "")
+        if not display_name or not re.fullmatch(r"[A-Za-z0-9._-]+", display_name):
+            issues.append(f"appendix display name must be an English code name: {rel}")
+        normalized = rel.replace("\\", "/")
         if item.get("required_in_appendix"):
             required_count += 1
             actual_lines = len(read_text(source).splitlines())
             required_lines += actual_lines
-            normalized = rel.replace("\\", "/")
             marker = f"CODE_FILE: {normalized}"
             if marker not in corpus and normalized not in corpus and Path(normalized).name not in corpus:
                 issues.append(f"required code is not embedded in appendix: {normalized}")
+        else:
+            marker = f"CODE_FILE: {normalized}"
+            if marker in corpus:
+                issues.append(f"supporting source must not be expanded as full code: {rel}")
     if required_count == 0:
         issues.append("code manifest selects no required appendix files")
     minimum = int(policy.get("minimum_code_lines", 20))
@@ -552,6 +960,13 @@ def check_s1(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require("建模" in text, "modeling_direction", "analysis includes modeling direction")
     result.require(has_any(text, ["图表", "流程图", "技术路线图"]), "figure_plan", "analysis includes figure or roadmap planning")
     result.require("数据探索" in text, "data_exploration", "analysis includes data exploration or no-data treatment")
+    data_files = user_data_files(workspace)
+    if data_files:
+        result.require(has_any(text.lower(), ["数据模式: supplied", "数据模式：supplied", "数据模式: collected", "数据模式：collected"]), "data_mode", "analysis explicitly declares supplied or collected data mode")
+        result.require(has_any(text, ["数据预处理", "预处理计划", "质量审查", "冻结模型输入"]), "data_preparation_plan", "analysis plans data audit, preprocessing, and frozen model input")
+    else:
+        result.require(has_any(text.lower(), ["数据模式: none", "数据模式：none"]), "data_mode", "analysis explicitly declares data mode none")
+        result.require(has_any(text, ["无附件数据", "无外部数据", "no supplied data"]), "data_preparation_waiver", "analysis explicitly waives preprocessing because no data exists")
     result.require("工作计划" in text, "work_plan", "analysis includes a work plan")
     result.require("假设敏感性预检" in text, "assumption_precheck", "analysis records assumption sensitivity precheck")
     result.require(has_any(text, ["题目逐句拆解表", "句子级五问审查"]), "sentence_audit", "analysis includes sentence-level audit tables")
@@ -579,6 +994,8 @@ def check_s2(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     modeled = heading_problem_count(text)
     if expected:
         result.require(modeled >= expected, "problem_coverage", f"modeled subproblems {modeled} >= expected {expected}")
+        definition_issues = model_definition_contract_issues(workspace, expected)
+        result.require(not definition_issues, "model_definition_contract", f"each question has a named model distinct from its solver algorithm: {definition_issues or 'all ok'}")
     result.require(has_any(text, ["目标函数", "min", "max", "\\begin{align}", "\\["]), "objective_or_formula", "report includes objective or formula markers")
     result.require(has_any(text, ["约束", "subject to", "s.t."]), "constraints", "report includes constraints")
     result.require(has_any(text, ["验证", "灵敏度", "鲁棒", "检验"]), "verification_plan", "report includes verification/sensitivity/robustness")
@@ -589,6 +1006,13 @@ def check_s2(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require("已对照防错手册审查" in text, "error_prevention_ack", "report acknowledges the error-prevention review")
     result.require("验证检查点" in text, "validation_checkpoints", "report includes validation checkpoints for computational-realization")
     result.require("图表预规划" in text, "figure_plan_carried", "report carries the figure plan forward")
+    if has_user_data_files(workspace):
+        result.require("预处理合同" in text, "data_preparation_contract", "data-bearing report defines a preprocessing contract")
+        result.require(has_any(text, ["缺失值", "异常值", "编码", "单位统一", "标准化", "归一化"]), "data_preparation_strategy", "preprocessing contract defines data quality and transformation strategies")
+        result.require(has_any(text, ["数据泄漏", "先划分后拟合", "训练集拟合", "split before", "train-only"]), "data_leakage_boundary", "preprocessing contract defines the leakage boundary")
+        result.require(has_any(text, ["冻结模型输入", "冻结输入", "processed input"]), "frozen_input_contract", "report defines the canonical frozen model input")
+    else:
+        result.require(has_any(text.lower(), ["数据模式: none", "数据模式：none", "预处理: skipped", "预处理：skipped"]), "data_preparation_skip", "no-data report records the preprocessing skip")
     if has_any(text, ["优化", "线性规划", "整数规划", "目标函数", "最优"]):
         result.require("结构性验证输入" in text, "structural_validation_inputs", "optimization-like reports include structural validation inputs")
     return result.to_dict()
@@ -642,8 +1066,12 @@ def check_s3(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         "依赖清单.txt lists at least one scientific library",
     )
     result.require(not contains_forbidden_figure_output(workspace), "no_pdf_figure_output", "computational-realization does not save pdf figures")
+    identity_issues = result_model_identity_issues(workspace, expected)
+    result.require(not identity_issues, "result_model_identity", f"computed result identities match formulation: {identity_issues or 'all ok'}")
+    data_issues = data_preparation_contract_issues(workspace)
+    result.require(not data_issues, "data_preparation_contract", f"conditional data preparation is complete and auditable: {data_issues or 'all ok'}")
     if has_user_data_files(workspace):
-        result.require((workspace / "程序" / "数据校验.py").exists(), "data_check_script", "data-bearing workflows include 程序/数据校验.py")
+        result.require(has_any(results_text, ["数据预处理", "冻结模型输入", "Data Preprocessing"]), "data_preparation_summary", "计算结果.md summarizes preprocessing and the frozen model input")
     result.warn_if(not (workspace / "程序" / "通用工具.py").exists(), "utils_skeleton", "程序/通用工具.py is missing")
     code_manifest_path = workspace / "程序" / "code_manifest.json"
     result.require(code_manifest_path.exists(), "code_manifest", "程序/code_manifest.json exists")
@@ -856,7 +1284,13 @@ def competition_source_checks(workspace: Path, main_tex: str, corpus: str, resul
     for term in profile.get("required_source_terms", []):
         result.require(term.lower() in main_tex.lower(), f"competition_source:{term}", f"required template marker present: {term}")
     for term in profile.get("required_content_terms", []):
-        result.require(term.lower() in corpus.lower(), f"competition_content:{term}", f"required paper content present: {term}")
+        aliases = {
+            ("cumcm", "摘要"): ["\\begin{abstract}", "\\section*{摘要}", "摘要"],
+            ("cumcm", "关键词"): ["\\keywords", "关键词"],
+            ("51mcm", "摘要"): ["\\begin{kwabstract}", "摘要"],
+            ("51mcm", "关键词"): ["\\begin{kwabstract}", "关键词"],
+        }.get((key, term), [term])
+        result.require(has_any(corpus.lower(), [alias.lower() for alias in aliases]), f"competition_content:{term}", f"required paper content present: {term}")
     forbidden = [term for term in profile.get("forbidden_identity_terms", []) if term.lower() in corpus.lower()]
     result.require(not forbidden, "competition_identity", f"forbidden identity fields absent: {forbidden or 'none'}")
     class_path = resolve_competition_class(workspace, profile)
@@ -897,6 +1331,15 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         result.require(has_any(markdown, ["参考文献", "References"]), "docx_references", "DOCX source includes references")
         result.require(has_any(markdown, ["验证", "检验", "灵敏度", "鲁棒", "Validation", "Sensitivity", "Robustness"]), "docx_validation", "DOCX source includes validation")
         result.require(has_any(markdown, ["解释", "表明", "说明", "意味着", "interpret", "indicate", "discussion"]), "docx_interpretation", "DOCX source includes result interpretation")
+        expected = expected_problem_count(workspace)
+        definition_issues = model_definition_contract_issues(workspace, expected)
+        result.require(not definition_issues, "model_definition_contract", f"model definitions are explicit before manuscript synthesis: {definition_issues or 'all ok'}")
+        result_identity_issues = result_model_identity_issues(workspace, expected)
+        result.require(not result_identity_issues, "result_model_identity", f"computed result identities remain aligned: {result_identity_issues or 'all ok'}")
+        abstract_issues = abstract_structure_issues(workspace, markdown, expected)
+        result.require(not abstract_issues, "abstract_structure_contract", f"abstract follows context, per-question model/result/validation, and model-advantage structure: {abstract_issues or 'all ok'}")
+        data_manuscript_issues = manuscript_data_preparation_issues(workspace, markdown)
+        result.require(not data_manuscript_issues, "manuscript_data_preparation", f"data preprocessing is independently and reproducibly documented: {data_manuscript_issues or 'all ok'}")
         key, profile = active_profile(workspace)
         forbidden = [term for term in profile.get("forbidden_identity_terms", []) if term.lower() in markdown.lower()]
         result.require(not forbidden, "docx_identity", f"forbidden identity fields absent: {forbidden or 'none'}")
@@ -911,6 +1354,10 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
             result.require(bool(re.search(r"报名号[：:]\s*(?!\[)\S+", markdown)), "docx_51mcm_registration", "51MCM registration number is populated")
         code_issues = code_appendix_contract_issues(workspace, markdown)
         result.require(not code_issues, "docx_code_appendix", f"DOCX code appendix is source-linked and complete: {code_issues or 'all ok'}")
+        for question, record in model_definition_records(read_text(workspace / "建模报告.md")).items():
+            result.require(record["academic_name"].lower() in markdown.lower(), f"docx_model_name_{question}", f"{question} publication model name appears in DOCX")
+            result.require(record["model_family"].lower() in markdown.lower(), f"docx_model_family_{question}", f"{question} canonical model family appears in DOCX")
+            result.require(record["solver_algorithm"].lower() in markdown.lower(), f"docx_solver_name_{question}", f"{question} solver algorithm appears in DOCX")
         result.require(not any(re.search(pattern, markdown) for pattern in placeholder_patterns()), "docx_placeholders", "DOCX source contains no template placeholders")
         return result.to_dict()
     main_tex = read_text(workspace / "论文" / "论文正文.tex")
@@ -923,6 +1370,15 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require(has_any(corpus, ["摘要", "Abstract"]), "abstract", "paper includes an abstract section")
     result.require(has_any(corpus, ["关键词", "Keywords"]), "keywords", "paper includes keywords")
     result.require(has_any(corpus, ["结论", "结语", "总结"]), "conclusion", "paper includes a conclusion-like section")
+    expected = expected_problem_count(workspace)
+    definition_issues = model_definition_contract_issues(workspace, expected)
+    result.require(not definition_issues, "model_definition_contract", f"model definitions are explicit before manuscript synthesis: {definition_issues or 'all ok'}")
+    result_identity_issues = result_model_identity_issues(workspace, expected)
+    result.require(not result_identity_issues, "result_model_identity", f"computed result identities remain aligned: {result_identity_issues or 'all ok'}")
+    abstract_issues = abstract_structure_issues(workspace, main_tex, expected)
+    result.require(not abstract_issues, "abstract_structure_contract", f"abstract follows context, per-question model/result/validation, and model-advantage structure: {abstract_issues or 'all ok'}")
+    data_manuscript_issues = manuscript_data_preparation_issues(workspace, corpus)
+    result.require(not data_manuscript_issues, "manuscript_data_preparation", f"data preprocessing is independently and reproducibly documented: {data_manuscript_issues or 'all ok'}")
     result.require(citation_count(corpus) > 0, "citations_in_body", "paper body includes citations")
     result.require(bibliography_entry_count(workspace) > 0, "bibliography_entries", "paper has bibliography entries")
     key, _ = active_profile(workspace)
@@ -933,6 +1389,10 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require(not figure_contract_issues, "figure_size_contract", f"LaTeX figures fit the page body: {figure_contract_issues or 'all ok'}")
     body_units, body_issues = body_density_contract(workspace)
     result.require(not body_issues, "body_density_contract", f"effective body units={body_units}; issues={body_issues or 'none'}")
+    for question, record in model_definition_records(read_text(workspace / "建模报告.md")).items():
+        result.require(record["academic_name"].lower() in corpus.lower(), f"paper_model_name_{question}", f"{question} publication model name appears in paper")
+        result.require(record["model_family"].lower() in corpus.lower(), f"paper_model_family_{question}", f"{question} canonical model family appears in paper")
+        result.require(record["solver_algorithm"].lower() in corpus.lower(), f"paper_solver_name_{question}", f"{question} solver algorithm appears in paper")
     code_issues = code_appendix_contract_issues(workspace, corpus)
     result.require(not code_issues, "code_appendix", f"code appendix embeds current source files: {code_issues or 'all ok'}")
     missing_placeholders = placeholders_present(workspace)
@@ -984,6 +1444,15 @@ def check_s7(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         units = int(report.get("effective_body_units") or 0)
         result.require(units >= minimum, "docx_body_density", f"effective body units {units} >= {minimum}")
         markdown = read_text(source_path)
+        expected = expected_problem_count(workspace)
+        final_definition_issues = model_definition_contract_issues(workspace, expected)
+        result.require(not final_definition_issues, "final_model_definition_contract", f"final model identities remain valid: {final_definition_issues or 'all ok'}")
+        final_result_identity_issues = result_model_identity_issues(workspace, expected)
+        result.require(not final_result_identity_issues, "final_result_model_identity", f"final result identities remain aligned: {final_result_identity_issues or 'all ok'}")
+        final_abstract_issues = abstract_structure_issues(workspace, markdown, expected)
+        result.require(not final_abstract_issues, "final_abstract_structure_contract", f"final abstract remains structurally consistent: {final_abstract_issues or 'all ok'}")
+        final_data_issues = manuscript_data_preparation_issues(workspace, markdown)
+        result.require(not final_data_issues, "final_data_preparation_contract", f"final data preprocessing section remains reproducible: {final_data_issues or 'all ok'}")
         code_issues = code_appendix_contract_issues(workspace, markdown)
         result.require(not code_issues, "docx_code_appendix", f"DOCX code appendix remains source-linked: {code_issues or 'all ok'}")
         page_policy = profile.get("page_policy") or {}
@@ -1021,6 +1490,15 @@ def check_s7(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         else:
             result.warn_if(True, "pdf_pages_unknown", "PyPDF2 unavailable or page count unreadable")
     result.require((workspace / "论文" / "编译日志.log").exists(), "compile_log", "论文/编译日志.log exists after compile")
+    expected = expected_problem_count(workspace)
+    final_definition_issues = model_definition_contract_issues(workspace, expected)
+    result.require(not final_definition_issues, "final_model_definition_contract", f"final model identities remain valid: {final_definition_issues or 'all ok'}")
+    final_result_identity_issues = result_model_identity_issues(workspace, expected)
+    result.require(not final_result_identity_issues, "final_result_model_identity", f"final result identities remain aligned: {final_result_identity_issues or 'all ok'}")
+    final_abstract_issues = abstract_structure_issues(workspace, read_text(main_tex), expected)
+    result.require(not final_abstract_issues, "final_abstract_structure_contract", f"final abstract remains structurally consistent: {final_abstract_issues or 'all ok'}")
+    final_data_issues = manuscript_data_preparation_issues(workspace, corpus)
+    result.require(not final_data_issues, "final_data_preparation_contract", f"final data preprocessing section remains reproducible: {final_data_issues or 'all ok'}")
     code_issues = code_appendix_contract_issues(workspace, corpus)
     result.require(not code_issues, "code_appendix", f"compiled paper uses current source-linked code appendix: {code_issues or 'all ok'}")
     if log_text:

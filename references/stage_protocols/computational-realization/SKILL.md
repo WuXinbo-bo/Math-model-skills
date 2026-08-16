@@ -5,6 +5,12 @@ description: "Meta-model-agent 将数学机制落地为可运行程序、数值�
 
 # 计算实验工程实现
 
+## DATA_PREPARATION 条件子流程
+
+它属于 COMPUTATION，不是第八阶段。有数据时先执行 `程序/data_preprocessing.py`：校验原始数据，按 FORMULATION 合同实施题目专属处理，比较处理前后质量，把唯一规范输入冻结到 `数据/processed/`，然后模型程序只读取该输入。将源文件路径/哈希、步骤、质量统计、泄漏控制和处理后文件路径/哈希写入现有 `图表/全部结果.json.data_preparation`，并在 `计算结果.md` 留一段摘要。无数据时不得创建这些伪产物。
+
+无论是否有数据，均在现有 `图表/全部结果.json.model_identity` 中按 `Q1/Q2/...` 写入 `academic_name`、`canonical_model_family` 和 `solver_algorithm`。三项值必须直接复制 `建模报告.md` 身份卡，不得在计算阶段重新包装名称。
+
 ## 稳定执行契约
 
 - **执行目标**：把建模报告中的每个子问题实现为可运行程序，并冻结真实计算结果与复核证据。
@@ -162,11 +168,11 @@ done
 
 ### 工作节点 2.5：数据查阅校验（有附件数据时必做）
 
-**⛔ 写任何求解代码此前，先写一个独立的数据校验脚本，确认数据查阅无误：**
+**⛔ 有数据时，写任何求解代码此前先完成独立的 `程序/data_preprocessing.py`；无数据时按明确豁免跳过：**
 
 ```python
 
-# 程序/data_verify.py — 数据读取验证（先跑这个，再写求解代码）
+# 程序/data_preprocessing.py — 数据审计、预处理与冻结输入（先跑这个，再写求解代码）
 
 import pandas as pd
 
@@ -240,7 +246,7 @@ for f in data_files:
 
 ```
 
-**实施 data_verify.py 后，确认以下几点再继续：**
+**实施 data_preprocessing.py 后，确认以下几点再继续：**
 
 1. 全部数据文件都能无误查阅（编码、分隔符无误）
 
@@ -249,6 +255,14 @@ for f in data_files:
 3. 数据规模和题目描述保持一致（行数、列数）
 
 4. 缺失值和异常值已识别，后续代码中有处理方案
+
+5. 按 `建模报告.md` 的预处理合同完成实际变换，禁止只打印审计信息便结束
+
+6. 处理前后质量统计均已计算，预测/学习任务已做到先划分、仅用训练集拟合变换器
+
+7. 只生成一个供模型读取的规范文件到 `数据/processed/`，模型脚本不得回读 `用户数据/`
+
+8. `全部结果.json.data_preparation` 已写入源文件与冻结输入 SHA-256、步骤、质量统计和泄漏控制
 
 ### 工作节点 3：代码目录结构
 
@@ -302,7 +316,7 @@ import 通用工具 as u   # 现在 通用工具.py 跟当前文件同目录就�
 
 # ✅ 正确（无论 utils 在不在都能跑）
 
-cd code && python data_verify.py && cd ..
+cd code && python data_preprocessing.py && cd ..
 
 cd code && python problem1.py && cd ..
 
@@ -326,7 +340,7 @@ cd code
 
 set -e
 
-python data_verify.py 2>&1 | tee ../临时文件/data_verify.log
+python data_preprocessing.py 2>&1 | tee ../临时文件/data_preprocessing.log
 
 python problem1.py 2>&1 | tee ../临时文件/problem1.log
 

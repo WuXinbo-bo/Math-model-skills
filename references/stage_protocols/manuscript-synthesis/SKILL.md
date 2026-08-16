@@ -5,6 +5,22 @@ description: "Meta-model-agent 整合模型、程序、结果、图形与引用�
 
 # 竞赛文稿集成
 
+## 模型准备中的数据预处理
+
+仅当存在真实数据时，在“模型准备”章节下设置独立“数据预处理”小节，按学术叙事说明数据来源与质量审查、实际处理方法、处理前后统计、泄漏控制和冻结模型输入。所有数字必须来自 `全部结果.json.data_preparation`，不得从规划文字补造；正文不展开内部哈希和门禁术语。无数据时不强制设置该小节，可在模型准备中用一句话说明数据豁免。
+
+## 模型叙事合同
+
+每个子问题必须按以下顺序写作，并明确使用上游登记的正式模型名称：
+
+1. 模型名称与建模思想：先指出标准模型族，再说明题目定制机制、研究对象、任务和适用理由；
+2. 模型假设、变量与数学表达：给出变量、参数、目标/方程、约束和适用边界；
+3. 求解算法：单独说明算法如何求解该模型、关键参数和停止条件；
+4. 结果与检验：给出真实结果、独立验证、灵敏度/稳健性和结果解释；
+5. 模型评价：说明可解释性、复杂度、优点、局限和推广条件。
+
+不要把“采用某算法”写成“建立某算法模型”。正式名称、标准模型族、定制机制和求解算法必须分别可定位；名称采用“题目机制 + 标准数学模型”，不能只保留业务化长名称。三项身份应与 `建模报告.md` 保持一致。
+
 ## 必读的版面子协议
 
 只加载当前任务需要的规则：
@@ -685,7 +701,7 @@ Valid format for cumcm/stats templates (already in template):
 
 \zihao{-4}\songti
 
-[中文摘要内容，600-800字，写满一整页]
+[统计建模中文摘要内容，500-700字，以内容完整为准并保留少量页底空白]
 
 \noindent\textbf{关键词：}...
 
@@ -705,7 +721,7 @@ Valid format for cumcm/stats templates (already in template):
 
 ```
 
-**数模竞赛摘要**: 400-600 字, every sub-problem is expected to include specific numerical outcomes. **⛔ 务必按问题分段**：第1段背景概述，第2-4段分别针对问题一/二/三（方法+数值结果），第5段模型评价。每段用 LaTeX 空行分隔。五一杯虽然是人工排版摘要，分段准则同理适用。
+**数模竞赛摘要**: 400-600 字, every sub-problem is expected to include specific numerical outcomes. **⛔ 务必按问题分段**：第1段说明问题、所建标准模型及任务，第2-4段分别针对问题一/二/三写“正式名称与标准模型族、定制机制、求解算法、求解结果和验证”，第5段总结模型优势、推广性和局限。关键词优先使用标准模型族和核心算法，不能只复制自创长名称。每段用 LaTeX 空行分隔。五一杯虽然是人工排版摘要，分段准则同理适用。
 
 **统计建模摘要**: 500-700 字, aim to fill most of one page but leave 3-4 lines margin at bottom — overflowing onto a second page looks worse than being slightly short. Content chain: 研究背景与意义 → 现有方法不足 → 本文方法 → 数据来源与处理 → 关键数值结果 → 应用价值与政策推荐. English abstract: 350-500 words, same structure and all numerical outcomes, also fit on one page.
 
@@ -1429,7 +1445,7 @@ See `<de_ai_polish>` in `工具/writing_rules.md`.
 
 **⛔ 统计建模必须写中英文两个摘要**：先写中文摘要（500-700字），然后将中文摘要忠实翻译为英文摘要（350-500 words），所有数值结果、方法名称、结论必须一一对应。数模竞赛（国赛/五一杯/MathorCup/华中杯等）只写中文摘要。
 
-For math modeling competitions: each sub-problem must have its specific result in the abstract (e.g., "问题一采用XX算法，最优解为YY，空间利用率达ZZ%")。
+For math modeling competitions: each sub-problem must identify the canonical model family before the solver and report a specific result (e.g., "问题一建立带容量约束的混合整数线性规划模型，采用 HiGHS 分支定界算法求解，最优解为 YY")。
 
 Read `工具/writing_rules.md` for abstract format rules (分段、首行缩进、长度).
 
@@ -1535,7 +1551,7 @@ echo "不得仅因估算页数低于上限的 80% 就扩写；只有论证链缺
 python 工具/build_code_appendix.py --workspace . --format latex
 ```
 
-CUMCM 必须把 `程序/code_manifest.json` 登记的全部源程序通过 `\lstinputlisting` 直接嵌入附录；51MCM 与 MCM/ICM 按竞赛 Profile 嵌入主程序和逐问核心实现。DOCX 路线执行：
+三种赛制均按竞赛 Profile 只嵌入主程序和逐问核心实现；数据处理、绘图、校验和公共工具只进入支撑材料清单，不展开完整源码。附录显示的程序文件名统一使用英文出版别名，机器审计仍使用真实路径和 SHA-256。DOCX 路线执行：
 
 ```bash
 python 工具/build_code_appendix.py --workspace . --format markdown --insert-into 论文/论文正文.md

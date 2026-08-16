@@ -20,7 +20,7 @@
       "abstract_end_marker": "AbstractEnd"
     },
     "code_appendix": {
-      "mode": "full",
+      "mode": "core",
       "require_manifest": true,
       "minimum_code_lines": 20
     },

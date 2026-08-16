@@ -8,7 +8,7 @@ from typing import Any
 
 from gate_contracts import run_gate_check
 from manifest import SKILL_ROOT, find_step, next_step, ordered_steps
-from state_store import append_event, get_step_state, load_state, save_state
+from state_store import append_event, get_step_state, load_state, refresh_data_preparation_state, save_state
 
 
 def copy_tree(src: Path, dst: Path) -> None:
@@ -256,6 +256,7 @@ def cmd_begin(args: argparse.Namespace) -> int:
     workspace = workspace_path(args.workspace)
     state = require_state(workspace)
     step = resolve_stage(args.stage)
+    refresh_data_preparation_state(workspace, state)
     ensure_previous_completed(state, step["stage_id"])
     if (
         step["stage_id"] == "ASSURANCE"
@@ -420,6 +421,9 @@ def cmd_complete(args: argparse.Namespace) -> int:
 
     step_state["status"] = "completed"
     step_state["completed_at"] = state["updated_at"]
+    if step["stage_id"] == "COMPUTATION":
+        preparation = state.setdefault("data_preparation", {})
+        preparation["status"] = "completed" if preparation.get("required") else "skipped"
     advance_after_completion(state, step)
     save_state(workspace, state)
     append_event(workspace, "completed", {"stage_id": step["stage_id"], "artifacts": artifacts})
