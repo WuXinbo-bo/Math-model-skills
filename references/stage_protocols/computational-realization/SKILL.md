@@ -9,7 +9,7 @@ description: "Meta-model-agent 将数学机制落地为可运行程序、数值�
 
 它属于 COMPUTATION，不是第八阶段。有数据时先执行 `程序/data_preprocessing.py`：校验原始数据，按 FORMULATION 合同实施题目专属处理，比较处理前后质量，把唯一规范输入冻结到 `数据/processed/`，然后模型程序只读取该输入。将源文件路径/哈希、步骤、质量统计、泄漏控制和处理后文件路径/哈希写入现有 `图表/全部结果.json.data_preparation`，并在 `计算结果.md` 留一段摘要。无数据时不得创建这些伪产物。
 
-无论是否有数据，均在现有 `图表/全部结果.json.model_identity` 中按 `Q1/Q2/...` 写入 `academic_name`、`canonical_model_family` 和 `solver_algorithm`。三项值必须直接复制 `建模报告.md` 身份卡，不得在计算阶段重新包装名称。
+对 `new_model/model_extension` 子问题，在现有 `图表/全部结果.json.model_identity` 中按 `Q1/Q2/...` 写入 `academic_name`、`canonical_model_family` 和 `solver_algorithm`。三项值必须直接复制 `建模报告.md` 审计身份卡。`comparison/validation/application` 子问题不伪造模型身份，只在计算结果中记录其继承模型和真实比较或验证证据。
 
 ## 稳定执行契约
 

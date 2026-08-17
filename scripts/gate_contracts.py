@@ -116,6 +116,31 @@ MODEL_STRUCTURE_EN_RE = re.compile(
     r"\s*\|\s*custom\s+mechanism\s*[:：]\s*(?P<mechanism>[^|\n]+)"
 )
 
+PAPER_EXPRESSION_RE = re.compile(
+    r"(?mi)^论文表达\s*Q(?P<question>\d+)\s*\|\s*展示名称\s*[:：]\s*(?P<name>[^|\n]+)"
+    r"\s*\|\s*问题角色\s*[:：]\s*(?P<role>[^|\n]+)"
+    r"\s*\|\s*继承模型\s*[:：]\s*(?P<inherits>[^|\n]+)"
+    r"\s*\|\s*核心方法\s*[:：]\s*(?P<method>[^|\n]+)"
+)
+
+PAPER_EXPRESSION_EN_RE = re.compile(
+    r"(?mi)^paper\s+expression\s+Q(?P<question>\d+)\s*\|\s*display\s+name\s*[:：]\s*(?P<name>[^|\n]+)"
+    r"\s*\|\s*question\s+role\s*[:：]\s*(?P<role>[^|\n]+)"
+    r"\s*\|\s*inherits\s+from\s*[:：]\s*(?P<inherits>[^|\n]+)"
+    r"\s*\|\s*core\s+method\s*[:：]\s*(?P<method>[^|\n]+)"
+)
+
+MODEL_BUILDING_ROLES = {"new_model", "model_extension"}
+INHERITED_ROLES = {"comparison", "validation", "application"}
+QUESTION_ROLES = MODEL_BUILDING_ROLES | INHERITED_ROLES
+ABSTRACT_INTERNAL_TERMS = [
+    "标准模型族为", "求解算法为", "冻结合同", "统一验证器", "验证器", "搜索预算",
+    "相同随机种子", "统一随机种子", "canonical model family", "solver algorithm is",
+    "frozen contract", "unified validator", "search budget", "same random seed",
+    "Q1/Q2求解器", "Q1/Q2 求解器", "model_identity", "全部结果.json",
+    "代码哈希", "哈希固化", "内部合同", "工作流状态",
+]
+
 CANONICAL_MODEL_FAMILIES: dict[str, tuple[str, ...]] = {
     "linear_programming": (r"(?<!非)(?<!整数)线性规划", r"(?i)(?<!integer )\blinear programming\b", r"(?i)\bLP\b"),
     "integer_programming": (r"(?<!混合)整数规划", r"(?i)(?<!mixed-)(?<!mixed )\binteger programming\b", r"(?i)\bIP\b"),
@@ -172,6 +197,8 @@ def model_identity_issues(name: str, family: str, algorithm: str, english_route:
     name_matches = matched_model_families(name)
     if family.strip().lower() in VAGUE_MODEL_FAMILIES or not family_matches:
         issues.append("canonical model family is vague or not recognized")
+    elif len(family_matches) > 1:
+        issues.append("canonical model family must identify one primary mathematical structure")
     if not name_matches:
         issues.append("academic model name does not expose a canonical mathematical model family")
     elif family_matches and not family_matches.intersection(name_matches):
@@ -215,13 +242,79 @@ def model_definition_records(text: str) -> dict[str, dict[str, str]]:
     return records
 
 
+def paper_expression_records(text: str) -> dict[str, dict[str, str]]:
+    records: dict[str, dict[str, str]] = {}
+    for pattern in (PAPER_EXPRESSION_RE, PAPER_EXPRESSION_EN_RE):
+        for match in pattern.finditer(text):
+            records[f"Q{match.group('question')}"] = {
+                "display_name": match.group("name").strip(),
+                "question_role": match.group("role").strip().lower(),
+                "inherits_from": match.group("inherits").strip(),
+                "core_method": match.group("method").strip(),
+            }
+    return records
+
+
+def paper_expression_contract_issues(workspace: Path, expected: int) -> list[str]:
+    report = read_text(workspace / "建模报告.md")
+    definitions = model_definition_records(report)
+    expressions = paper_expression_records(report)
+    english_route = active_profile(workspace)[0] == "mcm-icm"
+    issues: list[str] = []
+    for index in range(1, expected + 1):
+        question = f"Q{index}"
+        expression = expressions.get(question)
+        if not expression:
+            issues.append(f"{question}: missing paper expression card")
+            continue
+        role = expression["question_role"]
+        if role not in QUESTION_ROLES:
+            issues.append(f"{question}: invalid question role {role}")
+            continue
+        display_name = expression["display_name"]
+        core_method = expression["core_method"]
+        inherits_from = expression["inherits_from"].strip().lower()
+        name_limit = 90 if english_route else 32
+        method_limit = 100 if english_route else 40
+        if len(display_name) < 4 or len(display_name) > name_limit:
+            issues.append(f"{question}: paper display name must be concise and publication-facing")
+        if len(core_method) < 2 or len(core_method) > method_limit:
+            issues.append(f"{question}: core method is empty or expands into an implementation pipeline")
+        if any(term.lower() in f"{display_name} {core_method}".lower() for term in ABSTRACT_INTERNAL_TERMS):
+            issues.append(f"{question}: paper expression contains internal workflow vocabulary")
+        if len(re.findall(r"[、,+＋/]|以及|并结合|\b(?:and|with)\b", core_method, flags=re.IGNORECASE)) > 2:
+            issues.append(f"{question}: core method lists too many algorithm components")
+        definition = definitions.get(question)
+        if role in MODEL_BUILDING_ROLES:
+            if not definition:
+                issues.append(f"{question}: {role} requires a model definition and structure card")
+                continue
+            display_families = matched_model_families(display_name)
+            definition_families = matched_model_families(definition["model_family"])
+            if not display_families.intersection(definition_families):
+                issues.append(f"{question}: paper display name does not preserve the primary model family")
+            if role == "new_model" and inherits_from not in {"none", "无", "n/a", "not_applicable"}:
+                issues.append(f"{question}: new_model must not claim an inherited model")
+            if role == "model_extension" and inherits_from in {"none", "无", "n/a", "not_applicable"}:
+                issues.append(f"{question}: model_extension must identify its inherited model")
+        else:
+            if inherits_from in {"none", "无", "n/a", "not_applicable"}:
+                issues.append(f"{question}: {role} must identify the inherited model instead of inventing a new one")
+    return issues
+
+
 def model_definition_contract_issues(workspace: Path, expected: int) -> list[str]:
-    records = model_definition_records(read_text(workspace / "建模报告.md"))
+    report = read_text(workspace / "建模报告.md")
+    records = model_definition_records(report)
+    expressions = paper_expression_records(report)
     profile_key, _ = active_profile(workspace)
     english_route = profile_key == "mcm-icm"
     issues: list[str] = []
     for index in range(1, expected + 1):
         question = f"Q{index}"
+        expression = expressions.get(question)
+        if expression and expression.get("question_role") in INHERITED_ROLES:
+            continue
         record = records.get(question)
         if not record:
             issues.append(f"{question}: missing explicit model definition (name, canonical family, and solver algorithm)")
@@ -236,11 +329,14 @@ def model_definition_contract_issues(workspace: Path, expected: int) -> list[str
         missing_structure = [field for field in structure_fields if len(record.get(field, "").strip()) < 2]
         if missing_structure:
             issues.append(f"{question}: model structure card is incomplete: {missing_structure}")
+    issues.extend(paper_expression_contract_issues(workspace, expected))
     return issues
 
 
 def result_model_identity_issues(workspace: Path, expected: int) -> list[str]:
-    report_records = model_definition_records(read_text(workspace / "建模报告.md"))
+    report_text = read_text(workspace / "建模报告.md")
+    report_records = model_definition_records(report_text)
+    expressions = paper_expression_records(report_text)
     aggregate = load_json(workspace / "图表" / "全部结果.json")
     payload = aggregate.get("model_identity", {}) if isinstance(aggregate, dict) else {}
     if not isinstance(payload, dict):
@@ -248,6 +344,8 @@ def result_model_identity_issues(workspace: Path, expected: int) -> list[str]:
     issues: list[str] = []
     for index in range(1, expected + 1):
         question = f"Q{index}"
+        if expressions.get(question, {}).get("question_role") in INHERITED_ROLES:
+            continue
         report = report_records.get(question)
         result = payload.get(question)
         if not isinstance(result, dict):
@@ -287,36 +385,72 @@ def abstract_structure_issues(workspace: Path, source: str, expected: int) -> li
     abstract = abstract_source(source)
     if not abstract:
         return ["abstract content cannot be isolated for structural validation"]
-    report_records = model_definition_records(read_text(workspace / "建模报告.md"))
+    report_text = read_text(workspace / "建模报告.md")
+    report_records = model_definition_records(report_text)
+    expression_records = paper_expression_records(report_text)
     paragraphs = [part.strip() for part in re.split(r"\n\s*\n", abstract) if part.strip()]
-    key, _ = active_profile(workspace)
-    minimum_paragraphs = expected + 2 if key in {"cumcm", "51mcm"} else 3
+    content_paragraphs = [
+        paragraph for paragraph in paragraphs
+        if not re.match(r"(?is)^(?:\\keywords\{|(?:\\noindent\s*)?\\textbf\{?(?:关键词|keywords)|\*\*(?:关键词|keywords))", paragraph)
+    ]
+    minimum_paragraphs = expected + 2
     issues: list[str] = []
-    if len(paragraphs) < minimum_paragraphs:
-        issues.append(f"abstract has {len(paragraphs)} paragraphs; requires at least {minimum_paragraphs} structured paragraphs")
+    if len(content_paragraphs) < minimum_paragraphs:
+        issues.append(f"abstract has {len(content_paragraphs)} content paragraphs; requires at least {minimum_paragraphs} structured paragraphs")
     lowered = abstract.lower()
-    for question, record in sorted(report_records.items()):
-        if record["academic_name"].lower() not in lowered:
-            issues.append(f"{question}: abstract omits the registered academic model name")
-        if record["model_family"].lower() not in lowered:
-            issues.append(f"{question}: abstract omits the registered canonical model family")
-        if record["solver_algorithm"].lower() not in lowered:
-            issues.append(f"{question}: abstract omits the registered solver algorithm")
+    leaked = [term for term in ABSTRACT_INTERNAL_TERMS if term.lower() in lowered]
+    if leaked:
+        issues.append(f"abstract exposes field labels or internal workflow vocabulary: {leaked}")
+    acronym_groups = re.findall(r"(?<![A-Za-z])[A-Z](?:/[A-Z])+(?![A-Za-z])", abstract)
+    if acronym_groups and not re.search(r"分别(?:表示|为)|其中|记为|respectively|denote", abstract, flags=re.IGNORECASE):
+        issues.append(f"abstract uses unexplained scheme abbreviations: {sorted(set(acronym_groups))}")
     result_terms = ["结果", "得到", "目标值", "达到", "降低", "提高", "最优", "result", "achieved", "reduced", "improved", "optimal", "score", "value"]
     validation_terms = ["验证", "检验", "灵敏度", "稳健", "validation", "test", "sensitivity", "robust"]
+    decision_terms = ["优于", "可行", "推荐", "排序", "改善", "降低", "提高", "feasible", "recommended", "outperform", "rank"]
     cn_by_index = {value: key for key, value in CN_DIGITS.items()}
     for index in range(1, expected + 1):
+        question = f"Q{index}"
         cn_label = cn_by_index.get(index, str(index))
         question_pattern = rf"(?:问题\s*(?:{index}|{cn_label})|problem\s*{index}|q{index})"
-        question_paragraphs = [p.lower() for p in paragraphs if re.search(question_pattern, p, flags=re.IGNORECASE)]
+        question_paragraphs = [p.lower() for p in content_paragraphs if re.search(question_pattern, p, flags=re.IGNORECASE)]
         if not question_paragraphs:
             issues.append(f"Q{index}: abstract lacks a dedicated per-question paragraph")
             continue
         joined = " ".join(question_paragraphs)
+        expression = expression_records.get(question)
+        if not expression:
+            issues.append(f"{question}: abstract cannot resolve a paper expression card")
+        else:
+            if expression["display_name"].lower() not in joined:
+                issues.append(f"{question}: abstract omits the concise paper display name or inherited-task label")
+            if expression["core_method"].lower() not in joined:
+                issues.append(f"{question}: abstract omits the registered core method")
+            if expression["question_role"] in INHERITED_ROLES | {"model_extension"}:
+                inheritance_terms = ["基于前述", "在问题", "基础上", "沿用", "继承", "前述模型", "based on the preceding", "using the preceding", "builds on", "inherits"]
+                if not any(term in joined for term in inheritance_terms):
+                    issues.append(f"{question}: inherited task is written as if it established an unrelated new model")
         if not any(term.lower() in joined for term in result_terms):
             issues.append(f"Q{index}: per-question abstract paragraph lacks a result statement")
         if not any(term.lower() in joined for term in validation_terms):
             issues.append(f"Q{index}: per-question abstract paragraph lacks a validation statement")
+        if not re.search(r"[-+]?\d+(?:\.\d+)?\s*(?:%|min|h|元|辆|个|分|秒|倍)?", joined) and not any(term in joined for term in decision_terms):
+            issues.append(f"Q{index}: per-question abstract paragraph lacks a quantitative or decisive conclusion")
+        number_mentions = len(re.findall(r"[-+]?\d+(?:\.\d+)?\s*%?", re.sub(question_pattern, "", joined, flags=re.IGNORECASE)))
+        if number_mentions > 8:
+            issues.append(f"Q{index}: abstract reports too many numeric fragments ({number_mentions}); retain only decision-critical results")
+    if content_paragraphs:
+        opening = content_paragraphs[0].lower()
+        if not matched_model_families(opening) and not any(
+            expression["display_name"].lower() in opening for expression in expression_records.values()
+        ):
+            issues.append("abstract opening paragraph does not identify the principal mathematical model")
+        closing = content_paragraphs[-1].lower()
+        advantage_terms = ["可解释", "稳健", "推广", "迁移", "优势", "interpret", "robust", "general", "transfer"]
+        boundary_terms = ["局限", "限制", "边界", "适用", "假设", "limit", "boundary", "applicable", "assumption"]
+        if not any(term in closing for term in advantage_terms):
+            issues.append("abstract closing paragraph does not summarize model advantages")
+        if not any(term in closing for term in boundary_terms):
+            issues.append("abstract closing paragraph does not state limitations or applicability boundaries")
     visible_source = visible_manuscript_text(source)
     keyword_text = ""
     for pattern in (
@@ -339,7 +473,7 @@ def abstract_structure_issues(workspace: Path, source: str, expected: int) -> li
             for record in report_records.values()
             for family in matched_model_families(record["model_family"])
         }
-        algorithms = [record["solver_algorithm"].lower() for record in report_records.values()]
+        algorithms = [record["core_method"].lower() for record in expression_records.values()]
         invalid_keywords = []
         for keyword in keywords:
             keyword_lower = keyword.lower()
@@ -349,10 +483,30 @@ def abstract_structure_issues(workspace: Path, source: str, expected: int) -> li
                 invalid_keywords.append(keyword)
         if not keywords:
             issues.append("abstract has no keywords")
+        elif not 3 <= len(keywords) <= 5:
+            issues.append(f"abstract must contain 3-5 focused keywords; got {len(keywords)}")
         elif invalid_keywords:
             issues.append(f"abstract keywords are not canonical model families or registered solver algorithms: {invalid_keywords}")
         if keywords and not any(matched_model_families(keyword).intersection(family_ids) for keyword in keywords):
             issues.append("abstract keywords must include at least one canonical mathematical model family")
+    return issues
+
+
+def manuscript_expression_issues(workspace: Path, text: str) -> list[str]:
+    report_text = read_text(workspace / "建模报告.md")
+    definitions = model_definition_records(report_text)
+    expressions = paper_expression_records(report_text)
+    lowered = visible_manuscript_text(text).lower()
+    issues: list[str] = []
+    for question, expression in sorted(expressions.items()):
+        if expression["display_name"].lower() not in lowered:
+            issues.append(f"{question}: manuscript omits the concise paper display name")
+        if expression["core_method"].lower() not in lowered:
+            issues.append(f"{question}: manuscript omits the registered core method")
+        if expression["question_role"] in MODEL_BUILDING_ROLES:
+            definition = definitions.get(question)
+            if definition and definition["model_family"].lower() not in lowered:
+                issues.append(f"{question}: manuscript omits the canonical mathematical model family")
     return issues
 
 
@@ -1354,10 +1508,8 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
             result.require(bool(re.search(r"报名号[：:]\s*(?!\[)\S+", markdown)), "docx_51mcm_registration", "51MCM registration number is populated")
         code_issues = code_appendix_contract_issues(workspace, markdown)
         result.require(not code_issues, "docx_code_appendix", f"DOCX code appendix is source-linked and complete: {code_issues or 'all ok'}")
-        for question, record in model_definition_records(read_text(workspace / "建模报告.md")).items():
-            result.require(record["academic_name"].lower() in markdown.lower(), f"docx_model_name_{question}", f"{question} publication model name appears in DOCX")
-            result.require(record["model_family"].lower() in markdown.lower(), f"docx_model_family_{question}", f"{question} canonical model family appears in DOCX")
-            result.require(record["solver_algorithm"].lower() in markdown.lower(), f"docx_solver_name_{question}", f"{question} solver algorithm appears in DOCX")
+        expression_issues = manuscript_expression_issues(workspace, markdown)
+        result.require(not expression_issues, "docx_paper_expression", f"DOCX uses concise publication model expressions: {expression_issues or 'all ok'}")
         result.require(not any(re.search(pattern, markdown) for pattern in placeholder_patterns()), "docx_placeholders", "DOCX source contains no template placeholders")
         return result.to_dict()
     main_tex = read_text(workspace / "论文" / "论文正文.tex")
@@ -1389,10 +1541,8 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require(not figure_contract_issues, "figure_size_contract", f"LaTeX figures fit the page body: {figure_contract_issues or 'all ok'}")
     body_units, body_issues = body_density_contract(workspace)
     result.require(not body_issues, "body_density_contract", f"effective body units={body_units}; issues={body_issues or 'none'}")
-    for question, record in model_definition_records(read_text(workspace / "建模报告.md")).items():
-        result.require(record["academic_name"].lower() in corpus.lower(), f"paper_model_name_{question}", f"{question} publication model name appears in paper")
-        result.require(record["model_family"].lower() in corpus.lower(), f"paper_model_family_{question}", f"{question} canonical model family appears in paper")
-        result.require(record["solver_algorithm"].lower() in corpus.lower(), f"paper_solver_name_{question}", f"{question} solver algorithm appears in paper")
+    expression_issues = manuscript_expression_issues(workspace, corpus)
+    result.require(not expression_issues, "paper_expression_contract", f"paper uses concise publication model expressions: {expression_issues or 'all ok'}")
     code_issues = code_appendix_contract_issues(workspace, corpus)
     result.require(not code_issues, "code_appendix", f"code appendix embeds current source files: {code_issues or 'all ok'}")
     missing_placeholders = placeholders_present(workspace)
