@@ -220,6 +220,9 @@ Meta-model-agent/
 <table>
   <tr>
     <td align="center" width="28%">
+      <a href="https://88.scxai.top/">
+        <img src="assets/branding/sponsor-chuangshi-xinyuan.jpg" alt="创世の鑫元" width="150">
+      </a><br>
       <strong>创世の鑫元</strong><br>
       <a href="https://88.scxai.top/">访问官方网站</a>
     </td>
