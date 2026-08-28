@@ -214,3 +214,17 @@ Meta-model-agent/
 本项目采用 [MIT License](LICENSE)，允许在保留版权和许可声明的前提下使用、复制、修改、合并、发布、分发、再许可和销售软件副本。
 
 工作流设计参考了 [xuec699-sudo/math-modeling-skills](https://github.com/xuec699-sudo/math-modeling-skills)，并从 **Modex-MH-Agent** 的工作流组织方式中获得部分灵感。本项目为独立设计与实现，与上述项目不存在官方隶属或质量背书关系。
+
+## 赞助支持
+
+<table>
+  <tr>
+    <td align="center" width="28%">
+      <strong>创世の鑫元</strong><br>
+      <a href="https://88.scxai.top/">访问官方网站</a>
+    </td>
+    <td>
+      感谢 <strong>创世の鑫元</strong> 对本项目的赞助与支持。其网站提供 AI 相关服务与工具信息；具体服务内容、价格、可用性及使用条款请以官方网站的最新说明为准。
+    </td>
+  </tr>
+</table>
