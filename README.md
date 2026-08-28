@@ -51,15 +51,15 @@ Meta-model-agent 将题意分析、模型构建、真实计算、结果验证、
 
 正式工作流由 [机器清单](assets/workflow_manifest.json) 定义，当前包含 7 个阶段：
 
-| 阶段 | 目标 | 主要产物 |
-| --- | --- | --- |
-| `DISCOVERY` | 读取题面、附件与数据，拆解问题并声明数据模式 | `问题分析.md` |
-| `FORMULATION` | 建立数学机制、模型身份、预处理合同与验证方案 | `建模报告.md` |
-| `COMPUTATION` | 按需预处理数据，编写程序并开展真实计算 | `程序/主程序.py`、`计算结果.md`、结果 JSON |
-| `EVIDENCE` | 将结果转化为论文图表与数据证据 | 图形、表格、`图表/figure_manifest.json` |
-| `SCHEMATICS` | 绘制技术路线和系统逻辑图 | DrawIO/TikZ 源文件及论文引用 |
-| `MANUSCRIPT` | 集成模型、实验、图表、引用与核心代码附录 | LaTeX 或 Markdown 论文源稿 |
-| `ASSURANCE` | 编译并检查内容、版式、身份与最终材料 | `论文/数模论文.pdf` 或 `.docx` |
+| 阶段 | 目标 |
+| --- | --- |
+| `DISCOVERY` | 读取题面、附件与数据，拆解问题并声明数据模式 |
+| `FORMULATION` | 建立数学机制、模型身份、预处理合同与验证方案 |
+| `COMPUTATION` | 按需预处理数据，编写程序并开展真实计算 |
+| `EVIDENCE` | 将结果转化为论文图表与数据证据 |
+| `SCHEMATICS` | 绘制技术路线和系统逻辑图 |
+| `MANUSCRIPT` | 集成模型、实验、图表、引用与核心代码附录 |
+| `ASSURANCE` | 编译并检查内容、版式、身份与最终材料 |
 
 详细的阶段依赖、核验点和产物映射见 [工作流总图](references/workflow-map.md) 与 [门禁矩阵](references/gate-matrix.md)。
 
