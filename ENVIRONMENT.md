@@ -17,7 +17,7 @@
 | 常用建模 | NumPy、Pandas、SciPy、scikit-learn、statsmodels、NetworkX | 数据处理、预测、评价、优化、统计分析和图论 |
 | 绘图 | Matplotlib、Seaborn、SciencePlots、adjustText | 数据图、诊断图、标签避让和论文图形 |
 | 表格数据 | openpyxl、xlrd | 读取 `.xlsx` 和 `.xls` 附件 |
-| PDF 路线 | XeLaTeX、BibTeX、TeX 宏包、Bash、GNU 工具 | LaTeX 编译与提交质量检查 |
+| PDF 路线 | XeLaTeX、BibTeX、TeX 宏包、Bash、GNU 工具、PyMuPDF | LaTeX 编译、逐页页面构成与提交质量检查 |
 | DOCX 路线 | python-docx、Pillow、pypdf；页数检查需要 LibreOffice | Word 导出、图片尺寸和页数门禁 |
 | 流程图 | DrawIO Desktop CLI，或 XeLaTeX/TikZ | `.drawio` 或 TikZ 技术路线图 |
 | 视觉核验 | Poppler (`pdftoppm`) | 将 PDF 图形渲染为 PNG 进行检查 |
@@ -55,7 +55,7 @@ python -m pip install -r scripts/requirements.txt
 安装后验证公共 Python 环境：
 
 ```bash
-python -c "import numpy, pandas, scipy, sklearn, statsmodels, networkx, matplotlib, seaborn, openpyxl, docx, PIL, pypdf; print('python dependencies: ready')"
+python -c "import numpy, pandas, scipy, sklearn, statsmodels, networkx, matplotlib, seaborn, openpyxl, docx, PIL, pypdf, fitz; print('python dependencies: ready')"
 python scripts/workspace_init.py --help
 python scripts/stage_executor.py --help
 ```
@@ -255,7 +255,7 @@ done
 并执行 Python 导入检查：
 
 ```bash
-python -c "import numpy, pandas, scipy, sklearn, statsmodels, networkx, matplotlib, seaborn, openpyxl, xlrd, docx, PIL, pypdf, scienceplots, adjustText; print('python environment: ready')"
+python -c "import numpy, pandas, scipy, sklearn, statsmodels, networkx, matplotlib, seaborn, openpyxl, xlrd, docx, PIL, pypdf, fitz, scienceplots, adjustText; print('python environment: ready')"
 ```
 
 ## 常见问题

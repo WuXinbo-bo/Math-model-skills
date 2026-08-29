@@ -9,7 +9,15 @@ description: "Meta-model-agent 将数学机制落地为可运行程序、数值�
 
 它属于 COMPUTATION，不是第八阶段。有数据时先执行 `程序/data_preprocessing.py`：校验原始数据，按 FORMULATION 合同实施题目专属处理，比较处理前后质量，把唯一规范输入冻结到 `数据/processed/`，然后模型程序只读取该输入。将源文件路径/哈希、步骤、质量统计、泄漏控制和处理后文件路径/哈希写入现有 `图表/全部结果.json.data_preparation`，并在 `计算结果.md` 留一段摘要。无数据时不得创建这些伪产物。
 
-对 `new_model/model_extension` 子问题，在现有 `图表/全部结果.json.model_identity` 中按 `Q1/Q2/...` 写入 `academic_name`、`canonical_model_family` 和 `solver_algorithm`。三项值必须直接复制 `建模报告.md` 审计身份卡。`comparison/validation/application` 子问题不伪造模型身份，只在计算结果中记录其继承模型和真实比较或验证证据。
+对 `new_model/model_extension` 子问题，在现有 `图表/全部结果.json.model_identity` 中按 `Q1/Q2/...` 写入 `academic_name`、`canonical_model_family`、`solver_algorithm`、`objective_count`、`objective_direction`、`variable_type`、`relation_type` 和 `multiobjective_evidence`。各项值必须直接复制 `建模报告.md` 审计身份与模型语义卡。`comparison/validation/application` 子问题不伪造模型身份，只在计算结果中记录其继承模型和真实比较或验证证据。
+
+## 发布声明与新增机制验证
+
+在同一个 `图表/全部结果.json` 中维护 `publication_claims`，逐问至少登记一项进入论文的关键结果，包含 `question`、`statement`、`display_value`、`source_key`、`derivation` 和 `required_in`。直接结果使用 `derivation: direct`；加总、区间并集、均值、比率或归一化结果必须写明真实派生方式。论文只读取该账本，不另造数字。
+
+对 `model_extension` 验证新增机制：新增时序检查先后和边界精度，新增资源检查边际贡献、重叠与闲置，新增分配检查容量和分配后可行性，新增随机机制检查情景外可行率。元启发式或混合求解至少报告可行基线、全局阶段结果、局部精化增益、重复运行分布和最终约束残差中适用的项目。
+
+灵敏度分析必须记录指标定义、扰动范围、固定决策或重新优化、可行率和响应方向。不得把低灵敏度或零灵敏度直接写成“模型正确/鲁棒”。
 
 ## 稳定执行契约
 
@@ -19,7 +27,7 @@ description: "Meta-model-agent 将数学机制落地为可运行程序、数值�
 - **允许交付**：程序/、程序/code_manifest.json、计算结果.md、图表/全部结果.json、依赖清单.txt，以及必要的日志和状态记录。
 - **禁止写入**：不得越权修改已冻结的上游事实、用户原始文件或本协议未授权的目录。
 - **可用工具边界**：Bash(*), Read, Write, Edit, Grep, Glob, Agent。
-- **最小交付**：逐问可执行程序、主程序.py、代码清单与源码哈希、结果 JSON、运行记录、基线比较、稳定性检查与失败说明。
+- **最小交付**：逐问可执行程序、主程序.py、代码清单与源码哈希、结果 JSON、发布声明、运行记录、基线比较、差异化验证、约束残差与失败说明。
 - **恢复入口**：优先读取当前工作、状态记录和已有产物，从最近一次通过门禁的位置继续。
 - **失败回退**：执行失败时定位到数据、实现或模型层；只允许有证据的修复，模型根本失效时回退数学机制构造。
 - **收口顺序**：先核对输入，再完成产物，再运行本环节门禁，最后登记状态；门禁未通过不得宣告完成。

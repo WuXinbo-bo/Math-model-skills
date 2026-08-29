@@ -15,10 +15,19 @@ description: "Meta-model-agent 完成编译、版式、匿名、页数、引用�
 
 `建模报告.md` 的审计身份与 `全部结果.json.model_identity` 必须逐字一致；摘要和正文与论文表达卡保持语义一致，不得复制身份卡字段标签。最终摘要还必须拦截内部术语、完整算法链、未解释方案缩写、数字流水账和缺失的模型边界。
 
+## 发布声明、公式与页面构成验收
+
+- 核对 `全部结果.json.publication_claims` 的来源键、派生关系与正文显示值；同一指标在摘要、正文、图表、表格和结论中不得冲突。
+- 核对真实问题数、逐问章节文件和主文件 `\input/\include` 一一闭合，禁止章节存在但最终 PDF 漏问。
+- 读取 `latex-math.md`，检查原生公式、符号与量纲、`\eqref/\ref/\cref`、重复标签和硬编码图表公式编号。
+- 读取 `page-composition.md` 并在实际 PDF 上执行页面审计。编译成功、页数合规和页面质量是三个独立门禁。
+- Overfull box、裁切、标题孤悬、图题分离和不可读小字在冠军模式下不得带入终稿；低占用页面必须人工确认是否来自章节自然结束，而不是用空白或大图填页。
+
 ## 必读的版面子协议
 
 - 始终读取 `参考资料/paper-layout/core.md` 与 `body-density.md`。
 - PDF/LaTeX 验收读取 `latex-figures.md`。
+- PDF/LaTeX 验收同时读取 `latex-math.md` 与 `page-composition.md`。
 - DOCX 验收读取 `docx-figures.md`。
 - 子协议中的尺寸和页数语义优先于本文件中的旧示例。
 
@@ -263,9 +272,9 @@ done
 
 If labels are missing, find corresponding figure/table code in `图表/*.tex` and embed into the correct section file.
 
-Also verify compile_utils.sh output for "UNEMBEDDED" warnings — each one means a figure or table from `图表/` is not in any section.
+Also verify compile_utils.sh output for "UNEMBEDDED" warnings against `figure_manifest.json`. Only an item selected for publication is a blocking omission.
 
-**MANDATORY FIX LOOP — do NOT proceed to compilation until all figures AND tables are embedded:**
+**MANDATORY FIX LOOP — do NOT proceed to compilation until every `publish=true` figure and every table selected by the manuscript embedding plan is embedded:**
 
 ```bash
 
@@ -279,17 +288,21 @@ for pdf in 图表/*.pdf; do
 
     bn=$(basename "$pdf")
 
+    python3 -c "import json,sys; d=json.load(open('图表/figure_manifest.json',encoding='utf-8')); sys.exit(0 if any(x.get('publish') and x.get('path','').replace('\\\\','/').endswith('/'+sys.argv[1]) for x in d.get('figures',[])) else 1)" "$bn" || continue
+
     grep -rq "$bn" 论文/章节/*.tex 论文/论文正文.tex 2>/dev/null || { echo "UNEMBEDDED PDF: $bn"; UNEMBED=$((UNEMBED+1)); }
 
 done
 
-# Validate TABLE_*.tex files
+# Validate only TABLE_*.tex files selected by the manuscript embedding plan
 
 for tbl in 图表/TABLE_*.tex; do
 
     [ -f "$tbl" ] || continue
 
     bn=$(basename "$tbl")
+
+    python3 -c "import json,sys; d=json.load(open('图表/figure_manifest.json',encoding='utf-8')); sys.exit(0 if any(x.get('publish') and x.get('path','').replace('\\\\','/').endswith('/'+sys.argv[1]) for x in d.get('tables',[])) else 1)" "$bn" || continue
 
     # Validate if any label from this table file appears in sections
 
@@ -301,23 +314,13 @@ for tbl in 图表/TABLE_*.tex; do
 
 done
 
-# Validate 图表引用.tex labels
-
-if [ -f 图表/图表引用.tex ]; then
-
-    for lbl in $(grep -oh '\\label{[^}]*}' 图表/图表引用.tex 2>/dev/null); do
-
-        grep -rq "$lbl" 论文/章节/*.tex 论文/论文正文.tex 2>/dev/null || { echo "UNEMBEDDED: $lbl (from 图表引用.tex)"; UNEMBED=$((UNEMBED+1)); }
-
-    done
-
-fi
+# Raw 图表引用.tex labels are diagnostic; the published asset loops above remain authoritative
 
 echo "Total unembedded: $UNEMBED"
 
 ```
 
-If UNEMBED > 0, you MUST fix ALL of them before compiling. For each unembedded item:
+If UNEMBED > 0, you MUST fix all selected publication items before compiling. For each unembedded item:
 
 - **PDF figure**: copy the `\begin{figure}...\end{figure}` block from `图表/图表引用.tex` into the target section
 
@@ -327,17 +330,19 @@ If UNEMBED > 0, you MUST fix ALL of them before compiling. For each unembedded i
 
 - Re-run the count verify above — repeat until UNEMBED = 0
 
-**Do NOT compile with unembedded figures or tables — the PDF will have missing content.**
+**Do NOT compile with unembedded publication figures or selected正文 tables. Unpublished diagnostic assets are allowed to remain outside the paper.**
 
 ```bash
 
-# Validate all 图表/*.pdf are referenced in body
+# Diagnose generated PDFs; only publish=true omissions are blocking
 
 for pdf in 图表/*.pdf; do
 
     [ -f "$pdf" ] || continue
 
     bn=$(basename "$pdf")
+
+    python3 -c "import json,sys; d=json.load(open('图表/figure_manifest.json',encoding='utf-8')); sys.exit(0 if any(x.get('publish') and x.get('path','').replace('\\\\','/').endswith('/'+sys.argv[1]) for x in d.get('figures',[])) else 1)" "$bn" || continue
 
     grep -rq "$bn" 论文/章节/*.tex 论文/论文正文.tex 2>/dev/null || echo "⚠ $bn not referenced"
 
@@ -673,7 +678,7 @@ BBL_ENTRIES=$(grep -c '\\bibitem' 论文/论文正文.bbl 2>/dev/null || echo 0)
 
 [ "$BBL_ENTRIES" -gt 0 ] && echo "✅ Bibliography: $BBL_ENTRIES entries" || { echo "❌ Bibliography empty (BibTeX failed)"; GATE_FAIL=$((GATE_FAIL+1)); }
 
-# 4. No unembedded visuals
+# 4. No unembedded publish=true visuals
 
 UNEMBED=0
 
@@ -683,11 +688,13 @@ for pdf in 图表/*.pdf; do
 
     bn=$(basename "$pdf")
 
+    python3 -c "import json,sys; d=json.load(open('图表/figure_manifest.json',encoding='utf-8')); sys.exit(0 if any(x.get('publish') and x.get('path','').replace('\\\\','/').endswith('/'+sys.argv[1]) for x in d.get('figures',[])) else 1)" "$bn" || continue
+
     grep -rq "$bn" 论文/章节/*.tex 论文/论文正文.tex 2>/dev/null || UNEMBED=$((UNEMBED+1))
 
 done
 
-[ "$UNEMBED" -eq 0 ] && echo "✅ All visuals embedded" || { echo "❌ $UNEMBED visuals not embedded in manuscript"; GATE_FAIL=$((GATE_FAIL+1)); }
+[ "$UNEMBED" -eq 0 ] && echo "✅ All publication visuals embedded" || { echo "❌ $UNEMBED publish=true visuals not embedded in manuscript"; GATE_FAIL=$((GATE_FAIL+1)); }
 
 # 5. Page count
 
@@ -815,7 +822,7 @@ if [ "$PLAN_FIGS" -gt 0 ]; then
 
     echo "  Planned: ~$PLAN_FIGS visuals, Actual: $ACTUAL_FIGS PDFs"
 
-    [ "$ACTUAL_FIGS" -ge "$PLAN_FIGS" ] && echo "✅ Visual count meets plan" || { echo "❌ Fewer visuals than planned ($ACTUAL_FIGS < $PLAN_FIGS)"; GATE_FAIL=$((GATE_FAIL+1)); }
+    [ "$ACTUAL_FIGS" -ge "$PLAN_FIGS" ] && echo "✅ Visual count meets original plan" || echo "  ⚠ Visual count is below the early plan; confirm omitted items are registered publish=false with reasons"
 
 else
 
@@ -839,6 +846,8 @@ for tpdf in 图表/结构示意图.pdf 图表/结构示意图_*.pdf 图表/tikz_
 
     [ -f "$tpdf" ] || continue
 
+    python3 -c "import json,sys; d=json.load(open('图表/figure_manifest.json',encoding='utf-8')); sys.exit(0 if any(x.get('publish') and x.get('path','').replace('\\\\','/').endswith('/'+sys.argv[1]) for x in d.get('figures',[])) else 1)" "$(basename "$tpdf")" || continue
+
     TIKZ_PDF_TOTAL=$((TIKZ_PDF_TOTAL+1))
 
     grep -rq "$(basename "$tpdf")" 论文/章节/*.tex 论文/论文正文.tex 2>/dev/null || TIKZ_PDF_MISSING=$((TIKZ_PDF_MISSING+1))
@@ -847,7 +856,7 @@ done
 
 if [ "$TIKZ_PDF_TOTAL" -gt 0 ]; then
 
-    # 有真实 TikZ 产物 → 务必全部嵌入
+    # 有 publish=true 的 TikZ 产物 → 务必全部嵌入
 
     if [ "$TIKZ_PDF_MISSING" -gt 0 ]; then
 
@@ -889,11 +898,11 @@ UNDEF_REFS=$(grep -c 'LaTeX Warning.*Reference.*undefined' 论文/编译日志.l
 
 [ "$UNDEF_REFS" -eq 0 ] && echo "✅ No undefined refs" || { echo "❌ $UNDEF_REFS undefined references"; GATE_FAIL=$((GATE_FAIL+1)); }
 
-# 14. Overfull hbox (>5 = too many)
+# 14. Overfull hbox（零容忍）
 
 HBOX_ERR=$(grep -c 'Overfull.*hbox' 论文/编译日志.log 2>/dev/null || echo 0)
 
-[ "$HBOX_ERR" -lt 5 ] && echo "✅ Overfull hbox: $HBOX_ERR" || { echo "❌ $HBOX_ERR overfull hbox — fix wide tables/formulas"; GATE_FAIL=$((GATE_FAIL+1)); }
+[ "$HBOX_ERR" -eq 0 ] && echo "✅ No overfull hbox" || { echo "❌ $HBOX_ERR overfull hbox — fix wide tables/formulas"; GATE_FAIL=$((GATE_FAIL+1)); }
 
 # 15. Visual stacking
 
@@ -973,7 +982,7 @@ for f in 论文/章节/*.tex; do
 
 done
 
-# 20. 正文长表格核验（>15行应用 longtable）
+# 20. 正文长表格核验（>12 行必须摘要化；需跨页时使用 longtable）
 
 echo "--- Long table validate ---"
 
@@ -987,7 +996,7 @@ for f in 论文/章节/*.tex; do
 
         ROW_COUNT=$(awk '/\\begin\{tabular\}/,/\\end\{tabular\}/' "$f" 2>/dev/null | grep -c '&' || echo 0)
 
-        [ "$ROW_COUNT" -gt 15 ] && { echo "❌ $(basename $f): $ROW_COUNT 行表格应转 longtable"; GATE_FAIL=$((GATE_FAIL+1)); }
+        [ "$ROW_COUNT" -gt 12 ] && { echo "❌ $(basename $f): $ROW_COUNT 行结果表应在正文摘要化，完整表移至附录并按需使用 longtable"; GATE_FAIL=$((GATE_FAIL+1)); }
 
     fi
 

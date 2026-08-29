@@ -21,6 +21,10 @@ description: "Meta-model-agent 整合模型、程序、结果、图形与引用�
 
 不要把“采用某算法”写成“建立某算法模型”。审计身份在上游保持精确，正文和摘要使用论文表达卡中的简洁展示名称；比较、验证和应用类问题写明继承关系，不得伪造独立模型。论文中禁止出现身份卡字段标签。
 
+逐问正文进一步执行“任务作用 -> 模型或继承关系 -> 机制与数学表达 -> 求解 -> 真实结果 -> 独立验证 -> 机制解释与边界”。每个公式先说明为何需要，公式后解释符号、单位、定义域和它对后续计算的作用；禁止公式堆叠和算法教材化复述。结果段按“结论 -> 数值证据 -> 成因/机制 -> 边界或例外”闭合，不使用机械句数填充。
+
+`model_extension` 只完整展开新增机制，简要指回继承方程，并明确新增变量、约束、目标和验证。关键数值从 `全部结果.json.publication_claims` 提取，同一结果不得在摘要、正文、表格和结论中分别手抄。
+
 ## 摘要学术表达防退化合同
 
 摘要不是身份卡、运行日志或算法清单。写作时执行：
@@ -37,6 +41,7 @@ description: "Meta-model-agent 整合模型、程序、结果、图形与引用�
 
 - 始终读取 `参考资料/paper-layout/core.md` 与 `body-density.md`。
 - PDF/LaTeX 路线读取 `latex-figures.md`。
+- PDF/LaTeX 路线同时读取 `latex-math.md` 与 `page-composition.md`。
 - DOCX 路线读取 `docx-figures.md`。
 
 这些文件中的版心、图片尺寸和正文密度合同优先于本文件中遗留的通用示例。
@@ -787,7 +792,7 @@ FIGURE EMBEDDING PLAN:
 
 ```
 
-> 表格按输出模式选格式：PDF 模式 `\input{图表/TABLE_*.tex}`；Word/docx 模式 `cat 图表/TABLE_*.md`。图表/ 里有几个 TABLE 文件就嵌入几个，一张不漏。
+> 表格按输出模式选格式：PDF 模式 `\input{图表/TABLE_*.tex}`；Word/docx 模式读取 `图表/TABLE_*.md`。只嵌入已在证据清单中登记为正文发布、承担明确论点的摘要表；诊断表、重复表和完整长表进入附录或支撑材料。
 
 **Rules:**
 
@@ -795,7 +800,7 @@ FIGURE EMBEDDING PLAN:
 
 - **⛔ 必须使用 `图表引用.tex` 里的 figure 代码块**，不要自己写 `\includegraphics`。直接复制整个 `\begin{figure}...\end{figure}` 块，只改 caption 为中文
 
-- **⛔ TikZ 图必须嵌入**：`图表引用.tex` 里每个引用 `结构示意图.pdf` / `tikz_*.pdf` 的 `\begin{figure}...\end{figure}` 块都要复制到对应章节，一张都不能漏
+- **⛔ TikZ 图按证据角色嵌入**：仅复制 `figure_manifest.json` 中 `publish=true` 且承担机制、结果、验证或决策论点的 `结构示意图.pdf` / `tikz_*.pdf` 块；诊断、替代和重复结构图不进入正文
 
 - **⛔ 图片路线务必是 `../图表/xxx.pdf`**（由于 章节/ 在 论文/ 下面）
 
@@ -817,7 +822,7 @@ DrawIO 图（技术路线图、求解流程图、Pipeline 图等）的 `\begin{f
 
 | TikZ 几何/算法图 (结构示意图.pdf) | 几何示意图→相应子问题章节开头；算法过程图→模型建立小节 | 相应子问题/模型章节 |
 
-**写完全部章节后，务必运行以下核验确认 DrawIO/TikZ 图全部嵌入：**
+**写完全部章节后，务必运行以下核验确认 `figure_manifest.json` 中 `publish=true` 的 DrawIO/TikZ 图均已嵌入：**
 
 ```bash
 
@@ -829,13 +834,15 @@ for pdf in 图表/技术路线图.pdf 图表/fig_flow_*.pdf 图表/fig_pipeline*
 
     bn=$(basename "$pdf")
 
+    python3 -c "import json,sys; d=json.load(open('图表/figure_manifest.json',encoding='utf-8')); sys.exit(0 if any(x.get('publish') and x.get('path','').replace('\\\\','/').endswith('/'+sys.argv[1]) for x in d.get('figures',[])) else 1)" "$bn" || continue
+
     if grep -rq "$bn" 论文/章节/*.tex 论文/论文正文.tex 2>/dev/null; then
 
         echo "✅ $bn 已嵌入"
 
     else
 
-        echo "❌ $bn 未嵌入 — 必须立即修复！"
+        echo "❌ 发布图 $bn 未嵌入 — 必须立即修复！"
 
     fi
 
@@ -849,13 +856,15 @@ for tpdf in 图表/结构示意图.pdf 图表/结构示意图_*.pdf 图表/tikz_
 
     tbn=$(basename "$tpdf")
 
+    python3 -c "import json,sys; d=json.load(open('图表/figure_manifest.json',encoding='utf-8')); sys.exit(0 if any(x.get('publish') and x.get('path','').replace('\\\\','/').endswith('/'+sys.argv[1]) for x in d.get('figures',[])) else 1)" "$tbn" || continue
+
     if grep -rq "$tbn" 论文/章节/*.tex 论文/论文正文.tex 2>/dev/null; then
 
         echo "✅ TikZ $tbn 已嵌入"
 
     else
 
-        echo "❌ TikZ $tbn 未嵌入 — 必须立即修复！"
+        echo "❌ 发布 TikZ $tbn 未嵌入 — 必须立即修复！"
 
     fi
 
@@ -863,9 +872,9 @@ done
 
 ```
 
-**若有任何 ❌，务必立即修复后再继续写下一章。避免等到最后才修复。**
+**若任一 `publish=true` 资产出现 ❌，务必立即修复后再继续写下一章。`publish=false` 的诊断、替代或重复资产不进入正文。**
 
-Also scan `图表/*.tex` for all `\begin{figure}` / `\begin{table}` blocks with their `\label{}`. After writing, verify all are embedded:
+可扫描 `图表/*.tex` 的全部标签用于诊断，但只有发布清单或正文表格嵌入计划选中的标签缺失时才阻塞；不得因未发布标签存在而强塞正文：
 
 ```bash
 
@@ -873,7 +882,7 @@ grep -oh '\\label{[^}]*}' 图表/*.tex 2>/dev/null | sort -u > 临时文件/all_
 
 grep -oh '\\label{[^}]*}' 论文/章节/*.tex 论文/论文正文.tex 2>/dev/null | sort -u > 临时文件/embedded_labels.txt
 
-comm -23 临时文件/all_fig_labels.txt 临时文件/embedded_labels.txt  # should be empty
+comm -23 临时文件/all_fig_labels.txt 临时文件/embedded_labels.txt  # diagnostic only; cross-check missing labels against publish=true
 
 ```
 
@@ -1077,11 +1086,11 @@ Read 计算结果.md for exact numbers — ensure paper numbers match computatio
 
 Follow the interleaving, embedding, and LaTeX rules from `工具/writing_rules.md`.
 
-**⛔ 图文并茂硬规则（每个章节都必须遵守）：**
+**⛔ 图表论证硬规则（每个章节都必须遵守）：**
 
 - 普通图表使用 `[htbp]`，在章节边界用 `\FloatBarrier` 收束；禁止全篇强制 `[H]` 造成大块空白和页数膨胀
 
-- 每张图/表后面必须有 ≥5 行分析文字（数值解读+对比+结论），然后才能放下一张图
+- 每张图/表后必须完成“结论、数值证据、机制解释、边界/例外”中与该图相关的语义闭环；长度由信息量决定，不设置机械行数
 
 - 绝对禁止两张图连续出现中间没有分析段落
 
@@ -1091,9 +1100,9 @@ Follow the interleaving, embedding, and LaTeX rules from `工具/writing_rules.m
 
 - **⛔ 不设置统一图片宽度下限。** 判断标准是最终 100% 显示时文字是否清晰以及是否浪费页面。简单示意图可小于 `0.7\linewidth`；复杂数据图可适当放大，但任何图片不得超过 `\linewidth` 或 `0.70\textheight`。
 
-**⛔ 超长表格处理规则（>15 行的结果表格必须遵守）：**
+**⛔ 超长表格处理规则（>12 行的结果表格必须遵守）：**
 
-如果某个结果表格超过 15 行数据（如调度方案、路径规划、逐日预测值等），**不要把完整表格放在正文里**——会占好几页，挤压正文空间。正确做法：
+如果某个结果表格超过 12 行数据（如调度方案、路径规划、逐日预测值等），**不要把完整表格放在正文里**——会占好几页，挤压正文空间。正确做法：
 
 1. **正文放摘要表**：只展示前 5 行 + 后 3 行 + 汇总统计（均值/最优/总计），caption 标注"（部分，完整结果见附录表 X）"
 
@@ -1159,7 +1168,7 @@ Follow the interleaving, embedding, and LaTeX rules from `工具/writing_rules.m
 
 ```
 
-**判断标准：** 写表格前先数数据行数。≤15 行直接放正文，>15 行用摘要+附录方案。compile_utils.sh 也会自动检测并截断超长表格，但最好在写的时候就处理好。
+**判断标准：** 写表格前先数数据行数。≤12 行可按可读性放正文，>12 行用摘要+附录方案。必须跨页时使用 `longtable` 并重复表头；不得依赖无条件 `resizebox` 压缩。
 
 After each chapter, verify character count:
 
@@ -1455,7 +1464,7 @@ See `<de_ai_polish>` in `工具/writing_rules.md`.
 
 **⛔ 统计建模必须写中英文两个摘要**：先写中文摘要（500-700字），然后将中文摘要忠实翻译为英文摘要（350-500 words），所有数值结果、方法名称、结论必须一一对应。数模竞赛（国赛/五一杯/MathorCup/华中杯等）只写中文摘要。
 
-For math modeling competitions: each sub-problem must identify the canonical model family before the solver and report a specific result (e.g., "问题一建立带容量约束的混合整数线性规划模型，采用 HiGHS 分支定界算法求解，最优解为 YY")。
+For math modeling competitions: `new_model/model_extension` sub-problems identify the canonical model family before the solver and report a specific result; `comparison/validation/application` sub-problems state the inherited model and the new task instead of inventing another model name.
 
 Read `工具/writing_rules.md` for abstract format rules (分段、首行缩进、长度).
 

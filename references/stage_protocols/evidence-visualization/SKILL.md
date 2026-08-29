@@ -48,7 +48,7 @@ Stats tables: `stats_utils.py` supplies `regression_table`, `descriptive_table`,
 
 ## ⛔⛔⛔ 交付契约（最高优先级）
 
-除 `图表/图表引用.tex` 外，必须生成 `图表/figure_manifest.json`。每张图登记 `path`、`claim`、`source`、`reader_task`、`publish` 和 `placement`。只有 `publish=true` 的图必须嵌入正文；诊断图、调试图和被替代的图应登记为 `publish=false`，不得为了覆盖文件而挤入正文。
+除 `图表/图表引用.tex` 外，必须生成 `图表/figure_manifest.json`。`figures` 与 `tables` 均登记 `path`、`question`、`visual_role`、`claim`、`source`、`result_keys`、`reader_task`、`publish` 和 `placement`，表格可另登记 `label`。`visual_role` 取 `mechanism/result/validation/decision/diagnostic`；只有 `publish=true` 的图表必须嵌入正文，诊断、调试、完整长表和被替代资产登记为 `publish=false`。
 
 ```json
 {
@@ -56,15 +56,34 @@ Stats tables: `stats_utils.py` supplies `regression_table`, `descriptive_table`,
   "figures": [
     {
       "path": "图表/fig_q1_sensitivity.pdf",
+      "question": "Q1",
+      "visual_role": "validation",
       "claim": "参数扰动不改变最优方案排序",
       "source": "图表/全部结果.json",
+      "result_keys": ["Q1.validation.sensitivity"],
       "reader_task": "比较趋势与稳定区间",
+      "publish": true,
+      "placement": "body"
+    }
+  ],
+  "tables": [
+    {
+      "path": "图表/TABLE_q1_solution.tex",
+      "label": "tab:q1-solution",
+      "question": "Q1",
+      "visual_role": "result",
+      "claim": "最优方案满足全部约束并优于基线",
+      "source": "图表/全部结果.json",
+      "result_keys": ["Q1.solution", "Q1.validation.residual"],
+      "reader_task": "核对关键决策值与约束余量",
       "publish": true,
       "placement": "body"
     }
   ]
 }
 ```
+
+正文图表按论证需要组织为“机制 -> 结果 -> 验证/决策”，不是每问机械凑齐三张。所有生成的 `TABLE_*.tex/md` 必须进入 `tables` 分类，但只有 `publish=true` 的摘要表进入正文；相同数据和相同结论的重复资产不得通过更换形式伪装成新证据。
 
 **Must produce all planned visuals (per 论文规划.md or skill-specific plan)** as `图表/fig_*.png/pdf` plus `图表/图表引用.tex` (or, in docx mode, the same PNGs without 图表引用.tex requirement).
 
@@ -1099,7 +1118,7 @@ descriptive_table(df, output=f'图表/TABLE_descriptive.{ext}')
 
 ### 工作节点 6：Produce LaTeX include snippets
 
-Save to `图表/图表引用.tex`. Use `[H]` float specifier (requires `\usepackage{float}`).
+Save to `图表/图表引用.tex`. Use `[htbp]` for ordinary figures and tables, then use `\FloatBarrier` at section boundaries. Reserve `[H]` for the few small objects whose meaning depends on immediate adjacency to the paragraph.
 
 **⛔ Captions needs to match manuscript language.** Validate 选题规划.md or 问题分析.md:
 

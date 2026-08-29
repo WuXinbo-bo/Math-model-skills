@@ -175,6 +175,7 @@ def make_s2(workspace: Path) -> None:
             ## 问题一
             模型定义 Q1 | 正式名称: 考虑容量与预算约束的多目标优化线性规划模型 | 标准模型族: 多目标优化 | 求解算法: 加权和法与HiGHS算法
             模型结构 Q1 | 决策变量/状态量: 方案选择量与资源配置量 | 目标函数/统计关系: 最小化成本并最大化覆盖效率 | 核心约束/方程: 容量、预算与时间窗约束 | 定制机制: 分层资源配置
+            模型语义 Q1 | 目标数量: 2 | 目标方向: min,max | 变量类型: continuous | 关系类型: linear | 多目标证据: 成本与覆盖效率冲突并采用归一化加权和
             论文表达 Q1 | 展示名称: 容量预算约束多目标优化模型 | 问题角色: new_model | 继承模型: none | 核心方法: 加权和法
             方法调研：线性规划与分层优化都适用，本题优先采用分层优化，因为需要为后续阶段扩展保留结构。
             模型选择与理由：选择基础分层优化模型，优势对比是可直接衔接问题二的阶段转移。
@@ -185,6 +186,8 @@ def make_s2(workspace: Path) -> None:
             ## 问题二
             模型定义 Q2 | 正式名称: 考虑阶段转移与情景扰动的鲁棒优化模型 | 标准模型族: 鲁棒优化 | 求解算法: 情景生成与HiGHS算法
             模型结构 Q2 | 决策变量/状态量: 分阶段配置量与状态转移量 | 目标函数/统计关系: 最小化最坏情景风险暴露 | 核心约束/方程: 资源、稳定性与阶段转移约束 | 定制机制: 多阶段情景扰动
+            模型语义 Q2 | 目标数量: 1 | 目标方向: min | 变量类型: continuous | 关系类型: stochastic linear | 多目标证据: not_applicable
+            模型增量 Q2 | 继承方程: Q1资源平衡与预算约束 | 新增变量: 分阶段状态转移量 | 新增/修改约束: 情景可行性与阶段转移约束 | 目标变化: 由加权绩效改为最坏情景风险 | 求解变化: 增加情景生成 | 验证变化: 检查情景外可行率与转移闭合
             论文表达 Q2 | 展示名称: 多阶段情景鲁棒优化模型 | 问题角色: model_extension | 继承模型: Q1 | 核心方法: 情景生成法
             方法调研：多阶段规划优于静态线性规划。
             模型选择与理由：选择多阶段优化模型，因为问题情境解构中“资源可重新分配”触发升级。
@@ -195,6 +198,7 @@ def make_s2(workspace: Path) -> None:
             ## 问题三
             模型定义 Q3 | 正式名称: 兼顾公平与效率的TOPSIS多指标决策模型 | 标准模型族: 多指标决策 | 求解算法: 熵权TOPSIS排序算法
             模型结构 Q3 | 决策变量/状态量: 候选方案指标值与综合得分 | 目标函数/统计关系: 依据理想解贴近度完成方案排序 | 核心约束/方程: 指标归一化、权重和为一与公平约束 | 定制机制: 公平性和效率联合评价
+            模型语义 Q3 | 目标数量: 0 | 目标方向: none | 变量类型: continuous | 关系类型: statistical | 多目标证据: not_applicable
             论文表达 Q3 | 展示名称: 公平效率TOPSIS多指标决策模型 | 问题角色: new_model | 继承模型: none | 核心方法: 熵权TOPSIS法
             方法调研：综合评价模型适合方案排序。
             模型选择与理由：选择多指标综合评价，能够保留公平性与效率的权衡。
@@ -301,9 +305,14 @@ def make_s3(workspace: Path) -> None:
             {
                 "problems": [{"problem": i, "value": i * 10} for i in range(1, 4)],
                 "model_identity": {
-                    "Q1": {"academic_name": "考虑容量与预算约束的多目标优化线性规划模型", "canonical_model_family": "多目标优化", "solver_algorithm": "加权和法与HiGHS算法"},
-                    "Q2": {"academic_name": "考虑阶段转移与情景扰动的鲁棒优化模型", "canonical_model_family": "鲁棒优化", "solver_algorithm": "情景生成与HiGHS算法"},
-                    "Q3": {"academic_name": "兼顾公平与效率的TOPSIS多指标决策模型", "canonical_model_family": "多指标决策", "solver_algorithm": "熵权TOPSIS排序算法"},
+                    "Q1": {"academic_name": "考虑容量与预算约束的多目标优化线性规划模型", "canonical_model_family": "多目标优化", "solver_algorithm": "加权和法与HiGHS算法", "objective_count": "2", "objective_direction": "min,max", "variable_type": "continuous", "relation_type": "linear", "multiobjective_evidence": "成本与覆盖效率冲突并采用归一化加权和"},
+                    "Q2": {"academic_name": "考虑阶段转移与情景扰动的鲁棒优化模型", "canonical_model_family": "鲁棒优化", "solver_algorithm": "情景生成与HiGHS算法", "objective_count": "1", "objective_direction": "min", "variable_type": "continuous", "relation_type": "stochastic linear", "multiobjective_evidence": "not_applicable"},
+                    "Q3": {"academic_name": "兼顾公平与效率的TOPSIS多指标决策模型", "canonical_model_family": "多指标决策", "solver_algorithm": "熵权TOPSIS排序算法", "objective_count": "0", "objective_direction": "none", "variable_type": "continuous", "relation_type": "statistical", "multiobjective_evidence": "not_applicable"},
+                },
+                "publication_claims": {
+                    "C-Q1-01": {"question": "Q1", "statement": "最优目标值", "display_value": "10", "source_key": "problems.0.value", "derivation": "direct", "required_in": ["body"]},
+                    "C-Q2-01": {"question": "Q2", "statement": "风险暴露值", "display_value": "20", "source_key": "problems.1.value", "derivation": "direct", "required_in": ["body"]},
+                    "C-Q3-01": {"question": "Q3", "statement": "综合绩效得分", "display_value": "30", "source_key": "problems.2.value", "derivation": "direct", "required_in": ["body"]}
                 },
             },
             ensure_ascii=False,
@@ -323,11 +332,12 @@ def make_s4(workspace: Path) -> None:
     latex = (
         "\n".join(
             [
-                f"\\begin{{figure}}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{{../图表/结果总览图.pdf}}\n\\caption{{图{i} 数据结果图}}\n\\label{{fig:result{i}}}\n\\end{{figure}}"
-                for i in range(1, 5)
+                f"\\begin{{figure}}[htbp]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{{../图表/结果总览图.pdf}}\n\\caption{{图{i} 数据结果图}}\n\\label{{fig:result{i}}}\n\\end{{figure}}"
+                for i in range(1, 2)
             ]
         )
         + "\n"
+        + ("% publication figure contract: question, role, source, claim, reader task, placement.\n" * 8)
     )
     write_text(workspace / "图表" / "图表引用.tex", latex)
     write_text(
@@ -338,13 +348,17 @@ def make_s4(workspace: Path) -> None:
                 "figures": [
                     {
                         "path": "图表/结果总览图.pdf",
+                        "question": "GLOBAL",
+                        "visual_role": "result",
                         "claim": "三个子问题的核心结果均满足可行性约束",
                         "source": "图表/全部结果.json",
+                        "result_keys": ["problems"],
                         "reader_task": "比较三个子问题结果",
                         "publish": True,
                         "placement": "body",
                     }
                 ],
+                "tables": [],
             },
             ensure_ascii=False,
             indent=2,
@@ -358,20 +372,40 @@ def make_s5(workspace: Path) -> None:
         (workspace / "图表" / f"{name}.pdf").write_bytes(b"%PDF-1.4\n% fake drawio pdf\n")
     with (workspace / "图表" / "图表引用.tex").open("a", encoding="utf-8") as handle:
         handle.write(
-            "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/技术路线图.pdf}\n\\caption{技术路线图}\n\\label{fig:roadmap}\n\\end{figure}\n"
+            "\\begin{figure}[htbp]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/技术路线图.pdf}\n\\caption{技术路线图}\n\\label{fig:roadmap}\n\\end{figure}\n"
         )
         for index in range(1, 4):
             handle.write(
-                f"\\begin{{figure}}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{{../图表/问题流程图_{index}.pdf}}\n\\caption{{问题{index}求解流程图}}\n\\label{{fig:flow{index}}}\n\\end{{figure}}\n"
+                f"\\begin{{figure}}[htbp]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{{../图表/问题流程图_{index}.pdf}}\n\\caption{{问题{index}求解流程图}}\n\\label{{fig:flow{index}}}\n\\end{{figure}}\n"
             )
 
 
 def make_s6(workspace: Path) -> None:
     sections = workspace / "论文" / "章节"
+    question_paragraphs = {
+        1: "问题一建立容量预算约束多目标优化模型。定义连续资源配置变量，目标函数同时最小化成本并最大化覆盖效率，容量和预算构成线性约束。采用加权和算法求解，得到最优目标值10；预算约束回代和基线比较验证方案可行。结果表明资源增加改善覆盖效率，其边界受预算上限影响。",
+        2: "问题二继承问题一的资源平衡方程，新增阶段状态、情景可行性约束和最坏风险目标，形成多阶段情景鲁棒优化模型。采用情景生成算法求解，得到风险暴露值20；情景外可行率和阶段转移回代验证新增机制有效。结果说明鲁棒代价来自极端情景，其局限受情景集覆盖范围影响。",
+        3: "问题三建立公平效率TOPSIS多指标决策模型。连续指标经归一化形成统计关系，采用熵权TOPSIS算法求解，得到综合绩效得分30；权重扰动和排序基线检验验证结果稳定。结果表明推荐方案兼顾公平和效率，其适用边界取决于指标定义。",
+    }
+    for index, paragraph in question_paragraphs.items():
+        write_text(
+            sections / f"problem{index}.tex",
+            f"\\section{{问题{index}的建模与求解}}\n"
+            "\\subsection{模型机制与数学表达}\n"
+            + paragraph
+            + "\n\\begin{equation}\\label{eq:q"
+            + str(index)
+            + "} z="
+            + str(index * 10)
+            + "\\end{equation}\n"
+            + f"式~\\eqref{{eq:q{index}}}给出本问的发布结果，单位与定义域均由建模报告确定。\n"
+            + "\\subsection{求解、结果与验证}\n"
+            + paragraph * 12,
+        )
     write_text(
         sections / "1_问题重述.tex",
         ("问题重述与技术路线图说明。技术路线图.pdf 在本章展示整体求解路径，摘要之后先给出技术路线，再过渡到子问题；相关研究背景与流程设计可参考经典竞赛论文写法\\textsuperscript{\\cite{ref1}}。\n" * 80)
-        + "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/技术路线图.pdf}\n\\caption{技术路线图}\n\\label{fig:roadmap}\n\\end{figure}\n",
+        + "\\begin{figure}[htbp]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/技术路线图.pdf}\n\\caption{技术路线图}\n\\label{fig:roadmap}\n\\end{figure}\n",
     )
     write_text(
         sections / "2_模型构建.tex",
@@ -381,17 +415,14 @@ def make_s6(workspace: Path) -> None:
         + (
             "问题一、问题二、问题三的模型推导、约束表达、验证方法与灵敏度分析。问题流程图_1.pdf、问题流程图_2.pdf、问题流程图_3.pdf 分别用于说明三问的求解流程，算法设计与参数化假设均依据建模报告与相关文献\\textsuperscript{\\cite{ref1}}展开。\n" * 80
         )
-        + "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/问题流程图_1.pdf}\n\\caption{问题1求解流程图}\n\\label{fig:flow1}\n\\end{figure}\n"
-        + "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/问题流程图_2.pdf}\n\\caption{问题2求解流程图}\n\\label{fig:flow2}\n\\end{figure}\n"
-        + "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/问题流程图_3.pdf}\n\\caption{问题3求解流程图}\n\\label{fig:flow3}\n\\end{figure}\n",
+        + "\\begin{figure}[htbp]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/问题流程图_1.pdf}\n\\caption{问题1求解流程图}\n\\label{fig:flow1}\n\\end{figure}\n"
+        + "\\begin{figure}[htbp]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/问题流程图_2.pdf}\n\\caption{问题2求解流程图}\n\\label{fig:flow2}\n\\end{figure}\n"
+        + "\\begin{figure}[htbp]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/问题流程图_3.pdf}\n\\caption{问题3求解流程图}\n\\label{fig:flow3}\n\\end{figure}\n",
     )
     write_text(
         sections / "3_结果分析.tex",
         ("结果分析、对比讨论、模型评价与推广建议。结果总览图.pdf 展示三个子问题的核心结果，结论部分据此给出方案总结；所有数值结果都与 计算结果.md 保持一致，并结合参考方法\\textsuperscript{\\cite{ref1}}做对照解释。\n" * 80)
-        + "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/结果总览图.pdf}\n\\caption{图1 数据结果图}\n\\label{fig:result1}\n\\end{figure}\n"
-        + "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/结果总览图.pdf}\n\\caption{图2 数据结果图}\n\\label{fig:result2}\n\\end{figure}\n"
-        + "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/结果总览图.pdf}\n\\caption{图3 数据结果图}\n\\label{fig:result3}\n\\end{figure}\n"
-        + "\\begin{figure}[H]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/结果总览图.pdf}\n\\caption{图4 数据结果图}\n\\label{fig:result4}\n\\end{figure}\n"
+        + "\\begin{figure}[htbp]\n\\centering\n\\includegraphics[width=0.72\\linewidth,height=0.70\\textheight,keepaspectratio]{../图表/结果总览图.pdf}\n\\caption{结果总览}\n\\label{fig:result1}\n\\end{figure}\n"
         + "\\section*{结论}\n本文通过三个子问题完成建模、求解与综合评价，给出可解释的结论与推广建议。\n",
     )
     padding = ("% 长注释填充，模拟完整模板与长篇正文入口说明。\n" * 120)
@@ -419,7 +450,9 @@ def make_s6(workspace: Path) -> None:
             \label{AbstractEnd}
             \label{BodyStart}
             \input{章节/1_问题重述.tex}
-            \input{章节/2_模型构建.tex}
+            \input{章节/problem1.tex}
+            \input{章节/problem2.tex}
+            \input{章节/problem3.tex}
             \input{章节/3_结果分析.tex}
             \begin{thebibliography}{9}
             \bibitem{ref1} Example Reference
@@ -446,8 +479,15 @@ def make_s6(workspace: Path) -> None:
 
 def make_s7(workspace: Path) -> None:
     pdf = workspace / "论文" / "数模论文.pdf"
-    page_objects = b"\n".join(b"<< /Type /Page >>" for _ in range(8))
-    pdf.write_bytes(b"%PDF-1.4\n" + page_objects + b"\n% smoke padding\n" + b"x" * 25000)
+    from pypdf import PdfWriter
+
+    writer = PdfWriter()
+    for _ in range(8):
+        writer.add_blank_page(width=595.32, height=841.92)
+    with pdf.open("wb") as handle:
+        writer.write(handle)
+    with pdf.open("ab") as handle:
+        handle.write(b"\n% smoke padding\n" + b"x" * 25000)
     write_text(
         workspace / "论文" / "论文正文.aux",
         "\\newlabel{AbstractStart}{{}{1}}\n"

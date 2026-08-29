@@ -13,7 +13,7 @@
   <img alt="Targets" src="https://img.shields.io/badge/Targets-CUMCM%20%7C%2051MCM%20%7C%20MCM%2FICM-2563A8">
   <img alt="Outputs" src="https://img.shields.io/badge/Outputs-PDF%20%7C%20DOCX-6D4CC3">
   <img alt="Platform" src="https://img.shields.io/badge/Primary-Codex-111827">
-  <img alt="Version" src="https://img.shields.io/badge/Version-v1.2-16A34A">
+  <img alt="Version" src="https://img.shields.io/badge/Version-v1.3-16A34A">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-MIT-16A34A"></a>
 </p>
 
@@ -28,14 +28,31 @@ Meta-model-agent 将题意分析、模型构建、真实计算、结果验证、
 - 从真实题面、附件和数据建立问题底稿，并按 `supplied/collected/none` 声明数据模式；
 - 有数据时执行题目驱动的数据审计、预处理、质量复核和输入冻结，无数据时明确跳过；
 - 将自然语言任务转化为可计算、可验证的数学模型，严格区分模型名称、定制机制与求解算法；
+- 建立跨问题复用的机制内核，通过逐问继承与真实增量形成连续数学主线；
 - 先建立可解释基线，再通过对照、消融和稳健性分析验证改进；
 - 运行逐问程序并保存结构化结果，使论文数值能够追溯到计算输出；
 - 生成数据图、结果表、DrawIO/TikZ 流程图和稳定的论文引用；
 - 按目标竞赛模板组织 LaTeX 或 DOCX 论文，控制摘要结构、正文密度、图表尺寸与页数；
+- 对最终 PDF 执行公式语义、章节引用和页面构成审计，检查空白、孤行、小字、断表和硬编码编号；
 - 从当前源码生成仅包含主程序和逐问核心实现的代码附录，并使用英文程序显示名；
 - 通过阶段门禁、返工传播、断点恢复和多轮审稿控制研究质量。
 
-## v1.2 重点升级
+## v1.3 重点升级
+
+v1.3 保持七阶段流程和论文交付物数量不变，将高质量论文的建模递进、学术叙事和页面节奏转化为可执行合同：
+
+- **统一机理与逐问递进**：先建立跨问题复用的状态、几何、统计或资源机制，再通过模型增量卡记录新增变量、约束、目标、求解与验证，避免每问独立堆模型。
+- **模型语义门禁**：新增目标数量、方向、变量类型、关系类型与多目标证据；多资源、高维变量或多个指标不再自动通过“多目标模型”命名。
+- **发布声明一致性**：在现有 `全部结果.json` 中固化关键结果、来源键和派生方式，摘要、正文、图表与结论读取同一证据，减少加总、区间并集和人工抄数冲突。
+- **逐问学术叙事**：正文按“任务作用—模型/继承—机制公式—求解—结果—验证—解释边界”推进，结果段采用“结论—数值—机制—例外”闭环，不再使用机械句数补写。
+- **公式与交叉引用**：核心公式使用原生可编辑数学环境，补齐动机、符号、单位、定义域和后续作用；拦截公式截图、硬编码图表公式编号和重复标签。
+- **证据角色**：`figure_manifest.json` 对图与表统一登记所属问题、视觉角色、结果键和发布状态，区分机制、结果、验证、决策和诊断资产，避免重复图表与正文堆叠。
+- **动态问题章节**：国赛模板可按真实问题数同步章节和主文件输入，防止四问、五问文件存在却未进入最终 PDF。
+- **编译后页面审计**：新增最终 PDF 页面检测，识别低占用页面、底部大空白、标题孤悬、不可读小字和内容越界；页数合规不再替代页面质量。
+
+具体规则见 [模型质量合同](references/model-quality-contracts.md)、[LaTeX 数学表达](references/paper-layout/latex-math.md) 和 [页面构成合同](references/paper-layout/page-composition.md)。
+
+## v1.2 基础升级
 
 本版本保持原有七阶段工作流和主要交付物数量不变，重点完善论文内容与证据合同：
 
@@ -84,7 +101,7 @@ python scripts/pipeline_manager.py set-mode championship --workspace ../contest-
 ## 运行要求
 
 - Python 3.8 或更高版本，建议使用 Python 3.10 或 3.11；
-- PDF 路线需要 Bash、XeLaTeX、BibTeX 和相应 TeX 宏包；
+- PDF 路线需要 Bash、XeLaTeX、BibTeX、PyMuPDF 和相应 TeX 宏包；
 - DOCX 页数门禁需要 LibreOffice；DrawIO 和 PDF 视觉核验需要对应系统工具；
 - 完整的分平台安装、可选建模依赖和自检命令见 [环境配置说明](ENVIRONMENT.md)。
 
@@ -170,6 +187,9 @@ python "../contest-workspace/工具/docx_export.py" --workspace ../contest-works
 | 环境安装与依赖自检 | [ENVIRONMENT.md](ENVIRONMENT.md) |
 | 总流程与阶段映射 | [workflow-map.md](references/workflow-map.md) |
 | 阶段门禁与人工核验 | [gate-matrix.md](references/gate-matrix.md) |
+| 模型语义与逐问增量 | [model-quality-contracts.md](references/model-quality-contracts.md) |
+| LaTeX 数学表达 | [latex-math.md](references/paper-layout/latex-math.md) |
+| 编译后页面构成 | [page-composition.md](references/paper-layout/page-composition.md) |
 | Baseline 与 Enhancement | [phase-control.md](references/phase-control.md) |
 | 增强模式操作 | [enhancement-operations.md](references/enhancement-operations.md) |
 | 冠军模式审稿与评分 | [championship-review-method.md](references/championship-review-method.md) |

@@ -200,7 +200,7 @@ Additionally never write just: "如表所示，我们的方法表现最好" / "A
 
 - **⛔ 图片高度准则**：单张图不可超过页面高度的 70%（约 18cm）。若数据条目多（如 20+ 个类别的柱状图），务必限制 figsize 高度或分成多张子图。Python 产出时 `figsize=(width, height)` 的 height 避免超过 8（英寸）。超长的横向柱状图（30+ 条目）改用 `figsize=(7, 6)` + 缩小字号，或只展示 Top 15/20。
 
-- Float specifier: 用 `[H]`（需要 `\usepackage{float}`），图片紧跟在对应文字后面，不浮动。配合 `\includegraphics` 的 `height=0.38\textheight,keepaspectratio` 限高，防止图太高撑爆页面。⛔ 不要用 `[htbp]`——会导致图浮动，图和文字分离，多张图堆在一起
+- Float specifier: 普通图表使用 `[htbp]`，在章节边界用 `\FloatBarrier` 收束。只有尺寸较小且语义上必须紧邻正文的个别对象才使用 `[H]`；禁止全篇强制 `[H]`，否则容易产生大块空白和页数膨胀。
 
 - Figure/table captions: keep short (one line, ≤15 Chinese characters or ≤10 English words). Detailed descriptions go in the body text before/after the figure, not in the caption. Example: `\caption{残差诊断四联图}` not `\caption{Wiener 过程模型残差诊断。(a) Q-Q 图检验正态性;(b) 残差 vs 拟合值检验同方差性;(c) 残差直方图与标准正态分布对比;(d) 残差 vs 时间检验独立性。}`
 
@@ -781,4 +781,3 @@ If references.bib is empty or missing, avoid proceed to the next step.
 - Backup existing `论文/` prior to overwriting
 
 </output_conventions>
-

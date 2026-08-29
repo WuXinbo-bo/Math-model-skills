@@ -116,6 +116,40 @@ MODEL_STRUCTURE_EN_RE = re.compile(
     r"\s*\|\s*custom\s+mechanism\s*[:：]\s*(?P<mechanism>[^|\n]+)"
 )
 
+MODEL_SEMANTICS_RE = re.compile(
+    r"(?mi)^模型语义\s*Q(?P<question>\d+)\s*\|\s*目标数量\s*[:：]\s*(?P<objective_count>[^|\n]+)"
+    r"\s*\|\s*目标方向\s*[:：]\s*(?P<objective_direction>[^|\n]+)"
+    r"\s*\|\s*变量类型\s*[:：]\s*(?P<variable_type>[^|\n]+)"
+    r"\s*\|\s*关系类型\s*[:：]\s*(?P<relation_type>[^|\n]+)"
+    r"\s*\|\s*多目标证据\s*[:：]\s*(?P<multiobjective_evidence>[^|\n]+)"
+)
+
+MODEL_SEMANTICS_EN_RE = re.compile(
+    r"(?mi)^model\s+semantics\s+Q(?P<question>\d+)\s*\|\s*objective\s+count\s*[:：]\s*(?P<objective_count>[^|\n]+)"
+    r"\s*\|\s*objective\s+direction\s*[:：]\s*(?P<objective_direction>[^|\n]+)"
+    r"\s*\|\s*variable\s+type\s*[:：]\s*(?P<variable_type>[^|\n]+)"
+    r"\s*\|\s*relation\s+type\s*[:：]\s*(?P<relation_type>[^|\n]+)"
+    r"\s*\|\s*multiobjective\s+evidence\s*[:：]\s*(?P<multiobjective_evidence>[^|\n]+)"
+)
+
+MODEL_INCREMENT_RE = re.compile(
+    r"(?mi)^模型增量\s*Q(?P<question>\d+)\s*\|\s*继承方程\s*[:：]\s*(?P<inherited_equations>[^|\n]+)"
+    r"\s*\|\s*新增变量\s*[:：]\s*(?P<new_variables>[^|\n]+)"
+    r"\s*\|\s*新增/修改约束\s*[:：]\s*(?P<constraint_changes>[^|\n]+)"
+    r"\s*\|\s*目标变化\s*[:：]\s*(?P<objective_changes>[^|\n]+)"
+    r"\s*\|\s*求解变化\s*[:：]\s*(?P<solver_changes>[^|\n]+)"
+    r"\s*\|\s*验证变化\s*[:：]\s*(?P<validation_changes>[^|\n]+)"
+)
+
+MODEL_INCREMENT_EN_RE = re.compile(
+    r"(?mi)^model\s+increment\s+Q(?P<question>\d+)\s*\|\s*inherited\s+equations\s*[:：]\s*(?P<inherited_equations>[^|\n]+)"
+    r"\s*\|\s*new\s+variables\s*[:：]\s*(?P<new_variables>[^|\n]+)"
+    r"\s*\|\s*constraint\s+changes\s*[:：]\s*(?P<constraint_changes>[^|\n]+)"
+    r"\s*\|\s*objective\s+changes\s*[:：]\s*(?P<objective_changes>[^|\n]+)"
+    r"\s*\|\s*solver\s+changes\s*[:：]\s*(?P<solver_changes>[^|\n]+)"
+    r"\s*\|\s*validation\s+changes\s*[:：]\s*(?P<validation_changes>[^|\n]+)"
+)
+
 PAPER_EXPRESSION_RE = re.compile(
     r"(?mi)^论文表达\s*Q(?P<question>\d+)\s*\|\s*展示名称\s*[:：]\s*(?P<name>[^|\n]+)"
     r"\s*\|\s*问题角色\s*[:：]\s*(?P<role>[^|\n]+)"
@@ -163,6 +197,12 @@ CANONICAL_MODEL_FAMILIES: dict[str, tuple[str, ...]] = {
     "markov": (r"马尔可夫", r"(?i)\bMarkov\b"),
     "queueing": (r"排队模型|排队论", r"(?i)\bqueueing model|queuing model\b"),
     "differential_equation": (r"微分方程", r"(?i)\bdifferential equation\b"),
+    "kinematic_dynamic": (r"运动学模型|动力学模型", r"(?i)\bkinematic(?:s)? model|dynamic(?:s)? model\b"),
+    "geometric_visibility": (r"几何可见性|几何遮挡|视线遮挡|空间相交模型", r"(?i)\bgeometric visibility|line[- ]of[- ]sight|occlusion model|intersection model\b"),
+    "event_driven": (r"事件驱动(?:仿真|模型)|连续时间事件模型|事件区间模型", r"(?i)\bevent[- ]driven (?:simulation|model)|continuous[- ]time event model\b"),
+    "simulation_optimization": (r"仿真优化|模拟优化", r"(?i)\bsimulation[- ]based optimization|simulation optimization\b"),
+    "hybrid_discrete_continuous": (r"混合离散[-— ]连续模型|离散[-— ]连续联合模型|混合整数非线性规划", r"(?i)\bhybrid discrete[- ]continuous model|mixed[- ]integer nonlinear programming\b", r"(?i)\bMINLP\b"),
+    "set_interval": (r"区间集合模型|集合覆盖模型|最大覆盖模型", r"(?i)\binterval set model|set covering model|maximum coverage model\b"),
     "difference_equation": (r"差分方程", r"(?i)\bdifference equation\b"),
     "compartmental": (r"SIR|SEIR|仓室模型", r"(?i)\bSIR|SEIR|compartmental model\b"),
     "bayesian": (r"贝叶斯", r"(?i)\bBayesian\b"),
@@ -242,6 +282,63 @@ def model_definition_records(text: str) -> dict[str, dict[str, str]]:
     return records
 
 
+def model_semantic_records(text: str) -> dict[str, dict[str, str]]:
+    records: dict[str, dict[str, str]] = {}
+    for pattern in (MODEL_SEMANTICS_RE, MODEL_SEMANTICS_EN_RE):
+        for match in pattern.finditer(text):
+            records[f"Q{match.group('question')}"] = {
+                "objective_count": match.group("objective_count").strip(),
+                "objective_direction": match.group("objective_direction").strip(),
+                "variable_type": match.group("variable_type").strip(),
+                "relation_type": match.group("relation_type").strip(),
+                "multiobjective_evidence": match.group("multiobjective_evidence").strip(),
+            }
+    return records
+
+
+def model_increment_records(text: str) -> dict[str, dict[str, str]]:
+    records: dict[str, dict[str, str]] = {}
+    for pattern in (MODEL_INCREMENT_RE, MODEL_INCREMENT_EN_RE):
+        for match in pattern.finditer(text):
+            records[f"Q{match.group('question')}"] = {
+                field: match.group(field).strip()
+                for field in (
+                    "inherited_equations", "new_variables", "constraint_changes",
+                    "objective_changes", "solver_changes", "validation_changes",
+                )
+            }
+    return records
+
+
+def model_semantic_issues(question: str, definition: dict[str, str], semantic: dict[str, str] | None) -> list[str]:
+    if not semantic:
+        return [f"{question}: missing model semantics card"]
+    issues: list[str] = []
+    try:
+        objective_count = int(semantic["objective_count"])
+    except (TypeError, ValueError):
+        return [f"{question}: objective_count must be a non-negative integer"]
+    if objective_count < 0:
+        issues.append(f"{question}: objective_count must be non-negative")
+    direction = semantic["objective_direction"].strip().lower()
+    if objective_count == 0 and direction not in {"none", "n/a", "not_applicable", "无"}:
+        issues.append(f"{question}: a non-optimization model must use objective_direction=none")
+    if objective_count > 0 and direction in {"none", "n/a", "not_applicable", "无"}:
+        issues.append(f"{question}: an optimization model must state objective direction")
+    if not re.search(r"continuous|integer|binary|mixed|state|连续|整数|二元|混合|状态", semantic["variable_type"], flags=re.IGNORECASE):
+        issues.append(f"{question}: variable_type is not structurally recognizable")
+    if not re.search(r"linear|nonlinear|differential|stochastic|geometric|simulation|hybrid|statistical|network|set|线性|非线性|微分|随机|几何|仿真|混合|统计|网络|集合", semantic["relation_type"], flags=re.IGNORECASE):
+        issues.append(f"{question}: relation_type is not structurally recognizable")
+    identified = matched_model_families(definition.get("model_family", "") + " " + definition.get("academic_name", ""))
+    if "multiobjective_optimization" in identified:
+        if objective_count < 2:
+            issues.append(f"{question}: multiobjective model name requires at least two optimized objectives")
+        evidence = semantic["multiobjective_evidence"].strip().lower()
+        if evidence in {"none", "n/a", "not_applicable", "无", "不适用"} or len(evidence) < 4:
+            issues.append(f"{question}: multiobjective model lacks conflict/aggregation/Pareto evidence")
+    return issues
+
+
 def paper_expression_records(text: str) -> dict[str, dict[str, str]]:
     records: dict[str, dict[str, str]] = {}
     for pattern in (PAPER_EXPRESSION_RE, PAPER_EXPRESSION_EN_RE):
@@ -306,6 +403,8 @@ def paper_expression_contract_issues(workspace: Path, expected: int) -> list[str
 def model_definition_contract_issues(workspace: Path, expected: int) -> list[str]:
     report = read_text(workspace / "建模报告.md")
     records = model_definition_records(report)
+    semantics = model_semantic_records(report)
+    increments = model_increment_records(report)
     expressions = paper_expression_records(report)
     profile_key, _ = active_profile(workspace)
     english_route = profile_key == "mcm-icm"
@@ -329,6 +428,15 @@ def model_definition_contract_issues(workspace: Path, expected: int) -> list[str
         missing_structure = [field for field in structure_fields if len(record.get(field, "").strip()) < 2]
         if missing_structure:
             issues.append(f"{question}: model structure card is incomplete: {missing_structure}")
+        issues.extend(model_semantic_issues(question, record, semantics.get(question)))
+        if expression and expression.get("question_role") == "model_extension":
+            increment = increments.get(question)
+            if not increment:
+                issues.append(f"{question}: model_extension requires a model increment card")
+            else:
+                missing_increment = [field for field, value in increment.items() if len(value.strip()) < 2]
+                if missing_increment:
+                    issues.append(f"{question}: model increment card is incomplete: {missing_increment}")
     issues.extend(paper_expression_contract_issues(workspace, expected))
     return issues
 
@@ -336,6 +444,7 @@ def model_definition_contract_issues(workspace: Path, expected: int) -> list[str
 def result_model_identity_issues(workspace: Path, expected: int) -> list[str]:
     report_text = read_text(workspace / "建模报告.md")
     report_records = model_definition_records(report_text)
+    report_semantics = model_semantic_records(report_text)
     expressions = paper_expression_records(report_text)
     aggregate = load_json(workspace / "图表" / "全部结果.json")
     payload = aggregate.get("model_identity", {}) if isinstance(aggregate, dict) else {}
@@ -359,9 +468,53 @@ def result_model_identity_issues(workspace: Path, expected: int) -> list[str]:
             "canonical_model_family": report["model_family"],
             "solver_algorithm": report["solver_algorithm"],
         }
+        semantic = report_semantics.get(question, {})
+        expected_values.update({
+            "objective_count": semantic.get("objective_count", ""),
+            "objective_direction": semantic.get("objective_direction", ""),
+            "variable_type": semantic.get("variable_type", ""),
+            "relation_type": semantic.get("relation_type", ""),
+            "multiobjective_evidence": semantic.get("multiobjective_evidence", ""),
+        })
         for field, expected_value in expected_values.items():
-            if str(result.get(field) or "").strip() != expected_value:
+            if str(result.get(field) if result.get(field) is not None else "").strip() != expected_value:
                 issues.append(f"{question}: result {field} does not match the formulation identity")
+    return issues
+
+
+def publication_claim_issues(workspace: Path, expected: int, manuscript: str = "") -> list[str]:
+    aggregate = load_json(workspace / "图表" / "全部结果.json")
+    claims = aggregate.get("publication_claims", {}) if isinstance(aggregate, dict) else {}
+    if not isinstance(claims, dict) or not claims:
+        return ["全部结果.json.publication_claims must be a non-empty object"]
+    issues: list[str] = []
+    covered: set[str] = set()
+    allowed_sections = {"abstract", "body", "table", "figure", "conclusion", "appendix"}
+    for claim_id, item in claims.items():
+        if not isinstance(item, dict):
+            issues.append(f"{claim_id}: publication claim must be an object")
+            continue
+        question = str(item.get("question") or "").upper()
+        if not re.fullmatch(r"Q\d+", question):
+            issues.append(f"{claim_id}: invalid question id")
+        else:
+            covered.add(question)
+        for field in ("statement", "display_value", "source_key", "derivation"):
+            if len(str(item.get(field) or "").strip()) < 1:
+                issues.append(f"{claim_id}: missing {field}")
+        required_in = item.get("required_in")
+        if not isinstance(required_in, list) or not required_in:
+            issues.append(f"{claim_id}: required_in must be a non-empty list")
+        elif any(str(section).lower() not in allowed_sections for section in required_in):
+            issues.append(f"{claim_id}: required_in contains an unsupported section")
+        if manuscript:
+            display_value = str(item.get("display_value") or "")
+            numeric_tokens = re.findall(r"[-+]?\d+(?:\.\d+)?", display_value)
+            if numeric_tokens and not any(token in manuscript for token in numeric_tokens):
+                issues.append(f"{claim_id}: display value is absent from the manuscript")
+    for index in range(1, expected + 1):
+        if f"Q{index}" not in covered:
+            issues.append(f"Q{index}: no publication claim is registered")
     return issues
 
 
@@ -600,6 +753,14 @@ def published_figure_files(workspace: Path) -> list[Path]:
         if rel:
             files.append(workspace / rel)
     return files
+
+
+def published_table_entries(workspace: Path) -> list[dict[str, Any]]:
+    manifest = figure_manifest(workspace)
+    entries = manifest.get("tables", []) if isinstance(manifest, dict) else []
+    if not isinstance(entries, list):
+        return []
+    return [item for item in entries if isinstance(item, dict) and item.get("publish", False)]
 
 
 DATA_FILE_SUFFIXES = {
@@ -849,10 +1010,26 @@ def labels_in_file(path: Path) -> list[str]:
 
 
 def figure_table_labels(workspace: Path) -> list[str]:
-    labels: list[str] = []
-    labels.extend(labels_in_file(workspace / "图表" / "图表引用.tex"))
-    for path in sorted((workspace / "图表").glob("TABLE_*.tex")):
-        labels.extend(labels_in_file(path))
+    manifest = figure_manifest(workspace)
+    if not manifest:
+        labels: list[str] = []
+        labels.extend(labels_in_file(workspace / "图表" / "图表引用.tex"))
+        for path in sorted((workspace / "图表").glob("TABLE_*.tex")):
+            labels.extend(labels_in_file(path))
+        return sorted(set(labels))
+    labels = []
+    reference_text = read_text(workspace / "图表" / "图表引用.tex")
+    for path in published_figure_files(workspace):
+        for block in re.findall(r"\\begin\{figure\}.*?\\end\{figure\}", reference_text, flags=re.DOTALL):
+            if path.name in block or path.stem in block:
+                labels.extend(labels_in_text(block))
+    for item in published_table_entries(workspace):
+        label = str(item.get("label") or "").strip()
+        if label:
+            labels.append(label)
+        rel = str(item.get("path") or "")
+        if rel:
+            labels.extend(labels_in_file(workspace / rel))
     return sorted(set(labels))
 
 
@@ -1222,6 +1399,8 @@ def check_s3(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require(not contains_forbidden_figure_output(workspace), "no_pdf_figure_output", "computational-realization does not save pdf figures")
     identity_issues = result_model_identity_issues(workspace, expected)
     result.require(not identity_issues, "result_model_identity", f"computed result identities match formulation: {identity_issues or 'all ok'}")
+    claim_issues = publication_claim_issues(workspace, expected)
+    result.require(not claim_issues, "publication_claims", f"publication claims are traceable and cover every question: {claim_issues or 'all ok'}")
     data_issues = data_preparation_contract_issues(workspace)
     result.require(not data_issues, "data_preparation_contract", f"conditional data preparation is complete and auditable: {data_issues or 'all ok'}")
     if has_user_data_files(workspace):
@@ -1268,16 +1447,46 @@ def check_s4(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     manifest_entries = manifest.get("figures", []) if isinstance(manifest, dict) else []
     result.require(isinstance(manifest_entries, list), "figure_manifest_schema", "figure manifest has a figures list")
     for item in manifest_entries if isinstance(manifest_entries, list) else []:
-        if not item.get("publish", False):
-            continue
         rel = str(item.get("path") or "")
+        question = str(item.get("question") or "").upper()
+        visual_role = str(item.get("visual_role") or "").lower()
         claim = str(item.get("claim") or "").strip()
         source = str(item.get("source") or "").strip()
-        result.require(bool(rel) and (workspace / rel).exists(), f"published_figure:{rel}", f"published figure exists: {rel}")
+        result_keys = item.get("result_keys")
+        result.require(bool(re.fullmatch(r"Q\d+|GLOBAL", question)), f"figure_question:{rel}", f"figure has a valid question owner: {rel}")
+        result.require(visual_role in {"mechanism", "result", "validation", "decision", "diagnostic"}, f"figure_role:{rel}", f"figure has an explicit visual role: {rel}")
+        result.require(isinstance(result_keys, list) and bool(result_keys), f"figure_result_keys:{rel}", f"figure records result keys: {rel}")
         result.require(bool(claim), f"figure_claim:{rel}", f"published figure has an explicit evidence claim: {rel}")
         result.require(bool(source), f"figure_source:{rel}", f"published figure records its data source: {rel}")
+        if not item.get("publish", False):
+            continue
+        result.require(visual_role != "diagnostic", f"published_role:{rel}", f"published figure is not a diagnostic-only asset: {rel}")
+        result.require(bool(rel) and (workspace / rel).exists(), f"published_figure:{rel}", f"published figure exists: {rel}")
         if rel:
             result.require(Path(rel).name in includes_text or Path(rel).stem in includes_text, f"published_include:{rel}", f"published figure is included by LaTeX: {rel}")
+    table_entries = manifest.get("tables", []) if isinstance(manifest, dict) else []
+    result.require(isinstance(table_entries, list), "table_manifest_schema", "figure manifest has a tables list")
+    registered_tables: set[str] = set()
+    for item in table_entries if isinstance(table_entries, list) else []:
+        if not isinstance(item, dict):
+            result.require(False, "table_manifest_entry", "table manifest entries must be objects")
+            continue
+        rel = str(item.get("path") or "")
+        registered_tables.add(Path(rel).name)
+        question = str(item.get("question") or "").upper()
+        visual_role = str(item.get("visual_role") or "").lower()
+        result_keys = item.get("result_keys")
+        result.require(bool(re.fullmatch(r"Q\d+|GLOBAL", question)), f"table_question:{rel}", f"table has a valid question owner: {rel}")
+        result.require(visual_role in {"mechanism", "result", "validation", "decision", "diagnostic"}, f"table_role:{rel}", f"table has an explicit evidence role: {rel}")
+        result.require(isinstance(result_keys, list) and bool(result_keys), f"table_result_keys:{rel}", f"table records result keys: {rel}")
+        result.require(bool(str(item.get("claim") or "").strip()), f"table_claim:{rel}", f"table has an explicit evidence claim: {rel}")
+        result.require(bool(str(item.get("source") or "").strip()), f"table_source:{rel}", f"table records its data source: {rel}")
+        result.require(bool(rel) and (workspace / rel).exists(), f"table_asset:{rel}", f"registered table exists: {rel}")
+        if item.get("publish", False):
+            result.require(visual_role != "diagnostic", f"published_table_role:{rel}", f"published table is not diagnostic-only: {rel}")
+    generated_tables = [*sorted((workspace / "图表").glob("TABLE_*.tex")), *sorted((workspace / "图表").glob("TABLE_*.md"))]
+    unregistered_tables = [path.name for path in generated_tables if path.name not in registered_tables]
+    result.require(not unregistered_tables, "registered_tables", f"all generated tables are classified in the manifest: {unregistered_tables or 'all ok'}")
     if figure_files:
         result.require(includes.exists() and includes.stat().st_size > 0, "latex_includes", "图表引用.tex is present for generated figures")
     else:
@@ -1380,6 +1589,118 @@ def count_section_files(workspace: Path) -> int:
 
 def has_section_inputs(main_tex: str) -> bool:
     return bool(re.search(r"\\(?:input|include)\{(?:章节|sections)/", main_tex))
+
+
+def latex_input_paths(main_tex: str) -> set[str]:
+    return {
+        re.sub(r"\.tex$", "", match.replace("\\", "/"))
+        for match in re.findall(r"\\(?:input|include)\{([^}]+)\}", main_tex)
+    }
+
+
+def question_section_map(workspace: Path) -> dict[int, Path]:
+    paper_dir = workspace / "论文"
+    mapped: dict[int, Path] = {}
+    for dirname in ("章节", "sections"):
+        for path in (paper_dir / dirname).glob("*.tex"):
+            filename = re.search(r"(?i)problem[_-]?(\d+)", path.stem)
+            if filename:
+                mapped[int(filename.group(1))] = path
+                continue
+            text = visible_manuscript_text(read_text(path))
+            heading = re.search(r"\\section\{\s*问题\s*([一二三四五六七八九十\d]+)", text)
+            if heading:
+                index = cn_int(heading.group(1))
+                if index:
+                    mapped[index] = path
+    return mapped
+
+
+def question_input_issues(workspace: Path, main_tex: str, expected: int) -> list[str]:
+    issues: list[str] = []
+    paper_dir = workspace / "论文"
+    inputs = latex_input_paths(main_tex)
+    for rel in inputs:
+        candidate = paper_dir / f"{rel}.tex"
+        if rel.startswith(("sections/", "章节/")) and not candidate.exists():
+            issues.append(f"referenced section does not exist: {rel}.tex")
+    mapped = question_section_map(workspace)
+    for index in range(1, expected + 1):
+        path = mapped.get(index)
+        if not path:
+            issues.append(f"Q{index}: question section file is missing")
+            continue
+        rel = re.sub(r"\.tex$", "", path.relative_to(paper_dir).as_posix())
+        if rel not in inputs:
+            issues.append(f"Q{index}: {rel}.tex exists but is not included by the main manuscript")
+    return issues
+
+
+def problem_narrative_issues(workspace: Path, expected: int) -> list[str]:
+    issues: list[str] = []
+    mapped = question_section_map(workspace)
+    checks = {
+        "model/mechanism": ["模型", "机制", "继承", "model", "mechanism", "inherits"],
+        "mathematical expression": ["\\begin{equation", "\\begin{align", "目标函数", "约束", "状态方程", "statistical relation"],
+        "solver": ["求解", "算法", "数值计算", "solver", "algorithm"],
+        "numeric result": ["结果", "最优", "误差", "提升", "result", "optimum", "error"],
+        "validation": ["验证", "检验", "回代", "基线", "收敛", "validation", "baseline", "convergence"],
+        "interpretation/boundary": ["说明", "表明", "原因", "机制", "边界", "局限", "意味着", "indicate", "boundary", "limitation"],
+    }
+    for index in range(1, expected + 1):
+        path = mapped.get(index)
+        if not path:
+            continue
+        text = visible_manuscript_text(read_text(path))
+        for label, markers in checks.items():
+            if not has_any(text.lower(), [marker.lower() for marker in markers]):
+                issues.append(f"Q{index}: section lacks {label} evidence")
+        if not re.search(r"\d", text):
+            issues.append(f"Q{index}: section contains no numeric evidence")
+    return issues
+
+
+def latex_semantic_issues(workspace: Path) -> list[str]:
+    issues: list[str] = []
+    corpus = "\n".join(latex_texts(workspace))
+    visible = visible_manuscript_text(corpus)
+    labels = re.findall(r"\\label\{([^}]+)\}", corpus)
+    duplicates = sorted({label for label in labels if labels.count(label) > 1})
+    if duplicates:
+        issues.append(f"duplicate labels: {duplicates}")
+    for path in [workspace / "论文" / "论文正文.tex", *sorted((workspace / "论文" / "sections").glob("*.tex")), *sorted((workspace / "论文" / "章节").glob("*.tex"))]:
+        if not path.exists():
+            continue
+        for line_number, line in enumerate(read_text(path).splitlines(), start=1):
+            prose = re.sub(r"(?<!\\)%.*$", "", line)
+            if re.search(r"(?:图|表)\s*[0-9一二三四五六七八九十]+|式\s*[（(]?\s*\d+", prose) and not re.search(r"\\(?:ref|cref|Cref|eqref)\{", prose):
+                issues.append(f"{path.name}:{line_number}: hard-coded figure/table/equation number")
+    image_paths = re.findall(r"\\includegraphics(?:\[[^]]*\])?\{([^}]+)\}", corpus)
+    suspicious_images = [path for path in image_paths if re.search(r"(?i)(?:^|[/_-])(formula|equation|eqn|公式)(?:[/_.-]|$)", path)]
+    if suspicious_images:
+        issues.append(f"formula-like images must be native LaTeX: {suspicious_images}")
+    floats = len(re.findall(r"\\begin\{(?:figure|table)\}", corpus))
+    forced = len(re.findall(r"\\begin\{(?:figure|table)\}\[H\]", corpus))
+    if forced > max(2, int(floats * 0.3)):
+        issues.append(f"excessive forced [H] floats: {forced}/{floats}")
+    for table in re.findall(r"\\begin\{tabular\}.*?\\end\{tabular\}", corpus, flags=re.DOTALL):
+        rows = len(re.findall(r"\\\\(?:\s*\[[^]]+\])?\s*(?:\n|$)", table))
+        if rows > 13:
+            issues.append(f"ordinary tabular has {rows - 1} data/header rows; summarize or use longtable")
+    if re.search(r"\\resizebox\s*\{[^}]+\}\s*\{[^}]+\}\s*\{\s*\\begin\{(?:equation|align)", corpus):
+        issues.append("display equations must not be compressed with resizebox")
+    if re.search(r"\\begin\{(?:equation|align)\*?\}.*?\\includegraphics", visible, flags=re.DOTALL):
+        issues.append("math environments must contain native equations, not images")
+    return issues
+
+
+def citation_credibility_issues(workspace: Path) -> list[str]:
+    corpus = "\n".join(latex_texts(workspace))
+    bibliography = re.search(r"\\begin\{thebibliography\}.*?\\end\{thebibliography\}", corpus, flags=re.DOTALL)
+    if not bibliography:
+        return []
+    ai_names = re.findall(r"(?i)DeepSeek|Doubao|豆包|ChatGPT|Claude|Gemini", bibliography.group(0))
+    return [f"AI tools cannot serve as academic evidence in the bibliography: {sorted(set(ai_names))}"] if ai_names else []
 
 
 def resolve_competition_class(workspace: Path, profile: dict[str, Any]) -> Path | None:
@@ -1490,6 +1811,8 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         result.require(not definition_issues, "model_definition_contract", f"model definitions are explicit before manuscript synthesis: {definition_issues or 'all ok'}")
         result_identity_issues = result_model_identity_issues(workspace, expected)
         result.require(not result_identity_issues, "result_model_identity", f"computed result identities remain aligned: {result_identity_issues or 'all ok'}")
+        claim_issues = publication_claim_issues(workspace, expected, markdown)
+        result.require(not claim_issues, "publication_claims", f"publication claims remain traceable in the DOCX source: {claim_issues or 'all ok'}")
         abstract_issues = abstract_structure_issues(workspace, markdown, expected)
         result.require(not abstract_issues, "abstract_structure_contract", f"abstract follows context, per-question model/result/validation, and model-advantage structure: {abstract_issues or 'all ok'}")
         data_manuscript_issues = manuscript_data_preparation_issues(workspace, markdown)
@@ -1523,10 +1846,14 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require(has_any(corpus, ["关键词", "Keywords"]), "keywords", "paper includes keywords")
     result.require(has_any(corpus, ["结论", "结语", "总结"]), "conclusion", "paper includes a conclusion-like section")
     expected = expected_problem_count(workspace)
+    input_issues = question_input_issues(workspace, main_tex, expected)
+    result.require(not input_issues, "question_input_closure", f"every real question section is included by the main manuscript: {input_issues or 'all ok'}")
     definition_issues = model_definition_contract_issues(workspace, expected)
     result.require(not definition_issues, "model_definition_contract", f"model definitions are explicit before manuscript synthesis: {definition_issues or 'all ok'}")
     result_identity_issues = result_model_identity_issues(workspace, expected)
     result.require(not result_identity_issues, "result_model_identity", f"computed result identities remain aligned: {result_identity_issues or 'all ok'}")
+    claim_issues = publication_claim_issues(workspace, expected, corpus)
+    result.require(not claim_issues, "publication_claims", f"publication claims remain traceable in the manuscript: {claim_issues or 'all ok'}")
     abstract_issues = abstract_structure_issues(workspace, main_tex, expected)
     result.require(not abstract_issues, "abstract_structure_contract", f"abstract follows context, per-question model/result/validation, and model-advantage structure: {abstract_issues or 'all ok'}")
     data_manuscript_issues = manuscript_data_preparation_issues(workspace, corpus)
@@ -1541,6 +1868,12 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require(not figure_contract_issues, "figure_size_contract", f"LaTeX figures fit the page body: {figure_contract_issues or 'all ok'}")
     body_units, body_issues = body_density_contract(workspace)
     result.require(not body_issues, "body_density_contract", f"effective body units={body_units}; issues={body_issues or 'none'}")
+    narrative_issues = problem_narrative_issues(workspace, expected)
+    result.require(not narrative_issues, "problem_narrative_contract", f"each question closes model, result, validation, and interpretation: {narrative_issues or 'all ok'}")
+    semantic_issues = latex_semantic_issues(workspace)
+    result.require(not semantic_issues, "latex_semantic_contract", f"LaTeX uses native equations and semantic cross-references: {semantic_issues or 'all ok'}")
+    credibility_issues = citation_credibility_issues(workspace)
+    result.require(not credibility_issues, "citation_credibility", f"academic claims use credible sources: {credibility_issues or 'all ok'}")
     expression_issues = manuscript_expression_issues(workspace, corpus)
     result.require(not expression_issues, "paper_expression_contract", f"paper uses concise publication model expressions: {expression_issues or 'all ok'}")
     code_issues = code_appendix_contract_issues(workspace, corpus)
@@ -1552,10 +1885,19 @@ def check_s6(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         figure_files = all_generated_figure_files(workspace)
     if figure_files:
         missing_refs = [path.name for path in figure_files if path.name not in corpus]
-        result.require(not missing_refs, "embedded_figures", f"all generated figures are embedded: {', '.join(missing_refs) if missing_refs else 'all ok'}")
+        result.require(not missing_refs, "embedded_figures", f"all publish=true figures are embedded: {', '.join(missing_refs) if missing_refs else 'all ok'}")
+    published_tables = published_table_entries(workspace)
+    if published_tables:
+        missing_tables = []
+        for item in published_tables:
+            rel = str(item.get("path") or "")
+            label = str(item.get("label") or "")
+            if rel and Path(rel).name not in corpus and Path(rel).stem not in corpus and (not label or label not in corpus):
+                missing_tables.append(Path(rel).name)
+        result.require(not missing_tables, "embedded_tables", f"all publish=true tables are embedded: {', '.join(missing_tables) if missing_tables else 'all ok'}")
     missing_labels = missing_embedded_labels(workspace)
     if figure_table_labels(workspace):
-        result.require(not missing_labels, "embedded_labels", f"all figure/table labels from figures are embedded: {', '.join(missing_labels) if missing_labels else 'all ok'}")
+        result.require(not missing_labels, "embedded_labels", f"all publication figure/table labels are embedded: {', '.join(missing_labels) if missing_labels else 'all ok'}")
     section_sizes = section_char_counts(workspace)
     if section_sizes:
         result.warn_if(min(section_sizes) < 1200, "thin_section_warning", f"smallest section has {min(section_sizes)} raw chars")
@@ -1599,6 +1941,8 @@ def check_s7(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         result.require(not final_definition_issues, "final_model_definition_contract", f"final model identities remain valid: {final_definition_issues or 'all ok'}")
         final_result_identity_issues = result_model_identity_issues(workspace, expected)
         result.require(not final_result_identity_issues, "final_result_model_identity", f"final result identities remain aligned: {final_result_identity_issues or 'all ok'}")
+        final_claim_issues = publication_claim_issues(workspace, expected, markdown)
+        result.require(not final_claim_issues, "final_publication_claims", f"final claims remain traceable: {final_claim_issues or 'all ok'}")
         final_abstract_issues = abstract_structure_issues(workspace, markdown, expected)
         result.require(not final_abstract_issues, "final_abstract_structure_contract", f"final abstract remains structurally consistent: {final_abstract_issues or 'all ok'}")
         final_data_issues = manuscript_data_preparation_issues(workspace, markdown)
@@ -1645,6 +1989,8 @@ def check_s7(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
     result.require(not final_definition_issues, "final_model_definition_contract", f"final model identities remain valid: {final_definition_issues or 'all ok'}")
     final_result_identity_issues = result_model_identity_issues(workspace, expected)
     result.require(not final_result_identity_issues, "final_result_model_identity", f"final result identities remain aligned: {final_result_identity_issues or 'all ok'}")
+    final_claim_issues = publication_claim_issues(workspace, expected, corpus)
+    result.require(not final_claim_issues, "final_publication_claims", f"final claims remain traceable: {final_claim_issues or 'all ok'}")
     final_abstract_issues = abstract_structure_issues(workspace, read_text(main_tex), expected)
     result.require(not final_abstract_issues, "final_abstract_structure_contract", f"final abstract remains structurally consistent: {final_abstract_issues or 'all ok'}")
     final_data_issues = manuscript_data_preparation_issues(workspace, corpus)
@@ -1662,6 +2008,8 @@ def check_s7(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         ]
         fatal_hits = [pattern for pattern in fatal_patterns if re.search(pattern, log_text, flags=re.IGNORECASE)]
         result.require(not fatal_hits, "compile_log_health", f"compile log free of critical latex errors: {fatal_hits or 'none'}")
+        overfull = re.findall(r"Overfull \\[hv]box", log_text, flags=re.IGNORECASE)
+        result.require(not overfull, "no_overfull_boxes", f"compile log has no overfull boxes ({len(overfull)} found)")
     results_json = workspace / "图表" / "全部结果.json"
     if pdf_path.exists() and results_json.exists():
         result.warn_if(pdf_path.stat().st_mtime < results_json.stat().st_mtime, "stale_pdf", "pdf is older than 全部结果.json")
@@ -1675,10 +2023,25 @@ def check_s7(workspace: Path, step: dict[str, Any]) -> dict[str, Any]:
         generic_markers = [marker for marker in generic_markers if marker not in {r"Team\s*Number"}]
     result.require(not generic_markers, "anonymous_compliance", f"anonymous markers removed: {generic_markers or 'none'}")
     competition_source_checks(workspace, read_text(main_tex), corpus, result)
+    input_issues = question_input_issues(workspace, read_text(main_tex), expected)
+    result.require(not input_issues, "final_question_input_closure", f"compiled source includes every real question: {input_issues or 'all ok'}")
     figure_contract_issues = latex_figure_contract_issues(workspace)
     result.require(not figure_contract_issues, "figure_size_contract", f"LaTeX figures fit the page body: {figure_contract_issues or 'all ok'}")
     body_units, body_issues = body_density_contract(workspace)
     result.require(not body_issues, "body_density_contract", f"effective body units={body_units}; issues={body_issues or 'none'}")
+    narrative_issues = problem_narrative_issues(workspace, expected)
+    result.require(not narrative_issues, "final_problem_narrative", f"every question retains its semantic evidence chain: {narrative_issues or 'all ok'}")
+    semantic_issues = latex_semantic_issues(workspace)
+    result.require(not semantic_issues, "final_latex_semantics", f"formula and cross-reference contracts pass: {semantic_issues or 'all ok'}")
+    credibility_issues = citation_credibility_issues(workspace)
+    result.require(not credibility_issues, "final_citation_credibility", f"academic sources remain credible: {credibility_issues or 'all ok'}")
+    if pdf_path.exists():
+        from layout_audit import audit_pdf
+
+        layout_report = audit_pdf(pdf_path)
+        result.require(not layout_report.get("issues"), "rendered_page_layout", f"rendered PDF has no hard page-composition defects: {layout_report.get('issues') or 'all ok'}")
+        warnings = layout_report.get("warnings") or []
+        result.warn_if(bool(warnings), "rendered_page_layout_review", f"rendered PDF pages requiring review: {warnings or 'none'}")
     result.require(citation_count(corpus) > 0, "citations_present", "compiled paper source still contains citations")
     result.require(bibliography_entry_count(workspace) > 0, "bibliography_entries", "compiled paper has bibliography entries")
     return result.to_dict()

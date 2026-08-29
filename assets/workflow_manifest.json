@@ -91,6 +91,8 @@
         "recommended_method_alignment",
         "parameterized_assumptions",
         "validation_checkpoint_export",
+        "model_semantics_contract",
+        "model_increment_contract",
         "enhancement_suggestion_review"
       ],
       "subagents": [
@@ -130,6 +132,7 @@
         "result_generation",
         "data_support_readiness",
         "execution_reality",
+        "publication_claims_contract",
         "code_manifest_contract"
       ],
       "subagents": [
@@ -166,6 +169,7 @@
       "gates": [
         "figure_output_contract",
         "planned_figure_coverage",
+        "figure_evidence_roles",
         "publication_quality_floor",
         "visual_script_contract"
       ],
@@ -229,6 +233,9 @@
         "paper_output_contract",
         "competition_template_alignment",
         "chapter_completeness",
+        "question_input_closure",
+        "problem_narrative_contract",
+        "latex_semantic_contract",
         "figure_embedding_completeness",
         "citation_style_compliance",
         "code_appendix_coverage"
@@ -263,6 +270,8 @@
         "page_limit_check",
         "anonymous_compliance",
         "stale_figure_check",
+        "publication_claims_contract",
+        "rendered_page_layout",
         "compile_log_health"
       ],
       "subagents": [

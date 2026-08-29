@@ -20,6 +20,6 @@
 - 每项规划图形务必产出或给出合理豁免。
 - 图形数值务必能追溯到求解结果。
 - 样式、字体、单位和图例应满足正式文稿要求。
-- 每张正文图必须登记明确论点、数据来源和读者任务；仅 `publish=true` 的图进入正文，诊断图不得强制嵌入。
+- 每张图和每个 `TABLE_*` 表必须在现有 `figure_manifest.json` 的 `figures/tables` 中登记 `question/visual_role/claim/source/result_keys/reader_task/publish/placement`；仅 `publish=true` 的图表进入正文，诊断资产和完整长表不得强制嵌入。
+- 视觉角色使用 `mechanism/result/validation/decision/diagnostic`；正文优先形成机制、结果与验证的证据递进，不以图片数量评分。
 - 图形质量以信息准确、最终尺寸可读、灰度可辨和风格克制为准，不以渐变、圆角框、多层叠加或图形类别数量评分。
-

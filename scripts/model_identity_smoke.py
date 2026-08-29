@@ -24,6 +24,7 @@ VALID_REPORT = """# 建模报告
 ## 问题一
 模型定义 Q1 | 正式名称: 考虑维护约束的机组承诺混合整数线性规划模型 | 标准模型族: 混合整数线性规划 | 求解算法: HiGHS分支定界算法
 模型结构 Q1 | 决策变量/状态量: 机组启停、启动和出力变量 | 目标函数/统计关系: 最小化运行、启动和维护总成本 | 核心约束/方程: 供需平衡、容量、爬坡和最小开停机约束 | 定制机制: 逐台维护窗口与滚动预测
+模型语义 Q1 | 目标数量: 1 | 目标方向: min | 变量类型: mixed | 关系类型: linear | 多目标证据: not_applicable
 论文表达 Q1 | 展示名称: 维护约束机组承诺混合整数规划模型 | 问题角色: new_model | 继承模型: none | 核心方法: HiGHS分支定界算法
 """
 
@@ -54,6 +55,11 @@ def main() -> int:
                 "academic_name": "考虑维护约束的机组承诺混合整数线性规划模型",
                 "canonical_model_family": "混合整数线性规划",
                 "solver_algorithm": "HiGHS分支定界算法",
+                "objective_count": "1",
+                "objective_direction": "min",
+                "variable_type": "mixed",
+                "relation_type": "linear",
+                "multiobjective_evidence": "not_applicable",
             }
         }
     }
@@ -103,6 +109,16 @@ def main() -> int:
         "多目标车辆路径模型", "车辆路径与多目标优化", "自适应大邻域搜索", False
     )
     assert any("one primary" in item for item in multi_family_issues), multi_family_issues
+
+    false_multi = workspace(
+        base / "false_multi",
+        VALID_REPORT.replace(
+            "考虑维护约束的机组承诺混合整数线性规划模型 | 标准模型族: 混合整数线性规划",
+            "多资源机组承诺多目标优化模型 | 标准模型族: 多目标优化",
+        ),
+    )
+    false_multi_issues = model_definition_contract_issues(false_multi, 1)
+    assert any("at least two" in item for item in false_multi_issues), false_multi_issues
 
     good_abstract = r"""\section*{摘要}
 本文针对逐小时电力调度中的供需平衡与设备维护冲突，建立维护约束机组承诺混合整数规划模型完成经济调度。

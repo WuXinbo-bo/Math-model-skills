@@ -13,6 +13,12 @@
   \else\begin{center}{\zihao{4}\bfseries \abstractname\vspace{-.5em}\vspace{\z@}}\end{center}\quotation\fi
 }{\if@twocolumn\else\endquotation\newpage\fi}
 \makeatother
+% 温和控制孤行、标题悬挂和长公式分页；不改变官方字号与版心。
+\clubpenalty=7000
+\widowpenalty=7000
+\displaywidowpenalty=7000
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[2]
 \title{[论文标题]}
 \begin{document}
 \maketitle
@@ -36,9 +42,11 @@
 \input{sections/2_analysis}
 \input{sections/3_assumptions}
 \input{sections/4_symbols}
+% META_QUESTION_INPUTS_START -- run 工具/sync_question_sections.py after the real problem count is known.
 \input{sections/5_problem1}
 \input{sections/6_problem2}
 \input{sections/7_problem3}
+% META_QUESTION_INPUTS_END
 \input{sections/8_sensitivity}
 \input{sections/9_evaluation}
 \begin{thebibliography}{99}

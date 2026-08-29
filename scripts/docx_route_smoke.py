@@ -67,6 +67,7 @@ def prepare_model_context(workspace: Path, competition: str) -> None:
             "# Modeling Report\n\n## Problem 1\n"
             f"MODEL DEFINITION Q1 | ACADEMIC NAME: {name} | CANONICAL MODEL FAMILY: {family} | SOLVER ALGORITHM: {algorithm}\n"
             "MODEL STRUCTURE Q1 | DECISION/STATE VARIABLES: allocation and activation variables | OBJECTIVE/STATISTICAL RELATION: minimize total cost | CORE CONSTRAINTS/EQUATIONS: capacity and balance constraints | CUSTOM MECHANISM: problem-specific capacity limits\n"
+            "MODEL SEMANTICS Q1 | OBJECTIVE COUNT: 1 | OBJECTIVE DIRECTION: min | VARIABLE TYPE: mixed | RELATION TYPE: linear | MULTIOBJECTIVE EVIDENCE: not_applicable\n"
             "PAPER EXPRESSION Q1 | DISPLAY NAME: Capacity-Constrained Mixed-Integer Programming Model | QUESTION ROLE: new_model | INHERITS FROM: none | CORE METHOD: HiGHS branch-and-bound\n"
             "Data mode: none; preprocessing: skipped.\n"
         )
@@ -78,6 +79,7 @@ def prepare_model_context(workspace: Path, competition: str) -> None:
             "# 建模报告\n\n## 问题一\n"
             f"模型定义 Q1 | 正式名称: {name} | 标准模型族: {family} | 求解算法: {algorithm}\n"
             "模型结构 Q1 | 决策变量/状态量: 配置量与启用变量 | 目标函数/统计关系: 最小化总成本 | 核心约束/方程: 容量与平衡约束 | 定制机制: 题目容量上限\n"
+            "模型语义 Q1 | 目标数量: 1 | 目标方向: min | 变量类型: mixed | 关系类型: linear | 多目标证据: not_applicable\n"
             "论文表达 Q1 | 展示名称: 容量约束混合整数规划模型 | 问题角色: new_model | 继承模型: none | 核心方法: HiGHS分支定界算法\n"
             "数据模式: none\n预处理: skipped\n"
         )
@@ -88,8 +90,16 @@ def prepare_model_context(workspace: Path, competition: str) -> None:
                 "academic_name": name,
                 "canonical_model_family": family,
                 "solver_algorithm": algorithm,
+                "objective_count": "1",
+                "objective_direction": "min",
+                "variable_type": "mixed",
+                "relation_type": "linear",
+                "multiobjective_evidence": "not_applicable",
             }
-        }
+        },
+        "publication_claims": {
+            "C-Q1-01": {"question": "Q1", "statement": "optimal value", "display_value": "10", "source_key": "Q1.optimal_value", "derivation": "direct", "required_in": ["body"]}
+        },
     }
     (workspace / "图表").mkdir(parents=True, exist_ok=True)
     (workspace / "图表" / "全部结果.json").write_text(

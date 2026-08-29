@@ -30,3 +30,17 @@
 
 | 微分方程 | Euler、Runge-Kutta | scipy.integrate |
 
+| 运动学与动力学 | 状态方程、解析轨迹、数值积分 | scipy.integrate, sympy |
+
+| 几何可见性与遮挡 | 点线面距离、相交判据、计算几何 | numpy, scipy.spatial, shapely |
+
+| 连续时间事件模型 | 粗网格定位、根求解、二分精化、区间集合 | scipy.optimize, portion |
+
+| 仿真优化 | 机理仿真器、代理模型、黑箱约束优化 | scipy.optimize, pymoo |
+
+| 混合离散-连续模型 | 指派/路径/调度与连续控制分解、MINLP | OR-Tools, Pyomo, scipy.optimize |
+
+| 集合覆盖与时间区间 | 区间并集、重叠、边际贡献、最大覆盖 | portion, intervaltree, scipy |
+
+方法表只用于识别数学结构。库和算法必须根据可微性、凸性、变量类型、维度、精度与计算预算选择，不能反向用算法名称定义模型。
+
